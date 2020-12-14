@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "app_anfahrt.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

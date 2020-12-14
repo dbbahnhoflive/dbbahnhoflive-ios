@@ -1,0 +1,40 @@
+// SPDX-FileCopyrightText: 2020 DB Station&Service AG <bahnhoflive-opensource@deutschebahn.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+#ifndef MeinBahnhof_PrefixHeader_pch
+#define MeinBahnhof_PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#if defined(DEBUG) && !defined(APP_STORE)
+#   define NSLog(...) NSLog(__VA_ARGS__)
+#else
+#   define NSLog(...)
+#endif
+
+#define ISIPAD ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
+
+#define SCALEFACTORFORSCREEN (([UIApplication sharedApplication].keyWindow.frame.size.height <= 568) ? 568./667. : 1. )
+#define ISIPHONEPLUS (!ISIPAD && [UIApplication sharedApplication].keyWindow.frame.size.height > 667 )
+
+#define DEFAULT_CONFIRM_AREA_HEIGHT (92)
+
+
+#import "UIColor+DBColor.h"
+#import "UIFont+DBFont.h"
+#import "UIView+Frame.h"
+#import "UIImage+MBImage.h"
+
+#import "GTMNSString+HTML.h"
+#import "NSDateFormatter+MBDateFormatter.h"
+#import "MBUITrackableViewController.h"
+#import "MBTrackingManager.h"
+
+
+
+#define VOICEOVER_FOR_STR @"Straßenbahn"
+
+#endif

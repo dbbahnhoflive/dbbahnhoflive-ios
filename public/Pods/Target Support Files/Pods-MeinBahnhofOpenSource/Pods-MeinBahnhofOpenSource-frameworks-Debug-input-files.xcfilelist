@@ -1,0 +1,7 @@
+${PODS_ROOT}/Target Support Files/Pods-MeinBahnhofOpenSource/Pods-MeinBahnhofOpenSource-frameworks.sh
+${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework
+${BUILT_PRODUCTS_DIR}/GTMNSStringHTMLAdditions/GTMNSStringHTMLAdditions.framework
+${BUILT_PRODUCTS_DIR}/MBProgressHUD/MBProgressHUD.framework
+${BUILT_PRODUCTS_DIR}/Mantle/Mantle.framework
+${BUILT_PRODUCTS_DIR}/Sentry/Sentry.framework
+${BUILT_PRODUCTS_DIR}/TBXML/TBXML.framework

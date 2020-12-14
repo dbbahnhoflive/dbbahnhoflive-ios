@@ -1,0 +1,71 @@
+PODS:
+  - AFNetworking (4.0.1):
+    - AFNetworking/NSURLSession (= 4.0.1)
+    - AFNetworking/Reachability (= 4.0.1)
+    - AFNetworking/Security (= 4.0.1)
+    - AFNetworking/Serialization (= 4.0.1)
+    - AFNetworking/UIKit (= 4.0.1)
+  - AFNetworking/NSURLSession (4.0.1):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (4.0.1)
+  - AFNetworking/Security (4.0.1)
+  - AFNetworking/Serialization (4.0.1)
+  - AFNetworking/UIKit (4.0.1):
+    - AFNetworking/NSURLSession
+  - GoogleMaps (3.7.0):
+    - GoogleMaps/Maps (= 3.7.0)
+  - GoogleMaps/Base (3.7.0)
+  - GoogleMaps/Maps (3.7.0):
+    - GoogleMaps/Base
+  - GTMNSStringHTMLAdditions (0.2.1)
+  - Mantle (2.1.6):
+    - Mantle/extobjc (= 2.1.6)
+  - Mantle/extobjc (2.1.6)
+  - MBProgressHUD (1.1.0)
+  - Sentry (6.0.7):
+    - Sentry/Core (= 6.0.7)
+  - Sentry/Core (6.0.7)
+  - TBXML (1.5)
+
+DEPENDENCIES:
+  - AFNetworking (~> 4.0)
+  - GoogleMaps (~> 3.7.0)
+  - GTMNSStringHTMLAdditions (~> 0.2.1)
+  - Mantle (~> 2.1.6)
+  - MBProgressHUD (~> 1.1.0)
+  - Sentry (from `https://github.com/getsentry/sentry-cocoa.git`, tag `6.0.7`)
+  - TBXML (~> 1.5)
+
+SPEC REPOS:
+  trunk:
+    - AFNetworking
+    - GoogleMaps
+    - GTMNSStringHTMLAdditions
+    - Mantle
+    - MBProgressHUD
+    - TBXML
+
+EXTERNAL SOURCES:
+  Sentry:
+    :git: https://github.com/getsentry/sentry-cocoa.git
+    :tag: 6.0.7
+
+CHECKOUT OPTIONS:
+  Sentry:
+    :git: https://github.com/getsentry/sentry-cocoa.git
+    :tag: 6.0.7
+
+SPEC CHECKSUMS:
+  AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
+  GoogleMaps: 55da829c68aa931f3ae982b9e341cc2f3d89c587
+  GTMNSStringHTMLAdditions: 4bfc402b1b17165360728083156cae0a74ecb308
+  Mantle: 4c0ed6ce47c96eccc4dc3bb071deb3def0e2c3be
+  MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
+  Sentry: e2c691627ae1dc0029acebbd1b0b4af4df12af73
+  TBXML: 9f9dadb239f2f2af1dadb87fe43a0ce6e479379a
+
+PODFILE CHECKSUM: 8414d27ae5dd84431b77e96cd4ffbcb1e64ffcae
+
+COCOAPODS: 1.10.0

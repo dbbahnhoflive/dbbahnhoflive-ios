@@ -1,0 +1,32 @@
+/* 
+// SPDX-FileCopyrightText: 2020 DB Station&Service AG <bahnhoflive-opensource@deutschebahn.com>
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+ */
+
+"locationmanager_ls_disabled_title" = "Ortungsdienste deaktiviert";
+"locationmanager_ls_disabled_text" = "Bitte aktivieren Sie die Ortungsdienste";
+
+"locationmanager_ls_unauthorised_title" = "Fehlende Berechtigung";
+"locationmanager_ls_unauthorised_text" = "Bitte erteilen Sie der App die Berechtigung um die Ortungsdienste nutzen zu können.";
+
+"locationmanager_ble_unavailable_title" = "Bluetooth ist nicht aktiviert";
+"locationmanager_ble_unavailable_text" = "Um die Indoor Navigation zu verwenden, wird ein iPhone ab Model 4S und aktiviertes Bluetooth benötigt.";
+
+"core_update_nointernetconnection_title" = "Keine Internetverbindung";
+"core_update_nointernetconnection_text" = "Die App benötigt eine aktive Internetverbindung.";
+
+"locationmanager_popup_ok" = "Okay";
+"locationmanager_popup_gotosettings" = "Einstellungen";
+
+"locationmanager_ble_unavailable_title" = "Bluetooth ist nicht aktiviert";
+"locationmanager_ble_unavailable_text" = "Um die Indoor Navigation zu verwenden, wird ein iPhone ab Model 4S und aktiviertes Bluetooth benötigt.";
+
+"notification_popup_title_offernearyou" = "Angebot";
+"notification_popup_doyouwanttoseedetailsforoffer" = "Möchten Sie Details für dieses Angebot sehen?";
+"notification_popup_title_shopvenuenearyou" = "Geschäft";
+"notification_popup_doyouwanttoseedetailsforshopvenue" = "Möchten Sie Details zu diesem Geschäft sehen?";
+"notification_popup_cancel" = "Abbrechen";
+"notification_popup_continue" = "Weiter";
+"notification_popup_ok" = "Okay";

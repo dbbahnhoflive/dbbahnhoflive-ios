@@ -56,6 +56,9 @@
         
         self.aSwitch = [[UISwitch alloc] init];
         [self.contentView addSubview:self.aSwitch];
+        
+        self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+        self.accessibilityHint = @"Für weitere Einstellungen doppeltippen.";
     }
     return self;
 }

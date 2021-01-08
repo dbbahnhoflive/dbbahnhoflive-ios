@@ -72,6 +72,9 @@
 
     [self.contentView addSubview:self.bottomView];
     
+    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+    self.accessibilityHint = @"Zur Anzeige von Details doppeltippen.";
+
 }
 
 -(NSInteger)bottomViewHeight{

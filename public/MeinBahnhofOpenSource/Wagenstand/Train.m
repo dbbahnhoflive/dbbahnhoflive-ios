@@ -33,6 +33,9 @@
 
 - (NSString *)sectionRangeAsString;
 {
+    if(UIAccessibilityIsVoiceOverRunning()){
+        return [NSString stringWithFormat:@"Abschnitt %@ bis Abschnitt %@",[self.sections firstObject], [self.sections lastObject]];
+    }
     return [NSString stringWithFormat:@"%@-%@",[self.sections firstObject], [self.sections lastObject]];
 }
 

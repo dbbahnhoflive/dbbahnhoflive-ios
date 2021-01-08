@@ -30,6 +30,7 @@
     self.trash = [[UIButton alloc] init];
     [self.trash setImage:[UIImage db_imageNamed:@"app_loeschen"] forState:UIControlStateNormal];
     [self.trash addTarget:self action:@selector(deleteAll:) forControlEvents:UIControlEventTouchUpInside];
+    self.trash.accessibilityLabel = @"Alle Einträge aus Merkliste löschen.";
     self.trash.backgroundColor = [UIColor whiteColor];
     self.trash.layer.shadowOffset = CGSizeMake(1.0, 2.0);
     self.trash.layer.shadowColor = [[UIColor db_dadada] CGColor];

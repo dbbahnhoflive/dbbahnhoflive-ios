@@ -183,26 +183,26 @@
         }
         
         UIView* entryView = [[UIView alloc] initWithFrame:CGRectMake(0, y, self.contentView.sizeWidth, 72)];
-        
         UIImageView* icon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:self.iconForEntries[key]]];
         [icon setSize:CGSizeMake(40, 40)];
         [entryView addSubview:icon];
         [icon setGravityLeft:18];
         [icon centerViewVerticalInSuperView];
+        icon.isAccessibilityElement = NO;
         
-        UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(80, 16, self.contentView.sizeWidth-80-16, 20)];
+        UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(80, 16, self.contentView.sizeWidth-80-16-60, 20)];
         label.text = key;
         label.font = [UIFont db_RegularSixteen];
         label.textColor = [UIColor db_333333];
         [entryView addSubview:label];
-        label.isAccessibilityElement = NO;
+        //label.isAccessibilityElement = NO;
         
         UIImageView* statusIcon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_check"]];
         [entryView addSubview:statusIcon];
         [statusIcon setBelow:label withPadding:0];
         [statusIcon setGravityLeft:label.originX];
         
-        UILabel* statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(statusIcon.frame)+3, 40-3, self.contentView.sizeWidth, 20)];
+        UILabel* statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(statusIcon.frame)+3, 40-3, self.contentView.sizeWidth-80-16-80, 20)];
         statusLabel.font = [UIFont db_RegularFourteen];
         [entryView addSubview:statusLabel];
         statusLabel.isAccessibilityElement = NO;
@@ -222,9 +222,13 @@
             statusIcon.image = [UIImage db_imageNamed:@"app_kreuz"];
         }
         
+        label.accessibilityLabel = [NSString stringWithFormat:@"%@: %@.",label.text,statusLabel.text];
+        
         UIView* line = [[UIView alloc] initWithFrame:CGRectMake(16, entryView.sizeHeight-1, entryView.sizeWidth, 1)];
         line.backgroundColor = [UIColor db_light_lineColor];
         [entryView addSubview:line];
+        
+        entryView.accessibilityElements = @[label];
         
         if(isAvailable){
             id poi = nil;
@@ -244,16 +248,24 @@
                 }
             } else if([key isEqualToString:KEY_AUFZUG]){
                 if(_station.facilityStatusPOIs.count > 0){
-                    //we know that elevators are always available on the map:
-                    poi = _station.facilityStatusPOIs.firstObject;
-                    [self addLinkButtonToEntryView:entryView withMapFilter:@[PRESET_ELEVATORS] poi:poi];
+                    if(UIAccessibilityIsVoiceOverRunning()){
+                        //no button for voiceover users
+                    } else {
+                        //we know that elevators are always available on the map:
+                        poi = _station.facilityStatusPOIs.firstObject;
+                        [self addLinkButtonToEntryView:entryView withMapFilter:@[PRESET_ELEVATORS] poi:poi];
+                    }
                 }
             } else if([key isEqualToString:KEY_PARK]){
                 if(self.station.parkingInfoItems.count > 0){
-                    //we add these to the map, so we know they are available
-                    NSArray* mapFilter = @[ PRESET_PARKING ];
-                    id Ppoi = self.station.parkingInfoItems.firstObject;
-                    [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:Ppoi];
+                    if(UIAccessibilityIsVoiceOverRunning()){
+                        //no button for voiceover users
+                    } else {
+                        //we add these to the map, so we know they are available
+                        NSArray* mapFilter = @[ PRESET_PARKING ];
+                        id Ppoi = self.station.parkingInfoItems.firstObject;
+                        [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:Ppoi];
+                    }
                 }
             } else if([key isEqualToString:KEY_FAHRRADSTELLPLATZ]){
                 NSArray* mapFilter = @[ PRESET_BIKE_PARKING ];
@@ -309,8 +321,8 @@
                 }
             }
         }
-        entryView.isAccessibilityElement = YES;
-        entryView.accessibilityLabel = [NSString stringWithFormat:@"%@: %@",label.text,statusLabel.text];
+        //entryView.isAccessibilityElement = YES;
+        //entryView.accessibilityLabel = [NSString stringWithFormat:@"%@: %@",label.text,statusLabel.text];
         
         [self.contentScrollView addSubview:entryView];
         y += entryView.sizeHeight;
@@ -319,6 +331,10 @@
 }
 
 -(RIMapPoi*)poiForFilter:(NSArray*)mapFilterPresets{
+    if(UIAccessibilityIsVoiceOverRunning()){
+        return nil;//map is not accessible via voiceover
+    }
+    
     for(RIMapPoi* poi in self.station.riPois){
         NSString* filterTitle = nil;
         NSString* filterSubTitle = nil;
@@ -366,6 +382,7 @@
     linkBtn.accessibilityLabel = @"Details aufrufen";
     [entryView addSubview:linkBtn];
     [linkBtn setGravityRight:10];
+    entryView.accessibilityElements = [entryView.accessibilityElements arrayByAddingObject:linkBtn];
 }
 
 -(NSArray<NSString *> *)mapFilterPresets{

@@ -108,7 +108,9 @@
     [self.wagenStandButtonBackView addSubview:self.wagenstandButton];
     [self.bottomView addSubview:self.wagenStandButtonBackView];
     [self.bottomView addSubview:self.messageDetailContainer];
-   
+
+    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+    self.accessibilityHint = @"Zur Anzeige von Details doppeltippen.";
     self.accessibilityLanguage = @"de-DE";
     self.timeLabel.accessibilityLanguage = @"de-DE";
     self.expectedTimeLabel.accessibilityLanguage = @"de-DE";
@@ -231,8 +233,10 @@
 
 - (NSString *)accessibilityLabel
 {
-    
-    NSString *viaStations = [self.viaListView.stations componentsJoinedByString:@", "];
+    NSString* viaStations = @"";
+    if(self.expanded){
+        viaStations = [self.viaListView.stations componentsJoinedByString:@", "];
+    }
     NSString* train = self.trainStringForVoiceOver;
     NSString* gleis = [NSString stringWithFormat:@"Gleis %@",_event.actualPlatform];
     return [NSString stringWithFormat:@"%@ %@ %@, %@ Uhr, %@, %@; %@, über %@.",

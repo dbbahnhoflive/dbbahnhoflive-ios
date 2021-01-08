@@ -50,10 +50,12 @@
         
         self.chatbotImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"chatbot_h1"]];
         [self.contentView addSubview:self.chatbotImage];
+        self.chatbotImage.isAccessibilityElement = NO;
 
         self.mainLabel.isAccessibilityElement = NO;
         self.subLabel.isAccessibilityElement = NO;
         self.isAccessibilityElement = YES;
+        self.accessibilityTraits = UIAccessibilityTraitButton|UIAccessibilityTraitStaticText;
         self.accessibilityLabel = [NSString stringWithFormat:@"Chatbot. %@ %@",self.mainLabel.text,self.subLabel.text];
     }
     return self;
@@ -62,7 +64,9 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
 
-    if(_reducedSize){
+    NSLog(@"initial asset size %@",NSStringFromCGRect(self.chatbotImage.frame));
+    //code needs to be optimized when we show another tile next to the chatbot, currently not used
+    /*if(_reducedSize){
         //size according to width
         NSInteger imgW = (110./237.)*self.frame.size.width;
         self.chatbotImage.frame = CGRectMake(0, 0, imgW, imgW);
@@ -77,10 +81,10 @@
         size = [self.subLabel sizeThatFits:CGSizeMake(w, 200)];
         self.subLabel.frame = CGRectMake(x, CGRectGetMaxY(self.mainLabel.frame)+18, size.width,size.height);
         return;
-    }
-    self.chatbotImage.frame = CGRectMake(0, 0, 153, 163);
+    }*/
+    self.chatbotImage.frame = CGRectMake(0, 0, self.chatbotImage.image.size.width*0.8, self.chatbotImage.image.size.height*0.8 );
     [self.chatbotImage setGravityRight:24];
-    [self.chatbotImage setGravityBottom:0];
+    [self.chatbotImage centerViewVerticalInSuperView];
     NSInteger spaceRight = self.frame.size.width-(self.chatbotImage.frame.origin.x-22);
     NSInteger w = self.frame.size.width-24-spaceRight;
     

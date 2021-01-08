@@ -187,6 +187,7 @@
 		427BCD2725643C23007D8015 /* MBStationOccupancyOverlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 427BCD2125643C23007D8015 /* MBStationOccupancyOverlayViewController.m */; };
 		427BCD2825643C23007D8015 /* MBStationOccupancyDiagramView.m in Sources */ = {isa = PBXBuildFile; fileRef = 427BCD2225643C23007D8015 /* MBStationOccupancyDiagramView.m */; };
 		427BCD2925643C23007D8015 /* MBStationOccupancy.m in Sources */ = {isa = PBXBuildFile; fileRef = 427BCD2325643C23007D8015 /* MBStationOccupancy.m */; };
+		42C0DF2725A8439D0035A897 /* MBTrackingConsentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C0DF2525A8439D0035A897 /* MBTrackingConsentViewController.m */; };
 		42DAC5C6246D2AE90005CF64 /* MBParkingOccupancyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C5246D2AE90005CF64 /* MBParkingOccupancyManager.m */; };
 		42DAC5C8246D2AEF0005CF64 /* MBParkingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C7246D2AEF0005CF64 /* MBParkingManager.m */; };
 		42DAC5CB246D2B090005CF64 /* NSDictionary+MBDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C9246D2B090005CF64 /* NSDictionary+MBDictionary.m */; };
@@ -551,6 +552,8 @@
 		427BCD2225643C23007D8015 /* MBStationOccupancyDiagramView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBStationOccupancyDiagramView.m; sourceTree = "<group>"; };
 		427BCD2325643C23007D8015 /* MBStationOccupancy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBStationOccupancy.m; sourceTree = "<group>"; };
 		427BCD2425643C23007D8015 /* MBStationOccupancyDropdownMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBStationOccupancyDropdownMenuView.h; sourceTree = "<group>"; };
+		42C0DF2525A8439D0035A897 /* MBTrackingConsentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBTrackingConsentViewController.m; sourceTree = "<group>"; };
+		42C0DF2625A8439D0035A897 /* MBTrackingConsentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBTrackingConsentViewController.h; sourceTree = "<group>"; };
 		42DAC5C5246D2AE90005CF64 /* MBParkingOccupancyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBParkingOccupancyManager.m; sourceTree = "<group>"; };
 		42DAC5C7246D2AEF0005CF64 /* MBParkingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBParkingManager.m; sourceTree = "<group>"; };
 		42DAC5C9246D2B090005CF64 /* NSDictionary+MBDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+MBDictionary.m"; sourceTree = "<group>"; };
@@ -1008,6 +1011,8 @@
 		4261064F244EF10F00E0B05C /* Tracking */ = {
 			isa = PBXGroup;
 			children = (
+				42C0DF2625A8439D0035A897 /* MBTrackingConsentViewController.h */,
+				42C0DF2525A8439D0035A897 /* MBTrackingConsentViewController.m */,
 				4261055E244EF10F00E0B05C /* MBUITrackableViewController.h */,
 				42610544244EF10F00E0B05C /* MBUITrackableViewController.m */,
 				42610650244EF10F00E0B05C /* MBTrackingManager.h */,
@@ -1482,6 +1487,7 @@
 				426106B7244EF11000E0B05C /* MBExternalLinkButton.m in Sources */,
 				426106BB244EF11000E0B05C /* MBLabel.m in Sources */,
 				4261073C244EF11000E0B05C /* MBTimeTableViewCell.m in Sources */,
+				42C0DF2725A8439D0035A897 /* MBTrackingConsentViewController.m in Sources */,
 				42610743244EF11000E0B05C /* Message.m in Sources */,
 				4261071B244EF11000E0B05C /* MBPTSStationResponse.m in Sources */,
 				426106D4244EF11000E0B05C /* Train.m in Sources */,

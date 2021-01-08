@@ -116,11 +116,15 @@
     self.merkenLabel.numberOfLines = 2;
     self.merkenLabel.text = @"Aufzug der Merkliste\nhinzugefügt";
     [self.bottomView addSubview:self.merkenLabel];
+    self.merkenLabel.isAccessibilityElement = NO;
     
     self.merkenSwitch = [UISwitch new];
     [self.merkenSwitch addTarget:self action:@selector(toggleSwitch:) forControlEvents:UIControlEventValueChanged];
     [self.bottomView addSubview:self.merkenSwitch];
+    self.merkenSwitch.accessibilityHint = @"Aufzug in Merkliste speichern.";
     
+    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+    self.accessibilityHint = @"Zur Verwaltung von Favoriten doppeltippen.";
 
 }
 
@@ -161,6 +165,12 @@
 - (void)setExpanded:(BOOL)expanded {
     _expanded = expanded;
     self.bottomView.hidden = !expanded;
+    
+    if(expanded){
+        self.accessibilityHint = nil;
+    } else {
+        self.accessibilityHint = @"Zur Verwaltung von Favoriten doppeltippen.";
+    }
 }
 
 - (void)prepareForReuse {

@@ -221,7 +221,7 @@
         }
         
         self.isAccessibilityElement = true;
-        self.accessibilityLabel = [NSString stringWithFormat:@"%@, %@.",self.titleLabel.text,self.bubble.text];
+        self.accessibilityLabel = self.titleLabel.text;
         if(kachel.titleForVoiceOver){
             self.accessibilityLabel = kachel.titleForVoiceOver;
         }

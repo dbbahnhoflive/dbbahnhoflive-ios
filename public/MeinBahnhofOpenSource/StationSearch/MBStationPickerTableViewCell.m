@@ -175,6 +175,7 @@
     self.stationTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.stationTitleLabel.text = @"";
     [self.stationTitleLabel setFont:[UIFont db_RegularSeventeen]];
+    //self.stationTitleLabel.font = [UIFontMetrics.defaultMetrics scaledFontForFont:[UIFont db_RegularSeventeen]];
     [self.stationTitleLabel setTextColor:[UIColor db_333333]];
     self.stationTitleLabel.accessibilityTraits = UIAccessibilityTraitStaticText|UIAccessibilityTraitButton;
     
@@ -254,11 +255,13 @@
         [[MBFavoriteStationManager client] removeStation:self.station];
         self.favBtnImgView.tintColor = [UIColor dbColorWithRGB:0xD7DCE1];
         self.favButton.accessibilityLabel = @"Favorit: inaktiv";
+        self.favButton.accessibilityHint = @"Zum Hinzufügen zu Favoriten doppeltippen";
         [self.delegate stationPickerCell:self changedFavStatus:NO];
     } else {
         [[MBFavoriteStationManager client] addStation:self.station];
         self.favBtnImgView.tintColor = [UIColor db_mainColor];
         self.favButton.accessibilityLabel = @"Favorit: aktiv";
+        self.favButton.accessibilityHint = @"Zum Entfernen aus Favoriten doppeltippen";
         [self.delegate stationPickerCell:self changedFavStatus:YES];
     }
 }
@@ -275,9 +278,11 @@
     if([[MBFavoriteStationManager client] isFavorite:station]){
         self.favBtnImgView.tintColor = [UIColor db_mainColor];
         self.favButton.accessibilityLabel = @"Favorit: aktiv";
+        self.favButton.accessibilityHint = @"Zum Entfernen aus Favoriten doppeltippen";
     } else {
         self.favBtnImgView.tintColor = [UIColor dbColorWithRGB:0xD7DCE1];
         self.favButton.accessibilityLabel = @"Favorit: inaktiv";
+        self.favButton.accessibilityHint = @"Zum Hinzufügen zu Favoriten doppeltippen";
     }
     self.stationTypeImage = [UIImage db_imageNamed:(isOEPNV ? @"app_haltestelle" : @"DBMapPin")];
     [self setNeedsLayout];

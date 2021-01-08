@@ -60,6 +60,8 @@
     [self.contentView addSubview:self.platformLabel];
     [self.contentView addSubview:self.warningLabel];
     
+    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+    self.accessibilityHint = @"Zur Anzeige der Abfahrtstafel doppeltippen.";
 }
 
 - (NSString *)accessibilityLabel

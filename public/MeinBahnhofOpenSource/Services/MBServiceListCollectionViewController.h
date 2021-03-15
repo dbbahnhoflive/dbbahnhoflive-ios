@@ -11,6 +11,12 @@
 
 @class MBContentSearchResult;
 
+typedef enum : NSUInteger {
+    MBServiceCollectionTypeInfo,
+    MBServiceCollectionTypeShopping,
+    MBServiceCollectionTypeFeedback,
+} MBServiceCollectionType;
+
 @interface MBServiceListCollectionViewController : UIViewController<MBMapViewControllerDelegate>
 
 @property (nonatomic, strong) MBContentSearchResult* searchResult;
@@ -22,7 +28,7 @@
 @property (nonatomic, strong) MBStationTabBarViewController *tabBarViewController;
 
 /// @param type NSString @"info" for Bahnhofsinformationen, @"shopping" for Shoppen & Schlemmen
-- (instancetype)initWithType:(NSString *)type;
+- (instancetype)initWithType:(MBServiceCollectionType)type;
 
 - (NSArray *)prepareServices;
 

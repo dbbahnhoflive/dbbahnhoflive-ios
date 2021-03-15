@@ -203,7 +203,11 @@ static NSString *kHeadCell = @"HeadCell";
 }
 
 -(void)updateTitle{
-    self.title = [NSString stringWithFormat:@"%@ | Gl. %@",self.wagenstand.time,self.wagenstand.platform];
+    if(UIAccessibilityIsVoiceOverRunning()){
+        self.title = [NSString stringWithFormat:@"Wagenreihung %@ Uhr, Gl. %@",self.wagenstand.time,self.wagenstand.platform];
+    } else {
+        self.title = [NSString stringWithFormat:@"Wagenreihung %@ | Gl. %@",self.wagenstand.time,self.wagenstand.platform];
+    }
     if (self.waggonNumber.length > 0) {//I think this is no longer used...
         self.title = [self.title stringByAppendingString:[NSString stringWithFormat:@", Wagen %@", self.waggonNumber]];
     }

@@ -365,7 +365,7 @@
 -(void)addLinkButtonToEntryView:(UIView*)entryView withMBService:(MBService*)service{
     __weak MBStationInfrastructureViewController* weakSelf = self;
     [self addLinkButtonToEntryView:entryView withBlock:^{
-        MBDetailViewController* vc = [[MBDetailViewController alloc] initWithService:service];
+        MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:weakSelf.station];
         [vc setItem:service];
         
         [MBTrackingManager trackStatesWithStationInfo:@[@"d1", service.trackingKey ]];

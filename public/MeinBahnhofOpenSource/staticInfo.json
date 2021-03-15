@@ -69,7 +69,28 @@
              "descriptionText": "<p><b>Einfach vorbestellen</b></p><p>Machen Sie es sich bequem, mit der pickpack App. Zum Beispiel das Lieblingsessen vorbestellen, Abholzeit aussuchen und ohne extra Wartezeit genießen. Das pickpack Einkaufserlebnis ermöglichen wir gemeinsam mit Partnerläden Ihres Bahnhofs.</p><p><b>Ihre Vorteile</b><ul><li>Kein Anstehen</li><li>Kein Bargeld</li><li>Keine Wartezeit</li></ul></p><p> </p>",
              "title": "pickpack",
              "type": "pickpack"
-         }
+         },
+         
+         {
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p>Alternativ erreichen Sie uns über E-Mail.<br><a href=\"feedbackverschmutzung\">marketing-bahnhoefe@deutschebahn.com</a></p><p><b>Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p><p> <br> <br> </p>",
+             "title": "Verschmutzung melden",
+             "type": "verschmutzung_mitwhatsapp"
+         },
+         {
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p>Alternativ erreichen Sie uns über E-Mail.<br><a href=\"feedbackverschmutzung\">marketing-bahnhoefe@deutschebahn.com</a></p><p> <br> <br> </p>",
+             "title": "Verschmutzung melden",
+             "type": "verschmutzung_ohnewhatsapp"
+         },
+         {
+             "descriptionText": "<p><b>Kontakt</b></p><p>Schreiben Sie uns, sollten Ihnen Unstimmigkeiten in der App auffallen.<br><dbactionbutton href=\"feedbackmail\">Kontakt aufnehmen</dbactionbutton></p></p><p> <br> <br> </p>",
+             "title": "Problem mit der App melden",
+             "type": "problemmelden"
+         },
+         {
+             "descriptionText": "<p><b>Zufrieden mit der App?</b></p><p>Unterstützen Sie uns mit einer positiven Bewertung im App Store.<br><dbactionbutton href=\"https://appsto.re/de/6Kxhbb.i\">App bewerten</dbactionbutton></p></p><p> <br> <br> </p>",
+             "title": "App bewerten",
+             "type": "bewertung"
+         },
 
 	]
 }

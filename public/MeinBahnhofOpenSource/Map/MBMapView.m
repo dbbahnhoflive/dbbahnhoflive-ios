@@ -707,17 +707,27 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 - (void)mapView:(GMSMapView *)mapView didTapAtCoordinate:(CLLocationCoordinate2D)coordinate
 {
+    [self removeMarkerSelection];
+}
+-(BOOL)hasMarkerSelected{
+    return self.gmsMapView.selectedMarker != nil || self.lastSelectedMarker != nil;
+}
+
+
+
+-(void)removeMarkerSelection{
     [self.flyout hideAnimated];
-    mapView.selectedMarker = nil;
+    self.gmsMapView.selectedMarker = nil;
     
-    
-    [self configureMarkerIconDisabled:self.lastSelectedMarker];
-    self.lastSelectedMarker = nil;
+    if(self.lastSelectedMarker){
+        [self configureMarkerIconDisabled:self.lastSelectedMarker];
+        self.lastSelectedMarker = nil;
+    }
     
     if ([self.delegate respondsToSelector:@selector(didCloseFlyoutMapView:)]) {
         [self.delegate didCloseFlyoutMapView:self];
     }
-    
+
 }
 
 -(void)configureMarkerIconDisabled:(MBMarker*)marker{

@@ -42,7 +42,10 @@
                                    @"pickpack": @"pickpack",
                                    @"mobiler_service": @"app_mobiler_service",
                                    @"parkplaetze": @"rimap_parkplatz_grau",
-                                   
+                                   @"verschmutzung_mitwhatsapp": @"verschmutzungmelden",
+                                   @"verschmutzung_ohnewhatsapp": @"verschmutzungmelden",
+                                   @"bewertung": @"app_bewerten",
+                                   @"problemmelden": @"probleme_app_melden",
                                    };
     
     NSString *name = [mappingTypes objectForKey:self.type];
@@ -82,7 +85,7 @@
         return [self parseChatbotComponents:string];
     } else if ([self.type isEqualToString:@"pickpack"]) {
         return [self parsePickpackComponents:string];
-    } else if ([self.type isEqualToString:@"mobilitaetsservice"]){
+    } else if ([self.type isEqualToString:@"mobilitaetsservice"] || [self.type hasPrefix:@"verschmutzung"] || [self.type isEqualToString:@"bewertung"] || [self.type isEqualToString:@"problemmelden"]){
         return [self parseConfigurableService:string];
     } else {
         return [self parseRegularComponents:string];

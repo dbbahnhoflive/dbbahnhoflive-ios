@@ -142,15 +142,22 @@
             NSLog(@"paymentMethods: %@",paymentMethods);
             NSMutableString* paymentStrings = [[NSMutableString alloc] init];
             for(NSString* str in paymentMethods){
+                if(![str isKindOfClass:NSString.class]){
+                    continue;
+                }
                 [paymentStrings appendString:str];
                 if(str != paymentMethods.lastObject){
                     [paymentStrings appendString:@", "];
                 }
             }
             self.paymentTextLabel.text = paymentStrings;
-
-            self.paymentTextLabel.hidden = NO;
-            self.paymentHeaderLabel.hidden =NO;
+            if(paymentStrings.length > 0){
+                self.paymentTextLabel.hidden = NO;
+                self.paymentHeaderLabel.hidden =NO;
+            } else {
+                self.paymentTextLabel.hidden = YES;
+                self.paymentHeaderLabel.hidden = YES;
+            }
         } else {
             self.paymentTextLabel.hidden = YES;
             self.paymentHeaderLabel.hidden = YES;

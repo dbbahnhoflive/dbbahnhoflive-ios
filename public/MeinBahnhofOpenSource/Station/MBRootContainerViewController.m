@@ -13,8 +13,6 @@
 
 #import "WagenstandRequestManager.h"
 
-#import "MBFeedbackViewController.h"
-
 #import "MBTimetableViewController.h"
 #import "HafasCacheManager.h"
 
@@ -81,7 +79,7 @@
                                                   initWithRootViewController:vcTrains];
     navTrains.station = self.station;
 
-    MBServiceListCollectionViewController* vcInfo = [[MBServiceListCollectionViewController alloc] initWithType:@"info"];
+    MBServiceListCollectionViewController* vcInfo = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeInfo];
     self.infoServiceListViewController = vcInfo;
     self.infoServiceListViewController.station = self.station;
     vcInfo.station = self.station;
@@ -89,7 +87,7 @@
                                                   initWithRootViewController:vcInfo];
     navInfo.station = self.station;
 
-    self.shopServiceListViewController = [[MBServiceListCollectionViewController alloc] initWithType:@"shopping"];
+    self.shopServiceListViewController = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeShopping];
     self.shopServiceListViewController.station = self.station;
 
     MBStationNavigationViewController *servicesNavigationController = [[MBStationNavigationViewController alloc] initWithRootViewController:self.shopServiceListViewController];
@@ -624,10 +622,9 @@
             vc.currentStation = self.station;
             vc.title = @"Einstellungen";
         } else if(search.isFeedbackSearch){
-            MBFeedbackViewController* vc = [MBFeedbackViewController new];
-            finalVC = vc;
+            MBServiceListCollectionViewController* vc = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeFeedback];
             vc.station = self.station;
-            vc.title = @"Feedback";
+            finalVC = vc;
         } else if(search.isOPNVOverviewSearch){
             [self.stationContainerViewController openOPNV];
             return;

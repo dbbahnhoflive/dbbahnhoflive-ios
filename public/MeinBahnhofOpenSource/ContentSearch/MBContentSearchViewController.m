@@ -656,6 +656,9 @@
                 //we remove all spaces from the tags, "curry wurst" will be "currywurst"
                 [stringForSearch appendString:[poi.tags stringByReplacingOccurrencesOfString:@" " withString:@""]];
             }
+            if([poi.name isEqualToString:@"everyworks"]){
+                [stringForSearch appendString:@"everyworks, every, work, Arbeit, office, Büro, Buero, coworking, working, smart, city, Arbeitsplatz, Platz, Meeting, Room, Meetingraum, Raum"];
+            }
             BOOL found = YES;
             for(NSString* searchWord in words){
                 if(![stringForSearch localizedCaseInsensitiveContainsString:searchWord]){

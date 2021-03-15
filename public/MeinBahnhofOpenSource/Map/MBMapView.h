@@ -94,6 +94,9 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 -(MBMarker*)preselectMarkerAfterFilterChange;
 -(void)updateFacilityMarker;
 -(void)selectAndCenterMarker:(MBMarker*)marker;
+-(void)removeMarkerSelection;
+-(BOOL)hasMarkerSelected;
+
 -(void)setPOISelected:(id)poi;
 -(void)updatePositionAndZoomForMarker:(MBMarker*)marker animated:(BOOL)animated;
 -(MBMarker*)findMarkerForPOI:(id)poi;

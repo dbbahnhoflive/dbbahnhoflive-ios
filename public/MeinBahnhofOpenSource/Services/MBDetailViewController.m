@@ -15,7 +15,6 @@
 
 @property (nonatomic, strong) MBService *service;
 
-
 @property (nonatomic, strong) MBMarker *marker;
 
 @end
@@ -24,9 +23,11 @@
 
 @synthesize item = _item;
 
-- (instancetype) initWithService:(MBService*)service
+- (instancetype) initWithStation:(MBStation *)station
 {
-    if (self = [super init]) {}
+    if (self = [super init]) {
+        self.station = station;
+    }
     return self;
 }
 
@@ -104,9 +105,8 @@
 
 - (void) configureServiceView:(MBService*)service
 {
-    MBStaticServiceView *staticServiceView = [[MBStaticServiceView alloc] initWithService:service fullscreenLayout:YES andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    MBStaticServiceView *staticServiceView = [[MBStaticServiceView alloc] initWithService:service station:self.station fullscreenLayout:YES andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
     staticServiceView.delegate = self;
-    
     [self.view addSubview:staticServiceView];
 }
 

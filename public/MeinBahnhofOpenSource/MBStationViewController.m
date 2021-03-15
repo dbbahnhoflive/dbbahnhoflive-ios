@@ -25,8 +25,6 @@
 #import "TimetableManager.h"
 #import "MBMapViewController.h"
 
-#import "MBFeedbackViewController.h"
-
 #import "MBStationInfrastructureViewController.h"
 #import "MBOPNVInStationOverlayViewController.h"
 #import "MBFacilityStatusViewController.h"
@@ -904,9 +902,8 @@
         [self.navigationController pushViewController:vc animated:YES];
         trackingActionKey = @"aufzuege";
     } else if(kachel == self.feedbackKachel){
-        MBFeedbackViewController* vc = [MBFeedbackViewController new];
+        MBServiceListCollectionViewController* vc = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeFeedback];
         vc.station = self.station;
-        vc.title = kachel.title;
         [self.navigationController pushViewController:vc animated:YES];
         trackingActionKey = @"feedback";
     } else if(kachel == self.settingKachel){

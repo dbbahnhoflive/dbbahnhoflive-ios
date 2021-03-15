@@ -16,6 +16,9 @@
 #define kActionChatbot @"chatbot"
 #define kActionPickpackWebsite @"pickpackWebsite"
 #define kActionPickpackApp @"pickpackApp"
+#define kActionFeedbackMail @"feedbackmail"
+#define kActionWhatsAppFeedback @"whatsappfeedback"
+#define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
 
 @import CoreLocation;
 

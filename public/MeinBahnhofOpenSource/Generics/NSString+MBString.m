@@ -174,6 +174,13 @@
                     [attributeDict addObject:@{NSFontAttributeName: [UIFont db_BoldFourteen] }];
                     [attributeRanges addObject:[NSValue valueWithRange:NSMakeRange(location,closeTag-3-location)]];
                     index = closeTag-(3+4);//we removed the tags
+                } else if([tagName isEqualToString:@"i"]){
+                    [html deleteCharactersInRange:NSMakeRange(location, 3)];//delete start tag
+                    [html deleteCharactersInRange:NSMakeRange(closeTag-3, 4)];
+                    
+                    [attributeDict addObject:@{NSFontAttributeName: [UIFont db_ItalicWithSize:14] }];
+                    [attributeRanges addObject:[NSValue valueWithRange:NSMakeRange(location,closeTag-3-location)]];
+                    index = closeTag-(3+4);//we removed the tags
                 } else {
                     if(closeTag == NSNotFound){
                         //bad format, stop

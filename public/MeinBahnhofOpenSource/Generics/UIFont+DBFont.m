@@ -11,6 +11,7 @@
 #define IPAD_INCREASE (2.5f)
 
 #define FONT_REGULAR @"DBSans-Regular"
+#define FONT_ITALIC @"DBSans-Italic"
 #define FONT_BOLD @"DBSans-Bold"
 
 +(UIFont *)db_RegularWithSize:(CGFloat)size{
@@ -24,6 +25,13 @@
     UIFont* f = [UIFont fontWithName:FONT_BOLD size:size];
     if(!f){
         return [UIFont boldSystemFontOfSize:size];
+    }
+    return f;
+}
++(UIFont *)db_ItalicWithSize:(CGFloat)size{
+    UIFont* f = [UIFont fontWithName:FONT_ITALIC size:size];
+    if(!f){
+        return [UIFont italicSystemFontOfSize:size];
     }
     return f;
 }

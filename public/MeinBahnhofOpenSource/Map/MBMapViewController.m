@@ -687,6 +687,9 @@
 - (void)userDidSelectLevel:(LevelplanWrapper *)level onPicker:(MBMapLevelPicker *)picker
 {
     self.mapView.cameraFollowsUser = NO;
+    if(self.mapView.hasMarkerSelected){
+        [self.mapView removeMarkerSelection];
+    }
 }
 
 - (void)picker:(MBMapLevelPicker *)picker didChangeToLevel:(LevelplanWrapper*)level

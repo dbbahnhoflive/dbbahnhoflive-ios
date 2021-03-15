@@ -21,6 +21,6 @@
 @property (nonatomic, strong) NSArray *levels;
 @property (nonatomic, assign) BOOL indoorNavigationEnabled;
 
-- (instancetype) initWithService:(MBService*)service;
+- (instancetype) initWithStation:(MBStation*)station;
 
 @end

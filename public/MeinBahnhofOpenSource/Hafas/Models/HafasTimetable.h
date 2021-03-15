@@ -20,6 +20,8 @@
 @property (nonatomic) BOOL isBusy;
 @property (nonatomic) BOOL needsInitialRequest;
 
+@property (nonatomic) BOOL includeLongDistanceTrains;
+
 - (void)initializeTimetableFromArray:(NSArray<NSDictionary*> *)departures mergeData:(BOOL)merge date:(NSDate*)loadingDate;
 - (NSArray*) availableTransportTypes;
 -(NSDate *)lastRequestedDate;

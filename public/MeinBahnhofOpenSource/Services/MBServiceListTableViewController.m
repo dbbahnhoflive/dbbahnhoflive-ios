@@ -194,7 +194,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         } else if([serviceCell.item isKindOfClass:[RIMapPoi class]]){
             serviceCell.shopDetailView = [[MBShopDetailCellView alloc] initWithPXR:serviceCell.item];
         } else if([serviceCell.item isKindOfClass:[MBService class]]) {
-                serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:serviceCell.item fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+            serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:serviceCell.item station:nil fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
                 serviceCell.staticServiceView.delegate = self;
         }
         cell = serviceCell;

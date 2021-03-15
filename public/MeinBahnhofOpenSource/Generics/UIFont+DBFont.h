@@ -10,7 +10,7 @@
 
 + (UIFont*)dbHeadLightWithSize:(CGFloat)size;
 + (UIFont*)dbHeadBlackWithSize:(CGFloat)size;
-
++(UIFont *)db_ItalicWithSize:(CGFloat)size;
 
 + (UIFont*)db_BoldTen;
 + (UIFont*)db_BoldTwelve;

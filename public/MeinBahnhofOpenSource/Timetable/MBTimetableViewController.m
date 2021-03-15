@@ -116,10 +116,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     [self resetSelection];
-    
-    if (nil != self.station) {
-        self.title = self.station.title;
-    }
+    self.title = @"Abfahrt und Ankunft";
     // make sure back button in navigation bar shows only back icon (<)
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@" " style:UIBarButtonItemStylePlain target:nil action:nil];
     if(self.currentlySelectedPlatform == nil){
@@ -394,6 +391,7 @@
             self.hafasTimetable = [[HafasTimetable alloc] init];
             self.hafasTimetable.needsInitialRequest = YES;
         }
+        self.hafasTimetable.includeLongDistanceTrains = self.includeLongDistanceTrains;
         if(self.hafasTimetable.needsInitialRequest){
             self.hafasTimetable.needsInitialRequest = NO;
             [[HafasRequestManager sharedManager] loadDeparturesForStopId:self.hafasStation.stationId

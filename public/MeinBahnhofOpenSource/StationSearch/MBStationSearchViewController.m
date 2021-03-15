@@ -248,6 +248,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         self.onBoardingVisible = YES;
         OnboardingViewController *onboardingViewController = [[OnboardingViewController alloc] init];
         onboardingViewController.view.frame = CGRectMake(0, 0, self.view.sizeWidth, self.view.sizeHeight);
+        onboardingViewController.view.accessibilityViewIsModal = YES;
         [self addChildViewController:onboardingViewController];
         [onboardingViewController didMoveToParentViewController:self];
         [self.view addSubview:onboardingViewController.view];
@@ -265,6 +266,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(app.needsInitialPrivacyScreen){
         self.privacySetupVisible = YES;
         MBTrackingConsentViewController* vc = [MBTrackingConsentViewController new];
+        vc.view.accessibilityViewIsModal = YES;
         vc.view.frame = CGRectMake(0, 0, self.view.sizeWidth, self.view.sizeHeight);
         [self addChildViewController:vc];
         [vc didMoveToParentViewController:self];
@@ -604,7 +606,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             self.triangleErrorView.hidden = NO;
             [self.triangleErrorView setX:CGRectGetMidX(self.featureFavoriteButton.frame)-self.triangleErrorView.sizeWidth/2-15];
             self.triangleTableView.hidden = NO;
-            [self.searchErrorView setHeaderText:nil bodyText:@"Bestimmen Sie Ihre favorisierten Stationen einfach mithilfe des Stern-Icons in der Suche oder Umgebungsanzeige."];
+            [self.searchErrorView setHeaderText:@"Ihre Favoritenliste ist leer." bodyText:@"Bestimmen Sie Ihre favorisierten Stationen einfach mithilfe des Stern-Icons in der Suche oder Umgebungsanzeige."];
             [self.featureSearchButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
             [self.featureFavoriteButton viewWithTag:CONTENT_VIEW_TAG].hidden = NO;
             [self.featureLocationButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
@@ -1171,6 +1173,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
         MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithFernverkehr:NO];
         timeVC.oepnvOnly = YES;
+        timeVC.includeLongDistanceTrains = YES;
         timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
         
         NSString* idString = stationFromSearch.eva_ids.firstObject;

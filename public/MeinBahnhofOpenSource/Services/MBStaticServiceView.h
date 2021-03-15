@@ -14,7 +14,7 @@
 
 @property (nonatomic, weak) id<MBDetailViewDelegate> delegate;
 
-- (instancetype) initWithService:(MBService*)service fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame;
+- (instancetype) initWithService:(MBService*)service station:(MBStation*)station fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame;
 
 -(NSInteger)layoutForSize:(NSInteger)frameWidth;
 

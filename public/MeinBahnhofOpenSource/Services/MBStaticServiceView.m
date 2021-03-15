@@ -10,6 +10,7 @@
 #import "MBPTSTravelcenter.h"
 #import "MBButtonWithData.h"
 #import "MBExternalLinkButton.h"
+#import <sys/utsname.h>
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
 @property (nonatomic, strong) MBService *service;
@@ -20,12 +21,13 @@
 
 @implementation MBStaticServiceView
 
-- (instancetype) initWithService:(MBService*)service fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame
+- (instancetype) initWithService:(MBService*)service station:(MBStation*)station fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
         self.clipsToBounds = YES;
         self.fullscreenLayout = fullscren;
         self.service = service;
+        self.station = station;
         
         [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self setupViews];
@@ -55,7 +57,8 @@
         // all content is added in a scrollview and we have an image at the top
         UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0,self.frame.size.width, self.frame.size.height)];
         baseView = scrollView;
-        scrollView.contentInset = UIEdgeInsetsMake(0, 0, 80+60, 0);//+60 is for the tabbar, this view is not correctly resized by the parent!
+        scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        scrollView.contentInset = UIEdgeInsetsMake(0, 0, 80+80, 0);//+60 is for the tabbar, this view is not correctly resized by the parent!
         UIView* iconBackground = [[UIView alloc] initWithFrame:CGRectMake(0, 0, scrollView.sizeWidth, 100)];
         iconBackground.backgroundColor = [UIColor db_grayBackgroundColor];
         [scrollView addSubview:iconBackground];
@@ -356,6 +359,8 @@
         [self.delegate didTapOnPhoneLink:phoneString];
     } else if ([url.absoluteString rangeOfString:@"mailto:"].location != NSNotFound) {
         [self.delegate didTapOnEmailLink:url.absoluteString];
+    } else if([url.absoluteString isEqualToString:kActionFeedbackVerschmutzungMail]){
+        [self feedbackDirtViaWhatspp:false];
     } else {
         [self.delegate didOpenUrl:url];
     }
@@ -377,12 +382,57 @@
     } else if([action isEqualToString:kActionPickpackApp]){
         [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"pickpack",@"app"]];
         [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://itunes.apple.com/de/app/pickpack-unterwegs-bestellen/id1437396914?ls=1&mt=8"]];
+    } else if([action isEqualToString:kActionFeedbackMail]){
+        [self openFeedbackMail];
+    } else if([action isEqualToString:kActionWhatsAppFeedback]){
+        [self feedbackDirtViaWhatspp:true];
     } else {
         NSURL* url = [NSURL URLWithString:action];
         if(url){
             [[AppDelegate appDelegate] openURL:url];
         }
     }
+}
+
+-(void)feedbackDirtViaWhatspp:(BOOL)useWhatsapp{
+    NSString* s = [NSString stringWithFormat:@"Sehr geehrte Damen und Herren, mir ist eine Verschmutzung an folgendem Bahnhof aufgefallen: %@ (%@). ",self.station.title,self.station.mbId];
+    s = [s stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
+    NSString* link = nil;
+    if(useWhatsapp){
+        link = [NSString stringWithFormat:@"https://wa.me/4915792397402?text=%@",s];
+    } else {
+        NSString* subject = [[NSString stringWithFormat:@"Verschmutzungs-Meldung %@ (%@)",self.station.title,self.station.mbId] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
+        link = [NSString stringWithFormat:@"mailto:marketing-bahnhoefe@deutschebahn.com?subject=%@&body=%@", subject, s];
+    }
+    
+    NSURL* url = [NSURL URLWithString:link];
+    if(url){
+        [[AppDelegate appDelegate] openURL:url];
+    }
+}
+
+- (void)openFeedbackMail
+{
+    NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    NSString *build   = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    NSString *versionInfo = [NSString stringWithFormat:@"%@ (%@)", version, build];
+
+    NSString *device      = [[UIDevice currentDevice] localizedModel];
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    NSString* model= [NSString stringWithCString:systemInfo.machine
+                                        encoding:NSUTF8StringEncoding];
+    NSString* os = [[UIDevice currentDevice] systemVersion];
+    NSString* deviceInfo = [NSString stringWithFormat:@"%@, %@ (%@)",device,model,os];
+    
+    NSString* subject = [@"Feedback DB Bahnhof live App" stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
+    NSString* body = [[NSString stringWithFormat:@"\n\n\n\nUm meine folgenden Anmerkungen leichter nachvollziehen zu können, sende ich Ihnen anbei meine Geräteinformationen:\nBahnhof: %@ (%@)\nGerät: %@\nApp-Version: %@",self.station.title,self.station.mbId,deviceInfo,
+                       versionInfo] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
+    NSString *mailString = [NSString stringWithFormat:@"mailto:marketing-bahnhoefe@deutschebahn.com?subject=%@&body=%@", subject, body];
+    
+    NSURL* url = [NSURL URLWithString:mailString];
+    
+    [[AppDelegate appDelegate] openURL:url];
 }
 
 @end

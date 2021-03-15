@@ -29,6 +29,10 @@
         @"parkplaetze": @"bahnhofsausstattung_parkplatz",
         @"aufzuegeundfahrtreppen": @"app_aufzug",
         @"wlan" : @"rimap_wlan_grau",
+        @"verschmutzung_mitwhatsapp": @"verschmutzungmelden",
+        @"verschmutzung_ohnewhatsapp": @"verschmutzungmelden",
+        @"bewertung": @"app_bewerten",
+        @"problemmelden": @"probleme_app_melden",
     };
     
     NSString *iconFileName = [iconMapping objectForKey:self.type];

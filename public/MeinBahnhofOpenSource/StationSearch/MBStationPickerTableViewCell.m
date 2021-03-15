@@ -336,8 +336,9 @@
         //NSLog(@"DEPARTURE, load for map flyout");
         
         NSString* idString = eva_ids.firstObject;
-        
-        [self.localHafasManager loadDeparturesForStopId:idString timetable:nil withCompletion:^(HafasTimetable *timetable) {
+        HafasTimetable* timetable = [[HafasTimetable alloc] init];
+        timetable.includeLongDistanceTrains = true;
+        [self.localHafasManager loadDeparturesForStopId:idString timetable:timetable withCompletion:^(HafasTimetable *timetable) {
             [self setupViewsForHafas:timetable];
         }];
     } else {

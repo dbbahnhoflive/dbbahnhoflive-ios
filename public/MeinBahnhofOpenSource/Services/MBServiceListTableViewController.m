@@ -212,7 +212,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
 #pragma mark UITableViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     if(!self.ignoreTableUpdateOnSelect){
-        [self.tableView beginUpdates];
+        //[self.tableView beginUpdates];
     }
     MBExpandableTableViewCell *tableCell = [self.tableView cellForRowAtIndexPath:indexPath];
     NSLog(@"didSelectRowAtIndexPath %@ with selectedRow %@",indexPath,self.selectedRow);
@@ -248,8 +248,10 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         }
     }
     if(!self.ignoreTableUpdateOnSelect){
-        [self.tableView endUpdates];
+       // [self.tableView endUpdates];
 //    [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+        [self.tableView reloadData];
+        //UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, [self.tableView cellForRowAtIndexPath:indexPath]);
     }
 }
 

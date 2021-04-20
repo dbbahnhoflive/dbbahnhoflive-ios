@@ -14,7 +14,7 @@
 +(NSString*)kNewsApiKey;
 +(NSString*)kBusinessHubProdBaseUrl;
 +(NSString*)kPTSPath;
-
++(NSString*)kRISStationsPath;
 
 +(NSString*)kHafasKey;
 +(NSString*)kMapsKey;

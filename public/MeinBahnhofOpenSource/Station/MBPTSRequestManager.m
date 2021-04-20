@@ -7,6 +7,7 @@
 #import "MBPTSRequestManager.h"
 #import "MBCacheManager.h"
 #import "Constants.h"
+#import "NSDictionary+MBDictionary.h"
 @interface MBPTSRequestManager()
 
 @end
@@ -83,11 +84,12 @@ static BOOL simulateSearchFailure = NO;
 -(NSURLSessionTask *)searchStationByName:(NSString *)text success:(void (^)(NSArray<MBPTSStationFromSearch*>* stationList))success failureBlock:(void (^)(NSError *))failure{
     NSString* searchTerm = [text stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet letterCharacterSet]];
     NSInteger size = 100;
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places?size=%ld&name=%@",[Constants kBusinessHubProdBaseUrl], [Constants kPTSPath],(long)size,searchTerm];
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-name/%@?limit=%ld",[Constants kBusinessHubProdBaseUrl], [Constants kRISStationsPath],searchTerm,(long)size];
+    [self.requestSerializer setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
 
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
-    NSLog(@"PTS: %@",requestUrlWithParams);
+    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"db-api-key"];
+    self.responseSerializer.acceptableContentTypes = [self.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
+    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
     return [self GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
     } success:^(NSURLSessionTask *operation, id responseObject) {
@@ -98,31 +100,32 @@ static BOOL simulateSearchFailure = NO;
         }
 
         if([responseObject isKindOfClass:NSDictionary.class]){
-            [MBTrackingManager trackActions:@[@"pts_request", @"text", @"success"]];
+            [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"success"]];
             success([self parseResponse:responseObject]);
         } else {
-            [MBTrackingManager trackActions:@[@"pts_request", @"text", @"failure"]];
+            [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"failure"]];
             failure(nil);
         }
     } failure:^(NSURLSessionTask *operation, NSError *error) {
-        [MBTrackingManager trackActions:@[@"pts_request", @"text", @"failure"]];
-        NSLog(@"search failed: %@",error.localizedDescription);
+        [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"failure"]];
+        NSLog(@"risstations search failed: %@",error.localizedDescription);
         failure(error);
     }];
 }
 
 -(NSURLSessionTask *)searchStationByGeo:(CLLocationCoordinate2D)geo success:(void (^)(NSArray<MBPTSStationFromSearch*>* stationList))success failureBlock:(void (^)(NSError *))failure{
     NSInteger size = 100;
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places?latitude=%.3f&longitude=%.3f&radius=2000&size=%ld",
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-position?latitude=%.3f&longitude=%.3f&radius=2000&limit=%ld",
                             [Constants kBusinessHubProdBaseUrl],
-                            [Constants kPTSPath],
+                            [Constants kRISStationsPath],
                             geo.latitude,
                             geo.longitude,
                             (long)size];
 
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
-    NSLog(@"PTS: %@",requestUrlWithParams);
+    self.responseSerializer.acceptableContentTypes = [self.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
+    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"db-api-key"];
+    [self.requestSerializer setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
+    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
 
     return [self GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
@@ -134,72 +137,60 @@ static BOOL simulateSearchFailure = NO;
         }
 
         if([responseObject isKindOfClass:NSDictionary.class]){
-            [MBTrackingManager trackActions:@[@"pts_request", @"geo", @"success"]];
+            [MBTrackingManager trackActions:@[@"risstations_request", @"geo", @"success"]];
             success([self parseResponse:responseObject]);
         } else {
-            [MBTrackingManager trackActions:@[@"pts_request", @"geo", @"failure"]];
+            [MBTrackingManager trackActions:@[@"risstations_request", @"geo", @"failure"]];
             failure(nil);
         }
     } failure:^(NSURLSessionTask *operation, NSError *error) {
-        [MBTrackingManager trackActions:@[@"pts_request", @"geo", @"failure"]];
+        [MBTrackingManager trackActions:@[@"risstations_request", @"geo", @"failure"]];
         failure(error);
     }];
 }
 
 -(NSArray<MBPTSStationFromSearch*>*)parseResponse:(NSDictionary*)response{
     NSArray* results = nil;
-    if([response isKindOfClass:NSDictionary.class]){
-        NSDictionary* emb = response[@"_embedded"];
-        if(emb){
-            results = emb[@"stopPlaceList"];
-            if(!results){
-                //empty search results, handle this as a valid empty response
-                results = @[];
-            }
-        }
+    if(![response isKindOfClass:NSDictionary.class]){
+        return nil;
     }
+    results = [response db_arrayForKey:@"stopPlaces"];
     if(results){
         NSMutableArray<MBPTSStationFromSearch*>* resultsTransformed = [NSMutableArray arrayWithCapacity:results.count];
         for(NSDictionary* res in results){
-            NSNumber* stationNumber = nil;
-            NSString* evaId = nil;
-            NSArray* identifiers = res[@"identifiers"];
-            for(NSDictionary* identifier in identifiers){
-                if([identifier[@"type"] isEqualToString:@"STADA"]){
-                    NSString* stadaString = identifier[@"value"];
-                    stationNumber = [NSNumber numberWithLongLong:stadaString.longLongValue];
-                } else if([identifier[@"type"] isEqualToString:@"EVA"]){
-                    evaId = identifier[@"value"];
-                    if([evaId isKindOfClass:NSNumber.class]){
-                        evaId = ((NSNumber*)evaId).stringValue;
-                    } else if([evaId isKindOfClass:NSString.class]) {
-                        //remove leading 0 by converting into number
-                        evaId = [NSString stringWithFormat:@"%lld",evaId.longLongValue];
-                        //NSLog(@"got eva %@ from identifier %@",evaId,identifier);
-                    }
-                }
+            
+            NSString* stationID = [res db_stringForKey:@"stationID"];
+            NSString* evaNumber = [res db_stringForKey:@"evaNumber"];
+            NSArray* evaNumbers = [res db_arrayForKey:@"groupMembers"];
+            NSArray* availableTransports = [res db_arrayForKey:@"availableTransports"];
+            if(availableTransports.count == 0){
+                continue;//skip stations without any transports
             }
-            NSString* title = res[@"name"];
+
+            NSNumber* stationNumber = nil;
+            if(stationID){
+                stationNumber = [NSNumber numberWithLongLong:stationID.longLongValue];
+            }
+            NSString* title = [[[res db_dictForKey:@"names"] db_dictForKey:@"DE"] db_stringForKey:@"nameLong"];
             NSNumber* longitude = nil;
             NSNumber* latitude = nil;
-            NSDictionary* location = res[@"location"];
-            longitude = location[@"longitude"];
-            latitude = location[@"latitude"];
+            NSDictionary* location = [res db_dictForKey:@"position"];
+            longitude = [location db_numberForKey:@"longitude"];
+            latitude = [location db_numberForKey:@"latitude"];
             
-            MBPTSStationResponse* parsedStation = [[MBPTSStationResponse alloc] initWithResponse:res];
-            //NSLog(@"process %@, got evaIDS from parsedStation: %@",evaId,parsedStation.evaIds);
-            NSArray* evaIds = parsedStation.evaIds;
-            if(evaIds.count == 0 && evaId){
-                //fallback to single evaid from identifiers
-                evaIds = @[ evaId ];
+            NSMutableArray* evaIdsWithMainEvaFirst = [NSMutableArray arrayWithCapacity:evaNumbers.count];
+            if(evaNumbers){
+                [evaIdsWithMainEvaFirst addObjectsFromArray:evaNumbers];
+                [evaIdsWithMainEvaFirst removeObject:evaNumber];
             }
-            
-            if(title && evaIds.count > 0 && longitude && latitude){
+            [evaIdsWithMainEvaFirst insertObject:evaNumber atIndex:0];
+            evaNumbers = evaIdsWithMainEvaFirst;
+            if(title && evaNumbers.count > 0 && longitude && latitude){
                 MBPTSStationFromSearch* res = [MBPTSStationFromSearch new];
                 res.stationId = stationNumber;
                 res.isOPNVStation = stationNumber == nil;
                 res.title = title;
-                res.eva_ids = evaIds;
+                res.eva_ids = evaNumbers;
                 res.coordinate = CLLocationCoordinate2DMake(latitude.doubleValue, longitude.doubleValue);
                 res.distanceInKm = @0;
                 [resultsTransformed addObject:res];

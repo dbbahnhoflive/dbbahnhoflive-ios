@@ -224,15 +224,8 @@
 
 -(void)updateStationWithDetails:(MBPTSStationResponse *)details{
     self.stationDetails = details;
-    _eva_ids = details.evaIds;
     _category = details.category;
-    _position = details.position;
     _travelCenter = details.travelCenter;
-    NSNumber* newStadaId = details.stadaIdNumber;
-    if(_mbId && ![_mbId isEqualToNumber:newStadaId]){
-        NSLog(@"WARNING: STADA ID changed from %@ to %@",_mbId,newStadaId);
-    }
-    _mbId = newStadaId;
 }
 -(NSArray *)stationEvaIds{
     //prefer PTS, fallback to rimaps

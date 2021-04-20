@@ -27,6 +27,9 @@
 +(NSString*)kPTSPath{
     return @"public-transport-stations/v1";
 }
++(NSString*)kRISStationsPath{
+    return @"ris-stations/v1";
+}
 
 +(NSString*)kHafasKey{
     return @"";

@@ -26,6 +26,12 @@ static NSArray* displayTitles = nil;
         self.availabilityStrings = [NSMutableArray arrayWithCapacity:8];
         NSInteger index = 0;
         NSString* lastDayAdded = nil;
+        
+        NSString* divider = @"-";
+        if(UIAccessibilityIsVoiceOverRunning()){
+            divider = @" bis ";
+        }
+        
         for(NSString* dayKey in dayOrder){
             for(NSDictionary* dayDict in availability){
                 if([dayDict[@"day"] isEqualToString:dayKey]){
@@ -38,9 +44,9 @@ static NSArray* displayTitles = nil;
                            //same day: add the time with ", " on the same line
                             NSString* s = self.availabilityStrings.lastObject;
                             [self.availabilityStrings removeLastObject];
-                            [self.availabilityStrings addObject:[NSString stringWithFormat:@"%@, %@-%@", s, from,to]];
+                            [self.availabilityStrings addObject:[NSString stringWithFormat:@"%@, %@%@%@ Uhr", s, from,divider,to]];
                         } else {
-                            [self.availabilityStrings addObject:[NSString stringWithFormat:@"%@: %@-%@", displayTitles[index], from,to]];
+                            [self.availabilityStrings addObject:[NSString stringWithFormat:@"%@: %@%@%@ Uhr", displayTitles[index], from,divider,to]];
                             lastDayAdded = dayKey;
                         }
                     }

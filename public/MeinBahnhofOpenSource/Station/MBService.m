@@ -82,10 +82,26 @@
     if ([self.type isEqualToString:@"3-s-zentrale"]) {
         return [self parseDreiSComponents:string];
     } else if ([self.type isEqualToString:@"chatbot"]) {
-        return [self parseChatbotComponents:string];
+        NSMutableArray* res = [[self parseConfigurableService:string] mutableCopy];
+        [res insertObject:@{kImageKey:@"chatbot_d1"} atIndex:0];
+        /*
+        if(![self isChatBotTime]){
+            for(NSInteger i=0; i<res.count; i++){
+                if([res[i] isKindOfClass:NSDictionary.class]){
+                    NSDictionary* d = res[i];
+                    NSString* link = d[kActionButtonAction];
+                    if([link isEqualToString:kActionChatbot]){
+                        [res removeObjectAtIndex:i];
+                        break;
+                    }
+                }
+            }
+        }*/
+        return res;
     } else if ([self.type isEqualToString:@"pickpack"]) {
         return [self parsePickpackComponents:string];
-    } else if ([self.type isEqualToString:@"mobilitaetsservice"] || [self.type hasPrefix:@"verschmutzung"] || [self.type isEqualToString:@"bewertung"] || [self.type isEqualToString:@"problemmelden"]){
+    } else if ([self.type isEqualToString:@"mobilitaetsservice"] || [self.type hasPrefix:@"verschmutzung"] || [self.type isEqualToString:@"bewertung"] || [self.type isEqualToString:@"problemmelden"]
+               || [self.type isEqualToString:@"stufenfreier_zugang"]){
         return [self parseConfigurableService:string];
     } else {
         return [self parseRegularComponents:string];
@@ -144,27 +160,6 @@
     return res;
 }
 
-- (NSArray*)parseChatbotComponents:(NSString*)string{
-    //we expect a text, a button and another text
-    //the button is only visible at the opening times of the chatbot service
-    NSRange btnStart = [string rangeOfString:@"<dbactionbutton>"];
-    NSRange btnEnd = [string rangeOfString:@"</dbactionbutton>"];
-    if(btnStart.location != NSNotFound){
-        NSString* firstText = [string substringToIndex:btnStart.location];
-        NSString* btntext = [string substringWithRange:NSMakeRange(btnStart.location+btnStart.length, btnEnd.location-(btnStart.location+btnStart.length))];
-        NSString* lastText = [string substringFromIndex:btnEnd.location+btnEnd.length];
-        NSMutableArray* res = [NSMutableArray arrayWithCapacity:3];
-        [res addObject:@{kImageKey:@"chatbot_d1"}];
-        [res addObject:firstText];
-        if([self isChatBotTime]){
-            [res addObject:@{kActionButtonKey:btntext, kActionButtonAction:kActionChatbot}];
-        }
-        [res addObject:lastText];
-        return res;
-    }
-    //failure, return complete string
-    return @[string];
-}
 
 -(BOOL)isChatBotTime{
     NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
@@ -173,7 +168,7 @@
     
     NSDateComponents *comps = [gregorian components:NSCalendarUnitHour|NSCalendarUnitMinute fromDate:[NSDate date]];
     NSInteger currentHour = [comps hour];
-    return currentHour >= 7 && currentHour <= 19;
+    return currentHour >= 7 && currentHour <= 21;//7:00-21:59
 }
 
 - (NSArray*)parseRegularComponents:(NSString*)string

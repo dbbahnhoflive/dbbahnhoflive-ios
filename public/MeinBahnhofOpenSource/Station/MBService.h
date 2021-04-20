@@ -19,6 +19,7 @@
 #define kActionFeedbackMail @"feedbackmail"
 #define kActionWhatsAppFeedback @"whatsappfeedback"
 #define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
+#define kActionFeedbackChatbotMail @"feedbackchatbot"
 
 @import CoreLocation;
 

@@ -65,6 +65,19 @@
     self.paymentTextLabel.numberOfLines = 0;
     [self addSubview:self.paymentTextLabel];
 
+    self.isAccessibilityElement = YES;
+    self.addressLabel.isAccessibilityElement = NO;
+    self.openingHoursLabel.isAccessibilityElement = NO;
+    self.openingHeaderLabel.isAccessibilityElement = NO;
+
+}
+
+-(NSString *)accessibilityLabel{
+    NSString* res = [NSString stringWithFormat:@"%@. %@ %@",self.addressLabel.accessibilityLabel, self.openingHeaderLabel.accessibilityLabel, self.openingHoursLabel.accessibilityLabel];
+    if(!self.paymentHeaderLabel.hidden && self.paymentHeaderLabel.accessibilityLabel.length > 0){
+        res = [NSString stringWithFormat:@"%@. %@ %@",res,self.paymentHeaderLabel.accessibilityLabel,self.paymentTextLabel.accessibilityLabel];
+    }
+    return res;
 }
 
 -(BOOL)hasContactLinks{

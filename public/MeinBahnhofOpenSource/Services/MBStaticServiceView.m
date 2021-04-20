@@ -255,21 +255,17 @@
                 
                 CGFloat width = (ISIPAD ? (int)(((self.frame.size.width-2*40)/3.0)-50) : contentSize.width-2*x);
                 
-                MBLabel *headlineLabel = [[MBLabel alloc] initWithFrame:CGRectMake(x, tableRowItemOffset.y+15, width, ISIPAD ? 20 : 16)];
-                headlineLabel.font = [UIFont db_HelveticaBoldFourteen];
-                headlineLabel.text = headline;
-                headlineLabel.textColor = [UIColor db_333333];
+                NSString* txt = [NSString stringWithFormat:@"<b>%@</b><br>%@",headline,content];
                 
-                MBTextView *contentLabel = [[MBTextView alloc] initWithFrame:CGRectMake(x, headlineLabel.frame.origin.y+headlineLabel.frame.size.height+2, width, 0)];
+                MBTextView *contentLabel = [[MBTextView alloc] initWithFrame:CGRectMake(x, tableRowItemOffset.y+15, width, 0)];
                 contentLabel.font = [UIFont db_HelveticaFourteen];
-                contentLabel.htmlString = content;
+                contentLabel.htmlString = txt;
                 //contentLabel.textColor = [UIColor db_878c96];
                 contentLabel.userInteractionEnabled = YES;
                 contentLabel.delegado = self;
                 
                 [self sizeViewForWidth:contentLabel];
                 
-                [baseView addSubview:headlineLabel];
                 [baseView addSubview:contentLabel];
                 
                 CGFloat entryHeight = (25+contentLabel.frame.size.height)+5;
@@ -359,8 +355,6 @@
         [self.delegate didTapOnPhoneLink:phoneString];
     } else if ([url.absoluteString rangeOfString:@"mailto:"].location != NSNotFound) {
         [self.delegate didTapOnEmailLink:url.absoluteString];
-    } else if([url.absoluteString isEqualToString:kActionFeedbackVerschmutzungMail]){
-        [self feedbackDirtViaWhatspp:false];
     } else {
         [self.delegate didOpenUrl:url];
     }
@@ -384,6 +378,10 @@
         [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://itunes.apple.com/de/app/pickpack-unterwegs-bestellen/id1437396914?ls=1&mt=8"]];
     } else if([action isEqualToString:kActionFeedbackMail]){
         [self openFeedbackMail];
+    } else if([action isEqualToString:kActionFeedbackChatbotMail]){
+        [self chatBotMail];
+    } else if([action isEqualToString:kActionFeedbackVerschmutzungMail]){
+        [self feedbackDirtViaWhatspp:false];
     } else if([action isEqualToString:kActionWhatsAppFeedback]){
         [self feedbackDirtViaWhatspp:true];
     } else {
@@ -402,13 +400,21 @@
         link = [NSString stringWithFormat:@"https://wa.me/4915792397402?text=%@",s];
     } else {
         NSString* subject = [[NSString stringWithFormat:@"Verschmutzungs-Meldung %@ (%@)",self.station.title,self.station.mbId] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
-        link = [NSString stringWithFormat:@"mailto:marketing-bahnhoefe@deutschebahn.com?subject=%@&body=%@", subject, s];
+        link = [NSString stringWithFormat:@"mailto:feedback@bahnhof.de?subject=%@&body=%@", subject, s];
     }
     
     NSURL* url = [NSURL URLWithString:link];
     if(url){
         [[AppDelegate appDelegate] openURL:url];
     }
+}
+
+-(void)chatBotMail{
+    NSString *mailString = [NSString stringWithFormat:@"mailto:feedback@bahnhof.de?subject=%@&body=%@", @"", @""];
+    
+    NSURL* url = [NSURL URLWithString:mailString];
+    
+    [[AppDelegate appDelegate] openURL:url];
 }
 
 - (void)openFeedbackMail

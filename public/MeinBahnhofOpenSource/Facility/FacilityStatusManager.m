@@ -69,7 +69,7 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
         
         NSMutableArray* finalFacilities = [NSMutableArray arrayWithCapacity:20];
         for(FacilityStatus* status in facilityStatusItems){
-            if(status.geoCoordinateX == nil || status.geoCoordinateY == nil){
+            if(status.geoCoordinateX == nil || status.geoCoordinateY == nil || [status.shortDescription compare:@"Nicht Reisendenrelevant" options:NSCaseInsensitiveSearch] == NSOrderedSame){
                 
             } else {
                 [finalFacilities addObject:status];

@@ -68,6 +68,7 @@
     self.cellTitle.textColor = [UIColor db_333333];
     self.opencloseLabel.textAlignment = NSTextAlignmentLeft;
     self.opencloseLabel.font = [UIFont db_RegularFourteen];
+    self.opencloseLabel.isAccessibilityElement = NO;
     
     [self.topView addSubview:self.cellIcon];
     [self.topView addSubview:self.cellTitle];
@@ -95,6 +96,9 @@
     [self.backView addSubview:self.topView];
     [self.backView addSubview:self.bottomView];
     [self.backView addSubview:self.contactAddonView];
+    
+    self.isAccessibilityElement = NO;
+    self.topView.isAccessibilityElement = NO;
 }
 
 
@@ -113,6 +117,7 @@
             
         }
     }
+    [self configureVoiceOver];
 }
 
 
@@ -178,26 +183,20 @@
         self.contactAddonView.hidden = YES;
     }
     [self configureVoiceOver];
-    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
+    
 }
 
 -(void)configureVoiceOver{
-    NSMutableArray* items = [@[self.cellTitle] mutableCopy];
     if(!self.opencloseLabel.hidden){
         self.cellTitle.accessibilityLabel = [NSString stringWithFormat:@"%@, %@.",self.cellTitle.text,self.opencloseLabel.text];
     } else {
         self.cellTitle.accessibilityLabel = self.cellTitle.text;
     }
     if(self.expanded){
-        [items addObjectsFromArray:self.bottomView.subviews];
-        if(self.contactAddonView.subviews.count > 0){
-            [items addObjectsFromArray:self.contactAddonView.subviews];
-        }
         self.cellTitle.accessibilityTraits = UIAccessibilityTraitButton|UIAccessibilityTraitSelected;
     } else {
         self.cellTitle.accessibilityTraits = UIAccessibilityTraitButton;
     }
-    self.accessibilityElements = items;
 }
 
 - (void)layoutSubviews {
@@ -247,6 +246,7 @@
     [_staticServiceView removeFromSuperview];
     self.shopDetailView = nil;
     self.staticServiceView = nil;
+    [self.contactAddonView.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 #pragma mark MBDetailViewDelegate
 - (void) didOpenUrl:(NSURL*)url {

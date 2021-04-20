@@ -18,7 +18,7 @@
 		},
 
 		{
-			"descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich bis spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-hilfe.specials-bahn.de/\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:01806512512\">01806 512 512</dbactionbutton><p>(20 ct/Anruf aus dem Festnetz, Tarif bei Mobilfunk max. 60 ct/Anruf)</p><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
+            "descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich bis spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-hilfe.specials-bahn.de/\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
 			"title": "Mobilitätsservice",
 			"type": "mobilitaetsservice"
 		},
@@ -36,7 +36,7 @@
 		},
 
 		{
-			"descriptionText": "<p>Dieser Bahnhof bietet Ihnen stufenfreien Zugang.</p><p>Bei Fragen wenden Sie sich bitte an die zuständige 3-S-Zentrale oder an die Mobilitätsservice-Zentrale unter 0180 6 512 512 (20 ct/Anruf aus dem Festnetz, Tarif bei Mobilfunk max. 60 ct/Anruf).</p>",
+			"descriptionText": "<p>Dieser Bahnhof bietet Ihnen stufenfreien Zugang.</p><p>Bei Fragen wenden Sie sich bitte an die zuständige 3-S-Zentrale oder an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>",
 			"title": "Zugang & Wege",
 			"type": "stufenfreier_zugang"
 		},
@@ -54,13 +54,13 @@
          },
                    
          {
-            "descriptionText": "<p>Sie haben im Zug oder Bahnhof etwas verloren oder gefunden? Teilen Sie uns dies einfach und kostenlos unter <a href=\"https://www.bahn.de/p/view/service/fundservice.shtml\">https://www.bahn.de/p/view/service/fundservice.shtml</a> mit. Telefonisch erreichen Sie uns unter 0900 1 99 05 99 (59 ct/min. aus dem dt. Festnetz, Tarife bei Mobilfunk ggf. abweichend). Dieser Weg steht Ihnen rund um die Uhr zur Verfügung. An einigen Bahnhöfen gibt es darüber hinaus weitere Fundservices.</p>",
+            "descriptionText": "<p>Sie haben im Zug oder Bahnhof etwas verloren oder gefunden? Teilen Sie uns dies einfach und kostenlos unter <a href=\"https://www.bahn.de/p/view/service/fundservice.shtml\">https://www.bahn.de/p/view/service/fundservice.shtml</a> mit. Telefonisch erreichen Sie uns unter 030 586020909Dieser Weg steht Ihnen rund um die Uhr zur Verfügung. An einigen Bahnhöfen gibt es darüber hinaus weitere Fundservices.</p>",
             "title": "Fundservice",
             "type": "local_lostfound"
          },
          
          {
-             "descriptionText": "<p>Hallo, mein Name ist DB Smile. Ich bin Ihr digitaler Assistent und helfe bei Fragen zum Bahnhof.</p><dbactionbutton>Chatten Sie mit mir</dbactionbutton><p>Ich bin <b>Montag bis Sonntag von 07:00 - 22:00 Uhr</b> in vollem Umfang für Sie da.</p>",
+             "descriptionText": "<p>Hallo, mein Name ist DB Smile. Ich bin Ihr digitaler Assistent und helfe bei Fragen zum Bahnhof.</p><dbactionbutton href=\"chatbot\">Chatten Sie mit mir</dbactionbutton><p>Ich bin <b>Montag bis Sonntag von 07:00 - 22:00 Uhr</b> in vollem Umfang für Sie da.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackchatbot\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p>",
              "title": "Chatbot",
              "type": "chatbot"
          },
@@ -72,12 +72,12 @@
          },
          
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p>Alternativ erreichen Sie uns über E-Mail.<br><a href=\"feedbackverschmutzung\">marketing-bahnhoefe@deutschebahn.com</a></p><p><b>Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p><p> <br> <br> </p>",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p><p> <br> <br> </p>",
              "title": "Verschmutzung melden",
              "type": "verschmutzung_mitwhatsapp"
          },
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p>Alternativ erreichen Sie uns über E-Mail.<br><a href=\"feedbackverschmutzung\">marketing-bahnhoefe@deutschebahn.com</a></p><p> <br> <br> </p>",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p> <br> <br> </p>",
              "title": "Verschmutzung melden",
              "type": "verschmutzung_ohnewhatsapp"
          },

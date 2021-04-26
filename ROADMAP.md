@@ -3,9 +3,9 @@
 ### Aktuelle (Umsetzungs-)Themen
 Diese Inhalte (Funktionen, Anpassungen, Erweiterungen) befinden sich derzeit in der Umsetzung oder sind bereits für die nächsten Release-Zyklen eingeplant.
 
-##### Release 3.14.0 (Inhalte ohne Gewähr)
-•	Fehlerbehebung und Optimierungen für die Verwendung der App mit Voice-Over-Funktionen   
-•	Ersatz der Google Maps API
+##### Release 3.15.0 (Inhalte ohne Gewähr)
+•	Entfernung von Bahnhofs- und Umgebungskarten auf Basis von Google Maps
+• Anreicherung von Informationen im Kontext der Barrierefreiheit am Bahnhof
 
 
 ##### Entwicklungsfelder

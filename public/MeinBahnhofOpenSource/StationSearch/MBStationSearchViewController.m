@@ -29,7 +29,6 @@
 #import "MBParkingInfo.h"
 #import "MBParkingOccupancyManager.h"
 
-#import "RIMapManager.h"
 #import "RIMapPoi.h"
 
 #import "MBLinkButton.h"
@@ -451,7 +450,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.searchResultTableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     [self.searchResultTableView setContentInset:UIEdgeInsetsMake(8, 0, 80, 0)];
     [self.searchResultTableView registerClass:MBStationPickerTableViewCell.class forCellReuseIdentifier:@"cell"];
-    self.searchResultTableView.separatorStyle = UITableViewCellSelectionStyleNone;
+    self.searchResultTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.searchResultTableView.backgroundColor = [UIColor clearColor];
     self.searchResultTableView.backgroundView = [[UIView alloc] init];
     self.searchResultTableView.backgroundView.backgroundColor = [UIColor clearColor];
@@ -479,12 +478,12 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.loadActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     [self.loadActivity stopAnimating];
     if([[NSBundle mainBundle] pathForResource:@"impressum" ofType:@"html"]){
-        self.imprintButton = [MBLinkButton buttonWithRedLink];
+        self.imprintButton = [MBLinkButton boldButtonWithRedLink];
         [self.imprintButton setLabelText:@"Impressum"];
         [self.imprintButton addTarget:self action:@selector(didTapOnImprintLink:) forControlEvents:UIControlEventTouchUpInside];
     }
     if([[NSBundle mainBundle] pathForResource:@"datenschutz" ofType:@"html"]){
-        self.datenschutzButton = [MBLinkButton buttonWithRedLink];
+        self.datenschutzButton = [MBLinkButton boldButtonWithRedLink];
         [self.datenschutzButton setLabelText:@"Datenschutz"];
         [self.datenschutzButton addTarget:self action:@selector(didTapOnDatasecLink:) forControlEvents:UIControlEventTouchUpInside];
     }
@@ -1326,7 +1325,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     [UIView animateWithDuration:0.25 animations:^{
         if(SCALEFACTORFORSCREEN != 1.0){
-            [self.stationSearchInputField setGravityTop:30+15];
+            [self.stationSearchInputField setGravityTop:60];
         } else {
             CGFloat topSafeOffset = 0.0;
             if (@available(iOS 11.0, *)) {

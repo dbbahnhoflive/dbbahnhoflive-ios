@@ -22,7 +22,6 @@
 @property (nonatomic, strong) UILabel *trainLabel;
 @property (nonatomic, strong) UILabel *platformLabel;
 
-@property (nonatomic, strong) NSString* trainStringForVoiceOver;
 @property (nonatomic, strong) UILabel *stationLabel;
 @property (nonatomic, strong) UILabel *expectedTimeLabel;
 @property (nonatomic, strong) UILabel *intermediateStationsLabel;
@@ -48,5 +47,7 @@
 @property (nonatomic, assign) BOOL expanded;
 
 - (void) setExpanded:(BOOL)expanded forIndexPath:(NSIndexPath*)indexPath;
+
++(NSString*)voiceOverForEvent:(Event*)event;
 
 @end

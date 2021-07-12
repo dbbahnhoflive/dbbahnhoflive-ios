@@ -40,13 +40,15 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
 @property (nonatomic, strong) NSIndexPath *selectedRow;
 @property (nonatomic, assign) CGFloat additionalHeightForExpandedCell;
 @property (nonatomic) BOOL ignoreTableUpdateOnSelect;
+@property(nonatomic,strong) MBStation* station;
 @end
 
 @implementation MBServiceListTableViewController
 
-- (instancetype)initWithItem:(id)item {
+- (instancetype)initWithItem:(id)item station:(MBStation*)station{
     self = [super initWithStyle:UITableViewStylePlain];
     self.item = item;
+    self.station = station;
     if([item isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
         self.type = MBServiceType_Shop_Einkaufsbahnhof;
         self.subItems = [(MBEinkaufsbahnhofCategory*)item shops];
@@ -194,7 +196,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         } else if([serviceCell.item isKindOfClass:[RIMapPoi class]]){
             serviceCell.shopDetailView = [[MBShopDetailCellView alloc] initWithPXR:serviceCell.item];
         } else if([serviceCell.item isKindOfClass:[MBService class]]) {
-            serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:serviceCell.item station:nil fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+            serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:serviceCell.item station:self.station viewController:self fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
                 serviceCell.staticServiceView.delegate = self;
         }
         cell = serviceCell;

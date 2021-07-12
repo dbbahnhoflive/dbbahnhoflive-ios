@@ -169,7 +169,8 @@
 }
 
 -(BOOL)hasSteplessAccess{
-    return [self boolValueForKey:@"hasSteplessAccess"];//future dev: some stations have "PARTIAL"
+    //this method is no longer used
+    return true;//[self boolValueForKey:@"hasSteplessAccess"];//future dev: some stations have "PARTIAL"
 }
 -(BOOL)hasPublicFacilities{
     return [self boolValueForKey:@"hasPublicFacilities"];

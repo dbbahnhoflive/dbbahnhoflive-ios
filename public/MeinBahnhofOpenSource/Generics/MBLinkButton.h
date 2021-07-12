@@ -18,4 +18,5 @@
 + (instancetype) buttonWithLeftImage:(NSString*)imageName;
 + (instancetype) buttonWithRightImage:(NSString*)imageName;
 + (instancetype) buttonWithRedLink;
++ (instancetype) boldButtonWithRedLink;
 @end

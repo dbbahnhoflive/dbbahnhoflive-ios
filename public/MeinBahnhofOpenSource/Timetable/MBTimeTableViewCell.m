@@ -5,7 +5,8 @@
 
 
 #import "MBTimeTableViewCell.h"
-
+#import "Stop.h"
+#import "MBTimetableViewController.h"
 @interface MBTimeTableViewCell()
 
 @property (nonatomic, strong) UIView *backView;
@@ -153,8 +154,6 @@
     self.wagenstandIcon.frame = wagenstandFrame;
     self.messageIcon.frame = CGRectMake(self.wagenstandIcon.frame.origin.x+self.wagenstandIcon.frame.size.width+messageXOffset, self.wagenstandIcon.frame.origin.y + 2.0, self.messageIcon.image.size.width,self.messageIcon.image.size.height);
     
-    NSArray *stations = self.event.departure ? [@[self.currentStation] arrayByAddingObjectsFromArray:self.event.actualStationsArray] : [self.event.actualStationsArray arrayByAddingObject:self.currentStation];
-    self.viaListView.stations = stations;
     [self.viaListView setFrame:CGRectMake(0, 0, self.bottomView.frame.size.width, 92.0)];
     self.bottomView.hidden = !_expanded;
     
@@ -233,22 +232,45 @@
 
 - (NSString *)accessibilityLabel
 {
+    return [MBTimeTableViewCell voiceOverForEvent:_event expanded:self.expanded viaStation:self.viaListView.stations];
+}
++(NSString*)voiceOverForEvent:(Event*)event{
+    return [MBTimeTableViewCell voiceOverForEvent:event expanded:NO viaStation:nil];
+}
++(NSString*)voiceOverForEvent:(Event*)event expanded:(BOOL)expanded viaStation:(NSArray*)viaStationList{
     NSString* viaStations = @"";
-    if(self.expanded){
-        viaStations = [self.viaListView.stations componentsJoinedByString:@", "];
+    if(expanded){
+        viaStations = [viaStationList componentsJoinedByString:@", "];
+        viaStations = [@", über " stringByAppendingString:viaStations];
     }
-    NSString* train = self.trainStringForVoiceOver;
-    NSString* gleis = [NSString stringWithFormat:@"Gleis %@",_event.actualPlatform];
-    return [NSString stringWithFormat:@"%@ %@ %@, %@ Uhr, %@, %@; %@, über %@.",
+    NSString* train = [event.stop formattedTransportType:event.lineIdentifier];
+    if([train containsString:@"ICE"]){
+        train = [train stringByReplacingOccurrencesOfString:@"ICE" withString:@"I C E"];
+    } else if([train hasPrefix:@"STR"]){
+        train = [train stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
+    }
+    NSString* gleis = [NSString stringWithFormat:@"Gleis %@",event.actualPlatform];
+    NSString* msg = event.composedIrisMessage;
+    if(!msg){
+        msg = @"";
+    }
+    NSString* trainOrder = @"";
+    if(event.trainRecordAvailable || [MBTimetableViewController stopShouldHaveTrainRecord:event.stop]){
+        trainOrder = @"Informationen zur Wagenreihung verfügbar.";
+    }
+    NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@ Uhr, %@, %@; %@%@.%@",
                 train,
-                self.event.departure ? @"nach" : @"von",
-                self.stationLabel.text,
-                self.timeLabel.text,
-                ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@ Uhr",self.expectedTimeLabel.text]),
+                event.departure ? @"nach" : @"von",
+                event.actualStation,
+                event.formattedTime,
+                ([event.formattedTime isEqualToString:event.formattedExpectedTime] ? @"" : [NSString stringWithFormat:@"Erwartet %@ Uhr",event.formattedExpectedTime]),
                 gleis,
-                (self.messageTextLabel.text ? self.messageTextLabel.text : @""),
-                viaStations
+                msg,
+                viaStations,
+                trainOrder
             ];
+    //NSLog(@"voiceover: %@",res);
+    return res;
 }
 
 - (void)prepareForReuse
@@ -269,6 +291,9 @@
 - (void) setExpanded:(BOOL)expanded forIndexPath:(NSIndexPath*)indexPath;
 {
     _expanded = expanded;
+    if(expanded){
+        NSLog(@"open details for stop %@",self.event.stop.stopId);
+    }
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

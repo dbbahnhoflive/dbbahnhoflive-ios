@@ -55,6 +55,7 @@
 @property (nonatomic, strong) MBStationKachel* fahrstuhlKachel;
 @property (nonatomic, strong) MBStationKachel* ausstattungKachel;
 
+@property (nonatomic,strong) MBContentSearchButton* contentSearchButton;
 @property (nonatomic, strong) UIView *tafelContainerView;
 @property (nonatomic, strong) MBStationFernverkehrTableViewController *fernVC;
 
@@ -177,8 +178,14 @@
 
     //the content search button is part of the navigation controller since it is above the content
     MBStationNavigationViewController *navCon = (MBStationNavigationViewController *)self.navigationController;
-    [navCon.contentSearchButton addTarget:self action:@selector(openContentSearch) forControlEvents:UIControlEventTouchUpInside];
-    
+    if(UIAccessibilityIsVoiceOverRunning()){
+        [navCon removeSearchButton];
+        self.contentSearchButton = [MBContentSearchButton new];
+        [self.collectionView addSubview:self.contentSearchButton];
+        [self.contentSearchButton addTarget:self action:@selector(openContentSearch) forControlEvents:UIControlEventTouchUpInside];
+    } else {
+        [navCon.contentSearchButton addTarget:self action:@selector(openContentSearch) forControlEvents:UIControlEventTouchUpInside];
+    }
     self.fernVC = [[MBStationFernverkehrTableViewController alloc] initWithTrains:nil];
     self.fernVC.title = @"Abfahrt";
     self.fernVC.tableView.scrollEnabled = NO;
@@ -285,10 +292,16 @@
 
 -(void)updateContainerFrames{
     
+    NSInteger y = 46;
+    if(self.contentSearchButton){
+        [self.contentSearchButton layoutForScreenWidth:self.view.sizeWidth-2*8];
+        [self.contentSearchButton setGravityTop:15];
+        y = CGRectGetMaxY(self.contentSearchButton.frame)+15;
+    }
     CGRect newsFrame = CGRectMake(0.0, 0.0, 0.0, 185.0);
-    newsFrame.origin.y = 46;
+    newsFrame.origin.y = y;
     newsFrame.size.width = self.view.frame.size.width - 2*8.0;
-    NSInteger tafelY = 46;
+    NSInteger tafelY = y;
     self.newsContainerView.frame = newsFrame;
     self.newsVC.newsList = self.station.newsList;
     if(self.station.newsList.count > 0){
@@ -424,11 +437,7 @@
     // Karte is always available, but can be located in different places
     MBStationKachel *karteKachel = [MBStationKachel new];
     self.karteKachel = karteKachel;
-    if(self.station.displayStationMap){
-        karteKachel.title = @"Bahnhofskarte";
-    } else {
-        karteKachel.title = @"Umgebungskarte";
-    }
+    karteKachel.title = @"Bahnhofskarte";
     karteKachel.imageName = @"map_placeholder";
     karteKachel.station = _station;
     if(!CLLocationCoordinate2DIsValid(self.station.positionAsLatLng)){
@@ -835,21 +844,9 @@
     if(kachel.isChatbotTeaser){
         //link to services
         [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"chatbot"]];
-
-        [CATransaction begin];
-        [CATransaction setCompletionBlock:^{
-            [self.tabBarViewController selectViewControllerAtIndex:3];
+        [self moveToServiceListControllerAndConfigureController:^(MBServiceListCollectionViewController * _Nonnull controller) {
+            controller.openChatBotScreen = YES;
         }];
-        MBStationNavigationViewController* nav = self.tabBarViewController.viewControllers[3];
-        MBServiceListCollectionViewController *listController
-        = (MBServiceListCollectionViewController*)nav.visibleViewController;
-        if(![listController isKindOfClass:MBServiceListCollectionViewController.class]){
-            [nav popToRootViewControllerAnimated:NO];
-        }
-        listController = nav.viewControllers.firstObject;
-        listController.tabBarViewController = self.tabBarViewController;
-        listController.openChatBotScreen = YES;
-        [CATransaction commit];
         return;
     }
     if(kachel.isImageTeaser){
@@ -897,15 +894,14 @@
         trackingActionKey = @"shops";
     } else if(kachel == self.fahrstuhlKachel){
         MBFacilityStatusViewController *vc = [MBFacilityStatusViewController new];
-        vc.title = @"Aufzüge";
         vc.station = _station;
         [self.navigationController pushViewController:vc animated:YES];
         trackingActionKey = @"aufzuege";
     } else if(kachel == self.feedbackKachel){
-        MBServiceListCollectionViewController* vc = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeFeedback];
-        vc.station = self.station;
-        [self.navigationController pushViewController:vc animated:YES];
-        trackingActionKey = @"feedback";
+        [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"feedback"]];
+        [self moveToServiceListControllerAndConfigureController:^(MBServiceListCollectionViewController * _Nonnull controller) {
+            controller.openServiceNumberScreen = true;
+        }];
     } else if(kachel == self.settingKachel){
         MBSettingViewController* vc = [MBSettingViewController new];
         vc.currentStation = self.station;
@@ -924,6 +920,23 @@
     } else {
         [MBTrackingManager trackActions:@[@"h1", @"tap", trackingActionKey]];
     }
+}
+
+-(void)moveToServiceListControllerAndConfigureController:(void (^)(MBServiceListCollectionViewController * _Nonnull controller))configurationBlock{
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+        [self.tabBarViewController selectViewControllerAtIndex:3];
+    }];
+    MBStationNavigationViewController* nav = self.tabBarViewController.viewControllers[3];
+    MBServiceListCollectionViewController *listController
+    = (MBServiceListCollectionViewController*)nav.visibleViewController;
+    if(![listController isKindOfClass:MBServiceListCollectionViewController.class]){
+        [nav popToRootViewControllerAnimated:NO];
+    }
+    listController = nav.viewControllers.firstObject;
+    listController.tabBarViewController = self.tabBarViewController;
+    configurationBlock(listController);
+    [CATransaction commit];
 }
 
 -(void)openStationFeatures{

@@ -43,4 +43,5 @@ enum MarkerType : NSUInteger
 + (instancetype)markerWithPosition:(CLLocationCoordinate2D)position andType:(enum MarkerType)type;
 - (id)copyWithZone:(NSZone *)zone;
 
++ (void)renderTextIntoIconFor:(MBMarker *)marker markerIcon:(UIImage *)markerIcon titleText:(NSString *)titleText zoomForIconWithText:(NSInteger)zoomForIconWithText;
 @end

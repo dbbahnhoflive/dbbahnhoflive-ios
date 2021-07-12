@@ -288,6 +288,9 @@
                 // tracks use a different layout, instead of the contentScrollView they create their own view in
                 // moveableContentView which is larger and may be moved up to show more details
                 isTrack = YES;
+                if(![riMapPoi.title hasPrefix:@"Gleis"]){
+                    self.titleLabel.text = [@"Gleis " stringByAppendingString:riMapPoi.title];
+                }
                 [self setupTrackLayout:riMapPoi];
             }
             if(!isTrack){
@@ -430,6 +433,7 @@
                 lineLabel.isAccessibilityElement = NO;
                 destLabel.isAccessibilityElement = NO;
                 warnIcon.isAccessibilityElement = NO;
+                expTimeLabel.isAccessibilityElement = NO;
                 UILabel* accessibilityView = [[UILabel alloc] initWithFrame:CGRectMake(0, originTop, self.frame.size.width, 60)];
                 accessibilityView.hidden = YES;
                 accessibilityView.accessibilityHint = @"Zur Anzeige weiterer Abfahrten und Details doppeltippen.";
@@ -1010,7 +1014,7 @@
                     line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
 
                     UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-                    accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@, %@ Uhr.",line,destLabel.text,timeLabel.text];
+                    accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@. %@ Uhr.",line,destLabel.text,timeLabel.text];
                     accLabel.hidden = NO;
                 } else {
                     break;

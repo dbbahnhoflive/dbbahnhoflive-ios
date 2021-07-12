@@ -11,6 +11,7 @@
 #import "HafasRequestManager.h"
 #import "HafasTimetable.h"
 #import "TimetableManager.h"
+#import "MBTimeTableViewCell.h"
 
 @interface MBStationPickerTableViewCell ()
 
@@ -74,6 +75,7 @@
     self.departureContainer.backgroundColor = [UIColor dbColorWithRGB:0xF0F3F5];
     [self.contentView addSubview:self.departureContainer];
     self.departureContainer.hidden = YES;
+    self.departureContainer.isAccessibilityElement = NO;
     
     UITapGestureRecognizer* tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(departureTapped:)];
     [self.departureContainer addGestureRecognizer:tapGesture];
@@ -153,9 +155,11 @@
         lineLabel.isAccessibilityElement = NO;
         destLabel.isAccessibilityElement = NO;
         warnIcon.isAccessibilityElement = NO;
+        platformLabel.isAccessibilityElement = NO;
+        expTimeLabel.isAccessibilityElement = NO;
         UILabel* accessibilityView = [[UILabel alloc] initWithFrame:CGRectMake(0, originTop, self.frame.size.width, 60)];
+        accessibilityView.autoresizingMask = UIViewAutoresizingNone;
         accessibilityView.hidden = YES;
-        accessibilityView.accessibilityHint = @"Zur Anzeige weiterer Abfahrten und Details doppeltippen.";
         [self.departureContainer addSubview:accessibilityView];
         //this label never has a text, only an acc-label
         [abfahrtDict setObject:accessibilityView forKey:@"accLabel"];
@@ -431,7 +435,7 @@
         line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
         
         UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-        accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@, %@ Uhr, %@",line,destLabel.text,timeLabel.text, ([timeLabel.text isEqualToString:expectedTimeLabel.text]? @"." : [NSString stringWithFormat:@"erwartet %@",expectedTimeLabel.text])];
+        accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@",line,destLabel.text,timeLabel.text, ([timeLabel.text isEqualToString:expectedTimeLabel.text]? @"." : [NSString stringWithFormat:@"erwartet %@",expectedTimeLabel.text])];
         accLabel.hidden = NO;
     }
 }
@@ -526,17 +530,20 @@
             }
             
             index += 1;
-            
-            NSString* line = lineLabel.text;
-            line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
-            
+            //empty label with voiceover text
             UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-            accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@, %@ Uhr.",line,destLabel.text,timeLabel.text];
+            accLabel.accessibilityLabel = [MBTimeTableViewCell voiceOverForEvent:event];
+            //accLabel.backgroundColor = [UIColor colorWithRed:1 green:0 blue:0 alpha:0.3];
+            [accLabel setGravityLeft:timeLabel.frame.origin.x];
+            [accLabel setGravityTop:timeLabel.frame.origin.y];
+            [accLabel setSize:CGSizeMake(self.size.width-2*timeLabel.frame.origin.x, 45)];
             accLabel.hidden = NO;
+            NSLog(@"setting label %@",accLabel);
         } else {
             break;
         }
     }
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self);
 }
 
 - (void)didReceiveTimetableUpdate:(NSNotification *)notification {

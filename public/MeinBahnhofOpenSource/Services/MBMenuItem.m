@@ -26,6 +26,7 @@
         @"rufnummern": @"app_service_rufnummern",
         @"infoservices": @"bahnhofsausstattung_db_info",
         @"zugang": @"app_zugang_wege",
+        @"barrierefreiheit": @"app_zugang_wege",
         @"parkplaetze": @"bahnhofsausstattung_parkplatz",
         @"aufzuegeundfahrtreppen": @"app_aufzug",
         @"wlan" : @"rimap_wlan_grau",

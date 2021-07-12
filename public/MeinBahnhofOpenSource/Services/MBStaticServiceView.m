@@ -11,8 +11,10 @@
 #import "MBButtonWithData.h"
 #import "MBExternalLinkButton.h"
 #import <sys/utsname.h>
+#import "MBPlatformAccessibilityView.h"
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
+@property (nonatomic, weak) UIViewController* viewController;
 @property (nonatomic, strong) MBService *service;
 @property (nonatomic, strong) MBStation *station;
 
@@ -21,13 +23,14 @@
 
 @implementation MBStaticServiceView
 
-- (instancetype) initWithService:(MBService*)service station:(MBStation*)station fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame
+- (instancetype) initWithService:(MBService*)service station:(MBStation*)station viewController:(UIViewController*)vc fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
         self.clipsToBounds = YES;
         self.fullscreenLayout = fullscren;
         self.service = service;
         self.station = station;
+        self.viewController = vc;
         
         [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [self setupViews];
@@ -153,7 +156,17 @@
                 NSString *phoneNumber = obj[kPhoneKey];
                 NSString *actionButton = obj[kActionButtonKey];
                 NSString *imageName = obj[kImageKey];
-                if(imageName){
+                NSString *specialAction = obj[kSpecialAction];
+                if(specialAction){
+                    if([specialAction isEqualToString:kSpecialActionPlatformAccessibiltyUI]){
+                        //this view will resize its parent when the content changes
+                        MBPlatformAccessibilityView* av = [[MBPlatformAccessibilityView alloc] initWithFrame:CGRectMake(0, offset.y, contentSize.width, 0) station:self.station];
+                        av.viewController = self.viewController;
+                        [baseView addSubview:av];
+                        contentSize.height += av.frame.size.height;
+                        offset.y += av.frame.size.height;
+                    }
+                } else if(imageName){
                     UIImageView* imgV = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:imageName]];
                     imgV.contentMode = UIViewContentModeScaleAspectFit;
                     NSInteger imgH = 100;
@@ -346,6 +359,8 @@
     //this view is fixed layouted on init
     return self.frame.size.height;
 }
+
+
 
 - (void)didInteractWithURL:(NSURL *)url
 {

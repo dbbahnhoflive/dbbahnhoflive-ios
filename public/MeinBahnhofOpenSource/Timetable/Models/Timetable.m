@@ -109,6 +109,9 @@ static NSDate* initialSetupDate = nil;
                 if(timestamp >= now && timestamp < futureLimit){
                     //not yet departed...
                     NSLog(@"TODO: missing stop with a change in departure: %@, %f",changedStop.stopId, changedStop.departure.changedTimestamp);
+                } else if(timestamp == 0) {
+                    timestamp = changedStop.departure.timestamp;
+                    NSLog(@"TODO: missing departure stop, additional train? %@, %@,%@,%@,%@",changedStop.stopId,changedStop.departure.formattedTime,changedStop.departure.lineIdentifier,changedStop.transportCategory.transportCategoryType,changedStop.transportCategory.transportCategoryNumber);
                 }
             }
             if(changedStop.arrival){
@@ -140,6 +143,7 @@ static NSDate* initialSetupDate = nil;
     tc.transportCategoryNumber = @"11111";
     stop.transportCategory = tc;
     Event* event = [[Event alloc] init];
+    event.stop = stop;
     event.timestamp = [NSDate timeIntervalSinceReferenceDate]+60*60;
     event.formattedTime = @"12:00";
     event.originalPlatform = @"1";

@@ -7,10 +7,11 @@
 #import <UIKit/UIKit.h>
 
 @class MBContentSearchResult;
+@class MBStation;
 
 @interface MBServiceListTableViewController : UITableViewController
 
-- (instancetype)initWithItem:(id)item;
+- (instancetype)initWithItem:(id)item station:(MBStation*)station;
 
 @property (nonatomic, strong) NSString *trackingTitle;
 @property (nonatomic, strong) MBContentSearchResult* searchResult;

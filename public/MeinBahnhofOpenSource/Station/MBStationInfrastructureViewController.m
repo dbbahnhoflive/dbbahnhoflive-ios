@@ -37,7 +37,7 @@
 
 #define MIN_CATEGORY_FOR_FEATURES_THAT_MUST_BE_AVAILABLE 4
 
-#define KEY_STUFENFREI @"Stufenfreier Zugang"
+#define KEY_STUFENFREI @"Barrierefreiheit"
 #define KEY_WC @"WC"
 #define KEY_WLAN @"WLAN"
 #define KEY_AUFZUG @"Aufzüge"
@@ -84,8 +84,8 @@
     
     MBPTSStationResponse* details = _station.stationDetails;
     
-    if(details.hasSteplessAccess){
-        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:@"stufenfreier_zugang" withStation:_station] forKey:KEY_STUFENFREI];
+    if(true){
+        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:@"barrierefreiheit" withStation:_station] forKey:KEY_STUFENFREI];
     }
     if(details.hasPublicFacilities){
         [ausstattungEntries setObject:[NSNumber numberWithBool:YES] forKey:KEY_WC];
@@ -220,6 +220,15 @@
             statusLabel.text = @"nicht vorhanden";
             statusLabel.textColor = [UIColor db_mainColor];
             statusIcon.image = [UIImage db_imageNamed:@"app_kreuz"];
+        }
+        
+        if([key isEqualToString:KEY_STUFENFREI]){
+            //no status display here
+            statusLabel.text = @"mehr Informationen";
+            statusLabel.font = [UIFont db_ItalicWithSize:14];
+            [statusLabel setGravityLeft:statusIcon.frame.origin.x];
+            statusLabel.textColor = UIColor.db_5f5f5f;
+            statusIcon.hidden = YES;
         }
         
         label.accessibilityLabel = [NSString stringWithFormat:@"%@: %@.",label.text,statusLabel.text];

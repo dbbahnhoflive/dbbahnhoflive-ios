@@ -21,7 +21,7 @@
 @property (nonatomic, strong) UIImageView *cellIcon;
 @property (nonatomic, strong) UILabel *opencloseLabel;
 @property (nonatomic, strong) UIImageView *opencloseImage;
-
+@property (nonatomic) BOOL displayMultilineTitle;
 
 // back view is a bit smaller than the cell
 @property (nonatomic, strong) UIView *backView;
@@ -138,7 +138,7 @@
 - (void)setItem:(id)item {
     _item = item;
     ShopOpenState openState = POI_UNKNOWN;
-    
+    self.cellTitle.numberOfLines = 1;
     if([self.item isKindOfClass:[MBEinkaufsbahnhofStore class]]){
         MBEinkaufsbahnhofStore* venue = (MBEinkaufsbahnhofStore*)self.item;
         self.cellTitle.text = venue.name;
@@ -152,6 +152,8 @@
         openState = venue.hasOpeningInfo ? (venue.isOpen ? POI_OPEN : POI_CLOSED ) : POI_UNKNOWN;
     } else {
         MBService *service = (MBService *)self.item;
+        self.displayMultilineTitle = true;
+        self.cellTitle.numberOfLines = 2;
         self.cellTitle.text = service.title;
         self.cellIcon.image = [service iconForType];
     }
@@ -219,8 +221,14 @@
     if(self.opencloseImage.hidden){
         y += 10;
     }
-    self.cellTitle.frame = CGRectMake(CGRectGetMaxX(self.cellIcon.frame)+33, y, self.backView.sizeWidth-(CGRectGetMaxX(self.cellIcon.frame)+33)-8, 24);
-    y = CGRectGetMaxY(self.cellTitle.frame)+2;
+    NSInteger x = CGRectGetMaxX(self.cellIcon.frame)+33;
+    if(self.displayMultilineTitle){
+        CGSize size = [self.cellTitle sizeThatFits:CGSizeMake(self.backView.sizeWidth-x-25, 2*24)];
+        self.cellTitle.frame = CGRectMake(x, y-2, size.width, size.height);
+    } else {
+        self.cellTitle.frame = CGRectMake(x, y, self.backView.sizeWidth-(CGRectGetMaxX(self.cellIcon.frame)+33)-8, 24);
+        y = CGRectGetMaxY(self.cellTitle.frame)+2;
+    }
     self.opencloseImage.frame = CGRectMake(CGRectGetMaxX(self.cellIcon.frame)+30, y, 24, 24);
     self.opencloseLabel.frame = CGRectMake(CGRectGetMaxX(self.opencloseImage.frame)+4,y,self.backView.sizeWidth-(CGRectGetMaxX(self.opencloseImage.frame)+4),24);
     

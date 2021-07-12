@@ -13,8 +13,7 @@
 @interface MBStaticServiceView : UIView
 
 @property (nonatomic, weak) id<MBDetailViewDelegate> delegate;
-
-- (instancetype) initWithService:(MBService*)service station:(MBStation*)station fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame;
+- (instancetype) initWithService:(MBService*)service station:(MBStation*)station viewController:(UIViewController*)vc fullscreenLayout:(BOOL)fullscren andFrame:(CGRect)frame;
 
 -(NSInteger)layoutForSize:(NSInteger)frameWidth;
 

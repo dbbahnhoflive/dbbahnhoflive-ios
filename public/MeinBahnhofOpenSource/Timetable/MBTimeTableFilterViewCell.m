@@ -6,11 +6,12 @@
 
 #import "MBTimeTableFilterViewCell.h"
 #import "MBSwitch.h"
+#import "MBFilterButton.h"
 
 @interface MBTimeTableFilterViewCell()
 
 @property (nonatomic, strong) UIView *backView;
-@property (nonatomic, strong) UIButton *filterButton;
+@property (nonatomic, strong) MBFilterButton *filterButton;
 @property (nonatomic, strong) MBSwitch *abfahrtSwitch;
 
 @end
@@ -38,11 +39,8 @@
     self.backView = [[UIView alloc] init];
     self.backView.backgroundColor = [UIColor whiteColor];
 
-    self.filterButton = [[UIButton alloc] initWithFrame:CGRectZero];
-    [self.filterButton setImage:[UIImage db_imageNamed:@"app_filter"] forState:UIControlStateNormal];
+    self.filterButton = [[MBFilterButton alloc] init];
     [self.filterButton addTarget:self action:@selector(handleFilter:) forControlEvents:UIControlEventTouchUpInside];
-    self.filterButton.backgroundColor = [UIColor whiteColor];
-    self.filterButton.imageView.contentMode = UIViewContentModeCenter;
     
     self.filterButton.accessibilityLabel = @"Filter für Zugtyp und Gleis";
     self.filterButton.accessibilityHint = FILTER_TEXT_HIDDEN;
@@ -86,9 +84,9 @@
 -(void)setFilterActive:(BOOL)filterActive{
     _filterActive = filterActive;
     if(filterActive){
-        [self.filterButton setImage:[UIImage db_imageNamed:@"app_filter_aktiv"] forState:UIControlStateNormal];
+        [self.filterButton setStateActive:YES];
     } else {
-        [self.filterButton setImage:[UIImage db_imageNamed:@"app_filter"] forState:UIControlStateNormal];
+        [self.filterButton setStateActive:NO];
     }
 }
 
@@ -113,24 +111,11 @@
     self.backView.layer.shadowRadius = 1.5;
     self.backView.layer.shadowOpacity = 1.0;
 
-    CGSize buttonSize = [[self.filterButton imageForState:UIControlStateNormal] size];
-    buttonSize.height = 42.0;
-    buttonSize.width = 42.0;
-    self.filterButton.frame = CGRectMake(self.frame.size.width - buttonSize.width - 16.0, (self.frame.size.height-buttonSize.height) / 2.0, buttonSize.width, buttonSize.height);
-    self.filterButton.layer.cornerRadius = buttonSize.height / 2.0;
-    self.filterButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.filterButton.layer.shadowRadius = 2.0;
-    self.filterButton.imageEdgeInsets = UIEdgeInsetsMake(2.0, 0.0, 0.0, 0.0);
-    CGRect backRect = self.filterButton.bounds;
-    backRect.size.height += 4.0;
-    backRect.size.width += 4.0;
-    backRect.origin.y += 2.0;
-    backRect.origin.x -= 2.0;
-
-    self.filterButton.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect:backRect cornerRadius:backRect.size.height / 2.0] CGPath];
-    self.filterButton.layer.shadowOpacity = 1.0;
+    [self.filterButton setGravityLeft:self.frame.size.width - self.filterButton.frame.size.width - 16.0];
+    [self.filterButton setGravityTop:(self.frame.size.height-self.filterButton.frame.size.height) / 2.0];
+    
     CGFloat switchWidth = self.filterButton.frame.origin.x - 16.0 - 40.0;
-    self.abfahrtSwitch.frame = CGRectMake(16.0, self.filterButton.frame.origin.y, switchWidth, buttonSize.height);
+    self.abfahrtSwitch.frame = CGRectMake(16.0, self.filterButton.frame.origin.y, switchWidth, self.filterButton.frame.size.height);
 }
 
 @end

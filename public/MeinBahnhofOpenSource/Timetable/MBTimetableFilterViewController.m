@@ -37,7 +37,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.titleLabel.text = @"Verkehrsmittel";
+    if(self.platforms){
+        self.titleLabel.text = @"Gleis";
+    } else {
+        self.titleLabel.text = @"Verkehrsmittel";
+    }
     
     self.pickerContainer = [[UIView alloc] init];
     self.platformPicker = [[UIPickerView alloc] init];
@@ -45,18 +49,22 @@
     self.platformPicker.dataSource = self;
     self.platformPicker.hidden = YES;//changed by filterSwitch
     
-    self.transportTypePicker = [[UIPickerView alloc] init];
-    self.transportTypePicker.delegate = self;
-    self.transportTypePicker.dataSource = self;
-    self.transportTypePicker.hidden = NO;//changed by filterSwitch
-    
+    if(!self.platforms){
+        self.transportTypePicker = [[UIPickerView alloc] init];
+        self.transportTypePicker.delegate = self;
+        self.transportTypePicker.dataSource = self;
+        self.transportTypePicker.hidden = NO;//changed by filterSwitch
+    } else {
+        self.platformPicker.hidden = NO;
+    }
     self.pickerContainer.backgroundColor = [UIColor whiteColor];
     self.transportTypePicker.backgroundColor = self.platformPicker.backgroundColor = [UIColor whiteColor];
     
-    self.filterSwitch = [[MBSwitch alloc] initWithFrame:CGRectZero onTitle:@"Zugtyp" offTitle:kHeaderPlatform onState:YES];
-    self.filterSwitch.backgroundColor = [UIColor db_333333];
-    [self.filterSwitch addTarget:self action:@selector(handleSwitch:) forControlEvents:UIControlEventTouchUpInside];
-
+    if(!self.platforms){
+        self.filterSwitch = [[MBSwitch alloc] initWithFrame:CGRectZero onTitle:@"Zugtyp" offTitle:kHeaderPlatform onState:YES];
+        self.filterSwitch.backgroundColor = [UIColor db_333333];
+        [self.filterSwitch addTarget:self action:@selector(handleSwitch:) forControlEvents:UIControlEventTouchUpInside];
+    }
     self.filterSegmentedView = [[UIView alloc] init];
     self.filterSegmentedView.backgroundColor = [UIColor whiteColor];
     
@@ -81,15 +89,19 @@
     [self.confirmButton addTarget:self action:@selector(confirmFilterSelection:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.pickerContainer addSubview:self.platformPicker];
-    [self.pickerContainer addSubview:self.transportTypePicker];
-    
+    if(!self.platforms){
+        [self.pickerContainer addSubview:self.transportTypePicker];
+    }
     [self.filterSegmentedView addSubview:self.filterSwitch];
     [self.pickerContainer addSubview:self.filterSegmentedView];
     [self.pickerContainer addSubview:self.confirmButton];
     
     [self.contentView addSubview:self.pickerContainer];
     
-    if (self.useHafas) {
+    if(self.platforms){
+        self.filterPlatforms = self.platforms;
+        [self.platformPicker reloadAllComponents];
+    } else if (self.useHafas) {
         self.filterTrainTypes = [self.hafasTimetable availableTransportTypes];
         self.filterSwitch.hidden = YES;
     } else {
@@ -188,7 +200,19 @@
         return platforms[row];
     } else {
         NSArray *trainTypes = self.filterTrainTypes;
-        return trainTypes[row];
+        NSString* trainType = trainTypes[row];
+        if(UIAccessibilityIsVoiceOverRunning()){
+            if([trainType isEqualToString:@"S"]){
+                return @"S-Bahn";
+            } else if([trainType isEqualToString:@"U"]){
+                return @"U-Bahn";
+            } else if([trainType isEqualToString:@"ICE"]){
+                return @"I C E";
+            } else if([trainType isEqualToString:@"STR"]){
+                return VOICEOVER_FOR_STR;
+            }
+        }
+        return trainType;
     }
 }
 

@@ -15,6 +15,8 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
     MBCacheResponseEinkaufsbahnhofOverview = 7,
     MBCacheResponseTravelCenter = 8,
     MBCacheResponseNews = 9,
+    MBCacheResponseRIMapPOIs07Api = 10,
+    MBCacheResponseRIMapStatus07API = 11,
 };
 
 typedef NS_ENUM(NSUInteger, MBCacheState){
@@ -30,4 +32,5 @@ typedef NS_ENUM(NSUInteger, MBCacheState){
 -(NSDictionary*)cachedResponseForStationId:(NSNumber*)stationId type:(MBCacheResponseType)type;
 -(void)storeResponse:(NSDictionary*)responseObject forStationId:(NSNumber*)stationId type:(MBCacheResponseType)type;
 
+-(void)deleteCache;
 @end

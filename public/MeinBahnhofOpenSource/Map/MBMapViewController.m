@@ -72,11 +72,7 @@
     self.allFilterItems= [RIMapPoi createFilterItems];
     
     self.mapView = [[MBMapView alloc] initMapViewWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    if(self.station.displayStationMap){
-        [self.mapView setMapType:OSM];
-    } else {
-        [self.mapView setMapType:GOOGLE];
-    }
+    [self.mapView setMapType:OSM];
     [self.view addSubview:self.mapView];
     self.mapView.delegate = self;
     
@@ -148,12 +144,7 @@
     self.darkLayer.backgroundColor = [UIColor blackColor];
     [self.view addSubview:self.darkLayer];
     self.darkLayer.hidden = YES;
-    
-    if (self.mapView.currentMapType == OSM) {
-        self.osmCopyrightLabel.hidden = NO;
-    } else if (self.mapView.currentMapType == GOOGLE) {
-        self.osmCopyrightLabel.hidden = YES;
-    }
+    self.osmCopyrightLabel.hidden = NO;
 
 }
 

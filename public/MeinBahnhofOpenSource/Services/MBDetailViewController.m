@@ -10,12 +10,14 @@
 #import "MBLabel.h"
 #import "MBStationNavigationViewController.h"
 #import "AppDelegate.h"
+#import "MBPTSRequestManager.h"
 
 @interface MBDetailViewController()
 
 @property (nonatomic, strong) MBService *service;
 
 @property (nonatomic, strong) MBMarker *marker;
+@property(nonatomic,strong) UIActivityIndicatorView* act;
 
 @end
 
@@ -46,15 +48,52 @@
         self.service = (MBService*)item;
         self.title = self.service.title;
 
-        [self configureServiceView:self.service];
-
+        if(self.serviceNeedsAdditionalData){
+            [self loadServiceData];
+        } else {
+            [self configureServiceView:self.service];
+        }
     }
+}
+
+-(BOOL)serviceNeedsAdditionalData{
+    return [self.service.type isEqualToString:@"barrierefreiheit"] && self.station.platformAccessibility == nil;
+}
+-(void)loadServiceData{
+    self.act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [self.view addSubview:self.act];
+    [self.act startAnimating];
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self.act);
+
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    for(NSString* eva in self.station.stationEvaIds){
+        dispatch_group_enter(group);
+        //NSLog(@"loading platform data for eva %@",eva);
+        [[MBPTSRequestManager sharedInstance] requestAccessibility:eva success:^(NSArray<MBPlatformAccessibility *> *platformList) {
+            //NSLog(@"got platform acc: %@",platformList);
+            [self.station addPlatformAccessibility:platformList];
+            dispatch_group_leave(group);
+        } failureBlock:^(NSError *error) {
+            dispatch_group_leave(group);
+        }];
+    }
+    dispatch_group_leave(group);
+    dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.act stopAnimating];
+            [self.act removeFromSuperview];
+            self.act = nil;
+            [self configureServiceView:self.service];
+            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self.view);
+        });
+    });
 }
 
 -(NSArray<NSString *> *)mapFilterPresets{
     if([self.item isKindOfClass:[MBService class]]){
         MBService* service = self.item;
-        if([service.type isEqualToString:@"stufenfreier_zugang"]){
+        if([service.type isEqualToString:@"stufenfreier_zugang"] || [service.type isEqualToString:@"barrierefreiheit"] ){
             return @[PRESET_ELEVATORS];
         }
     }
@@ -84,7 +123,7 @@
             [(MBStationNavigationViewController *)self.navigationController setShowRedBar:YES];
         }
     }
-
+    [self.act centerViewInSuperView];
 }
 
 - (void) updateDistanceLabel:(CLLocation*)location
@@ -105,7 +144,7 @@
 
 - (void) configureServiceView:(MBService*)service
 {
-    MBStaticServiceView *staticServiceView = [[MBStaticServiceView alloc] initWithService:service station:self.station fullscreenLayout:YES andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    MBStaticServiceView *staticServiceView = [[MBStaticServiceView alloc] initWithService:service station:self.station viewController:self fullscreenLayout:YES andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
     staticServiceView.delegate = self;
     [self.view addSubview:staticServiceView];
 }

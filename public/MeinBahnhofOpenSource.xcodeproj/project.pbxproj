@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4222D77C266124AD009AA359 /* MBPlatformAccessibility.m in Sources */ = {isa = PBXBuildFile; fileRef = 4222D77B266124AD009AA359 /* MBPlatformAccessibility.m */; };
+		4222D780266124DB009AA359 /* MBPlatformAccessibilityView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4222D77F266124DB009AA359 /* MBPlatformAccessibilityView.m */; };
+		4222D7842661251A009AA359 /* MBFilterButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4222D7822661251A009AA359 /* MBFilterButton.m */; };
+		422B16DF2678CF4500B4A2CC /* MBContentSearchButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 422B16DE2678CF4500B4A2CC /* MBContentSearchButton.m */; };
+		422E29C92600F06600F55E48 /* RIMapBackgroundTileLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 422E29C62600F06600F55E48 /* RIMapBackgroundTileLayer.m */; };
+		422E29CA2600F06600F55E48 /* RIMapIndoorTileLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 422E29C72600F06600F55E48 /* RIMapIndoorTileLayer.m */; };
+		422E29CB2600F06600F55E48 /* RIMapManager2.m in Sources */ = {isa = PBXBuildFile; fileRef = 422E29C82600F06600F55E48 /* RIMapManager2.m */; };
 		4240CE7D247D0C4300DBB079 /* SharedMobilityAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 4240CE7C247D0C4300DBB079 /* SharedMobilityAPI.m */; };
 		4240CE82247D0C6600DBB079 /* SharedMobilityMappable.m in Sources */ = {isa = PBXBuildFile; fileRef = 4240CE7F247D0C6600DBB079 /* SharedMobilityMappable.m */; };
 		426100DC244EEDA400E0B05C /* Constants.m in Sources */ = {isa = PBXBuildFile; fileRef = 426100CD244EEDA400E0B05C /* Constants.m */; };
@@ -193,10 +200,26 @@
 		42DAC5CE247125170005CF64 /* MBNewsRequestManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5CD247125170005CF64 /* MBNewsRequestManager.m */; };
 		42DE5FBD254C0D0800C79258 /* MBStationOccupancyRequestManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DE5FBC254C0D0800C79258 /* MBStationOccupancyRequestManager.m */; };
 		42DE5FCE254C0D1600C79258 /* MBStationOccupancyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DE5FC1254C0D1600C79258 /* MBStationOccupancyViewController.m */; };
+		42F58DAA26835AB500EA469E /* MBPlatformAccessibilityFeature.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F58DA926835AB500EA469E /* MBPlatformAccessibilityFeature.m */; };
+		42F58DAD26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F58DAB26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m */; };
 		56E94AAC060126EC045C4008 /* Pods_MeinBahnhofOpenSource.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9E16A826E12FEAFDBFB15DC /* Pods_MeinBahnhofOpenSource.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4222D77A266124AC009AA359 /* MBPlatformAccessibility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformAccessibility.h; sourceTree = "<group>"; };
+		4222D77B266124AD009AA359 /* MBPlatformAccessibility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibility.m; sourceTree = "<group>"; };
+		4222D77E266124DB009AA359 /* MBPlatformAccessibilityView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformAccessibilityView.h; sourceTree = "<group>"; };
+		4222D77F266124DB009AA359 /* MBPlatformAccessibilityView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibilityView.m; sourceTree = "<group>"; };
+		4222D7822661251A009AA359 /* MBFilterButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBFilterButton.m; sourceTree = "<group>"; };
+		4222D7832661251A009AA359 /* MBFilterButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBFilterButton.h; sourceTree = "<group>"; };
+		422B16DD2678CF4500B4A2CC /* MBContentSearchButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBContentSearchButton.h; sourceTree = "<group>"; };
+		422B16DE2678CF4500B4A2CC /* MBContentSearchButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBContentSearchButton.m; sourceTree = "<group>"; };
+		422E29C32600F01200F55E48 /* RIMapBackgroundTileLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RIMapBackgroundTileLayer.h; sourceTree = "<group>"; };
+		422E29C42600F01200F55E48 /* RIMapIndoorTileLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RIMapIndoorTileLayer.h; sourceTree = "<group>"; };
+		422E29C52600F01200F55E48 /* RIMapManager2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RIMapManager2.h; sourceTree = "<group>"; };
+		422E29C62600F06600F55E48 /* RIMapBackgroundTileLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RIMapBackgroundTileLayer.m; sourceTree = "<group>"; };
+		422E29C72600F06600F55E48 /* RIMapIndoorTileLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RIMapIndoorTileLayer.m; sourceTree = "<group>"; };
+		422E29C82600F06600F55E48 /* RIMapManager2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RIMapManager2.m; sourceTree = "<group>"; };
 		4240CE7C247D0C4300DBB079 /* SharedMobilityAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SharedMobilityAPI.m; sourceTree = "<group>"; };
 		4240CE7F247D0C6600DBB079 /* SharedMobilityMappable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SharedMobilityMappable.m; sourceTree = "<group>"; };
 		4240CE80247D0C6600DBB079 /* SharedMobilityAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SharedMobilityAPI.h; sourceTree = "<group>"; };
@@ -560,6 +583,10 @@
 		42DE5FC1254C0D1600C79258 /* MBStationOccupancyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBStationOccupancyViewController.m; sourceTree = "<group>"; };
 		42DE5FC7254C0D1600C79258 /* MBStationOccupancyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBStationOccupancyViewController.h; sourceTree = "<group>"; };
 		42DE5FCA254C0D1600C79258 /* MBStationOccupancyRequestManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBStationOccupancyRequestManager.h; sourceTree = "<group>"; };
+		42F58DA826835AB500EA469E /* MBPlatformAccessibilityFeature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformAccessibilityFeature.h; sourceTree = "<group>"; };
+		42F58DA926835AB500EA469E /* MBPlatformAccessibilityFeature.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibilityFeature.m; sourceTree = "<group>"; };
+		42F58DAB26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibilityInfoOverlayViewController.m; sourceTree = "<group>"; };
+		42F58DAC26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformAccessibilityInfoOverlayViewController.h; sourceTree = "<group>"; };
 		77D2B534ECD89DD23BB1EAAE /* Pods-MeinBahnhofOpenSource.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MeinBahnhofOpenSource.release.xcconfig"; path = "Target Support Files/Pods-MeinBahnhofOpenSource/Pods-MeinBahnhofOpenSource.release.xcconfig"; sourceTree = "<group>"; };
 		8544AB5E4F24C097E57BB2C5 /* Pods-MeinBahnhofOpenSource.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MeinBahnhofOpenSource.debug.xcconfig"; path = "Target Support Files/Pods-MeinBahnhofOpenSource/Pods-MeinBahnhofOpenSource.debug.xcconfig"; sourceTree = "<group>"; };
 		A9E16A826E12FEAFDBFB15DC /* Pods_MeinBahnhofOpenSource.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MeinBahnhofOpenSource.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -590,6 +617,9 @@
 		426100CC244EEDA400E0B05C /* OpenSourceAPI */ = {
 			isa = PBXGroup;
 			children = (
+				422E29C62600F06600F55E48 /* RIMapBackgroundTileLayer.m */,
+				422E29C72600F06600F55E48 /* RIMapIndoorTileLayer.m */,
+				422E29C82600F06600F55E48 /* RIMapManager2.m */,
 				42DE5FBC254C0D0800C79258 /* MBStationOccupancyRequestManager.m */,
 				4240CE7C247D0C4300DBB079 /* SharedMobilityAPI.m */,
 				426100CD244EEDA400E0B05C /* Constants.m */,
@@ -732,6 +762,8 @@
 		42610578244EF10F00E0B05C /* ContentSearch */ = {
 			isa = PBXGroup;
 			children = (
+				422B16DD2678CF4500B4A2CC /* MBContentSearchButton.h */,
+				422B16DE2678CF4500B4A2CC /* MBContentSearchButton.m */,
 				4261057F244EF10F00E0B05C /* MBContentSearchViewController.h */,
 				4261057C244EF10F00E0B05C /* MBContentSearchViewController.m */,
 				42610579244EF10F00E0B05C /* MBContentSearchTableViewCell.h */,
@@ -862,6 +894,9 @@
 				426105E3244EF10F00E0B05C /* RIMapMetaData.m */,
 				426105DF244EF10F00E0B05C /* RIMapManager.h */,
 				426105F6244EF10F00E0B05C /* MBMapInternals.h */,
+				422E29C52600F01200F55E48 /* RIMapManager2.h */,
+				422E29C32600F01200F55E48 /* RIMapBackgroundTileLayer.h */,
+				422E29C42600F01200F55E48 /* RIMapIndoorTileLayer.h */,
 			);
 			path = Map;
 			sourceTree = "<group>";
@@ -889,6 +924,10 @@
 		4261060C244EF10F00E0B05C /* Station */ = {
 			isa = PBXGroup;
 			children = (
+				42F58DA826835AB500EA469E /* MBPlatformAccessibilityFeature.h */,
+				42F58DA926835AB500EA469E /* MBPlatformAccessibilityFeature.m */,
+				4222D77A266124AC009AA359 /* MBPlatformAccessibility.h */,
+				4222D77B266124AD009AA359 /* MBPlatformAccessibility.m */,
 				4261060D244EF10F00E0B05C /* MBStation.h */,
 				4261062E244EF10F00E0B05C /* MBStation.m */,
 				42610635244EF10F00E0B05C /* MBService.h */,
@@ -1040,6 +1079,10 @@
 		4261066D244EF11000E0B05C /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				42F58DAC26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.h */,
+				42F58DAB26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m */,
+				4222D77E266124DB009AA359 /* MBPlatformAccessibilityView.h */,
+				4222D77F266124DB009AA359 /* MBPlatformAccessibilityView.m */,
 				42610573244EF10F00E0B05C /* MBServiceListCollectionViewController.m */,
 				4261064C244EF10F00E0B05C /* MBServiceListCollectionViewController.h */,
 				426105AF244EF10F00E0B05C /* MBServiceListTableViewController.h */,
@@ -1083,6 +1126,8 @@
 		4261067D244EF11000E0B05C /* Timetable */ = {
 			isa = PBXGroup;
 			children = (
+				4222D7832661251A009AA359 /* MBFilterButton.h */,
+				4222D7822661251A009AA359 /* MBFilterButton.m */,
 				4261069A244EF11000E0B05C /* MBTimetableViewController.h */,
 				42610683244EF11000E0B05C /* MBTimetableViewController.m */,
 				42610697244EF11000E0B05C /* MBSwitch.h */,
@@ -1371,6 +1416,7 @@
 				42610740244EF11000E0B05C /* TransportCategory.m in Sources */,
 				427BCD2825643C23007D8015 /* MBStationOccupancyDiagramView.m in Sources */,
 				426106EB244EF11000E0B05C /* MBFavoriteStationManager.m in Sources */,
+				422B16DF2678CF4500B4A2CC /* MBContentSearchButton.m in Sources */,
 				426106E9244EF11000E0B05C /* MBStationPickerTableViewCell.m in Sources */,
 				426106E3244EF11000E0B05C /* MBFacilityTableViewCell.m in Sources */,
 				426106FD244EF11000E0B05C /* RIMapPoi.m in Sources */,
@@ -1412,6 +1458,8 @@
 				426106DF244EF11000E0B05C /* MBDetailViewController.m in Sources */,
 				42610701244EF11000E0B05C /* MBNewsContainerViewController.m in Sources */,
 				426100DE244EEDA400E0B05C /* MBMapInternals.m in Sources */,
+				4222D780266124DB009AA359 /* MBPlatformAccessibilityView.m in Sources */,
+				42F58DAA26835AB500EA469E /* MBPlatformAccessibilityFeature.m in Sources */,
 				426106F2244EF11000E0B05C /* LevelplanWrapper.m in Sources */,
 				42610712244EF11000E0B05C /* MBPTSStationFromSearch.m in Sources */,
 				426106D2244EF11000E0B05C /* IndicatorWaggonView.m in Sources */,
@@ -1421,6 +1469,7 @@
 				42610702244EF11000E0B05C /* MBCouponCategory.m in Sources */,
 				426106FE244EF11000E0B05C /* RIMapFilterCategory.m in Sources */,
 				4261070E244EF11000E0B05C /* MBService.m in Sources */,
+				4222D7842661251A009AA359 /* MBFilterButton.m in Sources */,
 				42610706244EF11000E0B05C /* MBNewsOverlayViewController.m in Sources */,
 				4240CE7D247D0C4300DBB079 /* SharedMobilityAPI.m in Sources */,
 				426106E5244EF11000E0B05C /* VenueExtraField.m in Sources */,
@@ -1430,6 +1479,7 @@
 				426106C7244EF11000E0B05C /* MBContentSearchInputField.m in Sources */,
 				426106A6244EF11000E0B05C /* UIScrollView+MBScrollView.m in Sources */,
 				4261071D244EF11000E0B05C /* MBStationTeaserWithImageCollectionViewCell.m in Sources */,
+				422E29C92600F06600F55E48 /* RIMapBackgroundTileLayer.m in Sources */,
 				426106C5244EF11000E0B05C /* MBContentSearchResult.m in Sources */,
 				42610718244EF11000E0B05C /* MBStation.m in Sources */,
 				4261072B244EF11000E0B05C /* MBParkingTableViewController.m in Sources */,
@@ -1476,6 +1526,7 @@
 				4261073C244EF11000E0B05C /* MBTimeTableViewCell.m in Sources */,
 				42C0DF2C25A84C5C0035A897 /* MBTrackingConsentViewController.m in Sources */,
 				42610743244EF11000E0B05C /* Message.m in Sources */,
+				422E29CB2600F06600F55E48 /* RIMapManager2.m in Sources */,
 				4261071B244EF11000E0B05C /* MBPTSStationResponse.m in Sources */,
 				426106D4244EF11000E0B05C /* Train.m in Sources */,
 				42610703244EF11000E0B05C /* MBNews.m in Sources */,
@@ -1509,6 +1560,7 @@
 				426106D5244EF11000E0B05C /* MBTrainPositionViewController.m in Sources */,
 				42DE5FBD254C0D0800C79258 /* MBStationOccupancyRequestManager.m in Sources */,
 				42610737244EF11000E0B05C /* OnboardingViewController.m in Sources */,
+				4222D77C266124AD009AA359 /* MBPlatformAccessibility.m in Sources */,
 				42610716244EF11000E0B05C /* MBStationTabView.m in Sources */,
 				427BCD2525643C23007D8015 /* MBStationOccupancyDayView.m in Sources */,
 				42610727244EF11000E0B05C /* MBContactInfoView.m in Sources */,
@@ -1536,7 +1588,9 @@
 				426106FC244EF11000E0B05C /* MBMapView.m in Sources */,
 				42610DAE244F308F00E0B05C /* FacilityStatusManager.m in Sources */,
 				42610736244EF11000E0B05C /* MBStaticServiceView.m in Sources */,
+				422E29CA2600F06600F55E48 /* RIMapIndoorTileLayer.m in Sources */,
 				426100E9244EEDA400E0B05C /* HafasRequestManager.m in Sources */,
+				42F58DAD26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m in Sources */,
 				4261070D244EF11000E0B05C /* MBStationTafelTableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

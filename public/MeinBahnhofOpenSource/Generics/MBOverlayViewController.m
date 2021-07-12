@@ -84,6 +84,14 @@
     }
 }
 
+
+-(BOOL)accessibilityPerformEscape{
+    [self hideOverlay];
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
+    return YES;
+}
+
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

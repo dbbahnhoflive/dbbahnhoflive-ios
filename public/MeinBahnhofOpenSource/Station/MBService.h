@@ -11,6 +11,10 @@
 
 #define kPhoneKey @"phone"
 #define kImageKey @"image"
+
+#define kSpecialAction @"specialAction"
+#define kSpecialActionPlatformAccessibiltyUI @"kSpecialActionPlatformAccessibiltyUI"
+
 #define kActionButtonKey @"actionButton"
 #define kActionButtonAction @"actionButtonAction"
 #define kActionChatbot @"chatbot"
@@ -21,12 +25,16 @@
 #define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
 #define kActionFeedbackChatbotMail @"feedbackchatbot"
 
+@class MBStation;
+
 @import CoreLocation;
 
 /*!
  *  @brief  This Model represents a Service as it is aggregated by our API from bahnhof.de
  */
 @interface MBService : MTLModel <MTLJSONSerializing>
+
+@property(nonatomic,strong) MBStation* station;
 
 @property (nonatomic, copy, readonly) NSString *type;
 @property (nonatomic, copy) NSString *title;

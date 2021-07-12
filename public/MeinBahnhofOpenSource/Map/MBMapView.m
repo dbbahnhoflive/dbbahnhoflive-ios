@@ -11,8 +11,9 @@
 #import "RIMapPoi.h"
 #import "MBStation.h"
 #import "RIMapFilterCategory.h"
-#import "RIMapManager.h"
 #import "MBMapInternals.h"
+#import "RIMapBackgroundTileLayer.h"
+#import "RIMapIndoorTileLayer.h"
 #import "FacilityStatus.h"
 
 @interface MBMapView()
@@ -98,7 +99,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
         [self addSubview:self.gmsMapView];
         self.defaultZoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
-        [self addIndoorMap];
+        //[self addIndoorMap];
         
         if(_zoomDebugLabel){
             [self addSubview:self.zoomDebugLabel];
@@ -143,32 +144,22 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 
 -(void)addIndoorMap{
-    if(![MBMapInternals indoorTileURLForLevel:@"0" zoom:0 x:0 y:0]){
+    if(![MBMapInternals indoorTileURLForLevel:@"L0" zoom:0 x:0 y:0 osm:self.station.useOSM]){
         return;//no indoor tile pattern available
     }
     
-    if(!self.indoorLayer){
-        // Implement GMSTileURLConstructor
-        // Returns a Tile based on the x,y,zoom coordinates, and the requested floor
-        __weak MBMapView* weakSelf = self;
-        GMSTileURLConstructor urls = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-            //indoor map
-            //NSString* indoorLevel = [_currentLevel.levelString uppercaseString];
-            NSString* url = [MBMapInternals indoorTileURLForLevel:weakSelf.currentIndoorLevelString zoom:zoom x:x y:y];
-            
-            //NSLog(@"get tile for zoom %lu, %@",(unsigned long)zoom,url);
-            return [NSURL URLWithString:url];
-        };
-        
-        if (!self.tileLayer) {
-            // Create the GMSTileLayer if it doesn't exist
-            self.indoorLayer = [GMSURLTileLayer tileLayerWithURLConstructor:urls];
-            self.indoorLayer.tileSize = 512; //[UIScreen mainScreen].scale = 512; //256 : 512;
-            
-            // Display on the map at a specific zIndex
-            self.indoorLayer.zIndex = 100;
-        }
+    if (!self.indoorLayer) {
+        // Create the GMSTileLayer if it doesn't exist
+        self.indoorLayer = [[RIMapIndoorTileLayer alloc] init];//[GMSURLTileLayer tileLayerWithURLConstructor:urls];
+        self.indoorLayer.tileSize = 512; //[UIScreen mainScreen].scale = 512; //256 : 512;
+        // Display on the map at a specific zIndex
+        self.indoorLayer.zIndex = 100;
     }
+    ((RIMapIndoorTileLayer*)self.indoorLayer).currentLevel = _currentIndoorLevelString;
+    BOOL useOSM = self.station.useOSM;
+    ((RIMapIndoorTileLayer*)self.indoorLayer).useOSM = useOSM;
+    NSLog(@"creating an indoor layer with osm %d",useOSM);
+
     self.indoorLayer.map = self.gmsMapView;
     self.gmsMapView.indoorEnabled = NO;//disable googles "indoor"
 }
@@ -200,89 +191,25 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 //
 
-- (void)toggleMapType{
-    MAP_TYPE newMapType;
-    
-    if (self.currentMapType == OSM) {
-        newMapType = GOOGLE;
-    } else {
-        newMapType = OSM;
-    }
-    
-    if (newMapType == self.currentMapType) {
-        return;
-    }
-    [self setMapType:newMapType];
-}
+
 -(void)setMapType:(MAP_TYPE)newMapType{
-    [self toggleTileSource:newMapType];
-    [self saveTileSource:newMapType];
-}
-
-- (void) saveTileSource:(MAP_TYPE)tileSource
-{
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults setInteger:tileSource forKey:@"map_tile_source"];
-    [userDefaults synchronize];
-}
-
-- (MAP_TYPE) storedMapSource
-{
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    
-    NSInteger mapSource = [userDefaults integerForKey:@"map_tile_source"];
-    if (mapSource == OSM) {
-        return OSM;
-    } else {
-        return GOOGLE;
+    if(newMapType != OSM){
+        NSAssert(false, @"only OSM type supported");
     }
-}
-
-- (void) toggleTileSource:(MAP_TYPE)type
-{
-    if (type == OSM) {
-        if(![self enableOSMTileLayer]){
-            //failure
-            type = GOOGLE;
-        }
-    } else if (type == GOOGLE) {
-        self.tileLayer.map = nil;
-        //[self.tileLayer clearTileCache];
-        self.gmsMapView.mapType = kGMSTypeNormal;
-    }
-    
+    [self enableOSMTileLayer];
     [self layoutIfNeeded];
-    self.currentMapType = type;
-    if(self.currentMapType == OSM && self.levels.count == 0){
-        [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_NOINDOOR_OSM-1];
-    } else {
+    if(self.levels.count == 0){
         [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_REST];
     }
-
 }
-
 
 
 - (BOOL) enableOSMTileLayer
 {
-    if(![MBMapInternals backgroundTileURLForZoom:0 x:0 y:0]){
-        self.tileLayer.map = nil;
-        self.gmsMapView.mapType = kGMSTypeNormal;
-        return false;
-    }
-    
-    // Implement GMSTileURLConstructor
-    // Returns a Tile based on the x,y,zoom coordinates, and the requested floor
-    GMSTileURLConstructor urls = ^(NSUInteger x, NSUInteger y, NSUInteger zoom) {
-        //background map
-        NSString* url = [MBMapInternals backgroundTileURLForZoom:(int)round(zoom) x:(int)x y:(int)y];
-        //NSLog(@"get tile for zoom %lu, %@",(unsigned long)zoom,url);
-        return [NSURL URLWithString:url];
-    };
-
     if (!self.tileLayer) {
         // Create the GMSTileLayer if it doesn't exist
-        self.tileLayer = [GMSURLTileLayer tileLayerWithURLConstructor:urls];
+        self.tileLayer = [[RIMapBackgroundTileLayer alloc] init];
+        //self.tileLayer = [GMSURLTileLayer tileLayerWithURLConstructor:urls];
         self.tileLayer.tileSize = 512; //[UIScreen mainScreen].scale = 512; //256 : 512;
 
         // Display on the map at a specific zIndex
@@ -359,7 +286,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     _currentLevel = level;
     self.currentIndoorLevelString = [level.levelString uppercaseString];
     if (level) {
-        //self.indoorLayer.indoorLevel = [level.levelString uppercaseString];
+        ((RIMapIndoorTileLayer*)self.indoorLayer).currentLevel = [level.levelString uppercaseString];
         if(self.indoorLayer.map){
             //reset the map link to force reloading
             self.indoorLayer.map = nil;
@@ -390,12 +317,8 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         
         self.defaultZoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
         
-        if(self.currentMapType == OSM){
-            [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_NOINDOOR_OSM-1];
-        } else {
-            [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_REST];
-        }
-        
+        [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_REST];
+
         styleUrl = [mainBundle URLForResource:@"mapstyle_noindoor" withExtension:@"json"];
     } else {
         
@@ -471,7 +394,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 - (void)setStationMarker:(GMSMarker *)stationMarker
 {
     _stationMarker = stationMarker;
-    _stationMarker.zIndex = 12;
+    _stationMarker.zIndex = 990;
     _stationMarker.map = self.gmsMapView;
 }
 

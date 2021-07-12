@@ -20,6 +20,8 @@ enum EventType {
  */
 @interface Event : NSObject
 
+@property (nonatomic, weak) Stop* stop;
+
 /*!
  *  @brief  The time of the arrival/departure (raw)
  */

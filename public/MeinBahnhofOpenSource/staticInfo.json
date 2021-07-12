@@ -40,7 +40,13 @@
 			"title": "Zugang & Wege",
 			"type": "stufenfreier_zugang"
 		},
-                   
+
+        {
+            "descriptionText": "<p>[STATUS]</p><p>Bei Fragen wenden Sie sich bitte an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>Die nachfolgend genannten Ausstattungsmerkmale dienen der barrierefreien Zugänglichkeit des Bahnhofs.",
+            "title": "Barrierefreiheit",
+            "type": "barrierefreiheit"
+        },
+
         {
              "descriptionText": "<p>Im DB Reisezentrum erhalten Sie bei persönlicher Beratung dieses Leistungsangebot:<ul><li>Fahrkarten und Reservierungen bis kurz vor Abfahrt</li><li>Zeitkarten und DB Monatskarten im Abo</li><li>Nationale und internationale Fahrplan- und Tarifauskünfte im Verbund, Nahverkehr und Fernverkehr</li><li>Angebote rund um die BahnCard</li><li>Ergänzende Leistungen und Angebote rund um Ihre Bahnreise (z.B. Gepäckbeförderung, Parkplätze am Bahnhof, Mietwagen, Carsharing, Reiseschutz, Hotels uvm.)</li></ul></p>",
              "title": "DB Reisezentrum",
@@ -61,7 +67,7 @@
          
          {
              "descriptionText": "<p>Hallo, mein Name ist DB Smile. Ich bin Ihr digitaler Assistent und helfe bei Fragen zum Bahnhof.</p><dbactionbutton href=\"chatbot\">Chatten Sie mit mir</dbactionbutton><p>Ich bin <b>Montag bis Sonntag von 07:00 - 22:00 Uhr</b> in vollem Umfang für Sie da.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackchatbot\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p>",
-             "title": "Chatbot",
+             "title": "Fragen & Feedback zum Bahnhof",
              "type": "chatbot"
          },
          
@@ -72,22 +78,22 @@
          },
          
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p><p> <br> <br> </p>",
-             "title": "Verschmutzung melden",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p>",
+             "title": "Verschmutzung und Defekte melden",
              "type": "verschmutzung_mitwhatsapp"
          },
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p> <br> <br> </p>",
-             "title": "Verschmutzung melden",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p>",
+             "title": "Verschmutzung und Defekte melden",
              "type": "verschmutzung_ohnewhatsapp"
          },
          {
-             "descriptionText": "<p><b>Kontakt</b></p><p>Schreiben Sie uns, sollten Ihnen Unstimmigkeiten in der App auffallen.<br><dbactionbutton href=\"feedbackmail\">Kontakt aufnehmen</dbactionbutton></p></p><p> <br> <br> </p>",
-             "title": "Problem mit der App melden",
+             "descriptionText": "<p><b>Kontakt</b></p><p>Schreiben Sie uns, sollten Ihnen Unstimmigkeiten in der App auffallen.<br><dbactionbutton href=\"feedbackmail\">Kontakt aufnehmen</dbactionbutton></p></p>",
+             "title": "Probleme mit der App melden",
              "type": "problemmelden"
          },
          {
-             "descriptionText": "<p><b>Zufrieden mit der App?</b></p><p>Unterstützen Sie uns mit einer positiven Bewertung im App Store.<br><dbactionbutton href=\"https://appsto.re/de/6Kxhbb.i\">App bewerten</dbactionbutton></p></p><p> <br> <br> </p>",
+             "descriptionText": "<p><b>Zufrieden mit der App?</b></p><p>Unterstützen Sie uns mit einer positiven Bewertung im App Store.<br><dbactionbutton href=\"https://appsto.re/de/6Kxhbb.i\">App bewerten</dbactionbutton></p></p>",
              "title": "App bewerten",
              "type": "bewertung"
          },

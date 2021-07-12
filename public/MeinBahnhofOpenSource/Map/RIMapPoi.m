@@ -104,84 +104,10 @@ static NSDictionary* levelCodeToNumber = nil;
     if(markerIcon && config.showLabelAtZoom){
         //NSLog(@"create icon with text for %@",self.displname);
         //create an icon that contains the title table
-        marker.iconWithoutText = markerIcon;
-        marker.zoomForIconWithText = config.showLabelAtZoom.integerValue;
-        // text
-        CGFloat labelWidth = 120;
+        NSString* titleText = self.detail ? self.detail : self.title;
+        NSInteger zoomForIconWithText = config.showLabelAtZoom.integerValue;
         
-        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, labelWidth, 50)];
-        label.font = [UIFont db_BoldFourteen];
-        label.textAlignment = NSTextAlignmentCenter;
-        label.numberOfLines = 0;
-        label.textColor = [UIColor blackColor];
-        label.text = self.detail ? self.detail : self.title;
-        
-        UIColor* shadowColor = [UIColor colorWithWhite:0.85 alpha:1.0];
-
-        label.size = [label sizeThatFits:CGSizeMake(labelWidth, 100)];
-        UILabel *label2 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, labelWidth, 50)];
-        label2.font = label.font;
-        label2.textAlignment = NSTextAlignmentCenter;
-        label2.numberOfLines = 0;
-        label2.textColor = shadowColor;
-        label2.text = label.text;
-        label2.size = [label2 sizeThatFits:CGSizeMake(labelWidth, 100)];
-        UILabel *label3 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, labelWidth, 50)];
-        label3.font = label.font;
-        label3.textAlignment = NSTextAlignmentCenter;
-        label3.numberOfLines = 0;
-        label3.textColor = shadowColor;
-        label3.text = label.text;
-        label3.size = [label3 sizeThatFits:CGSizeMake(labelWidth, 100)];
-        UILabel *label4 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, labelWidth, 50)];
-        label4.font = label.font;
-        label4.textAlignment = NSTextAlignmentCenter;
-        label4.numberOfLines = 0;
-        label4.textColor = shadowColor;
-        label4.text = label.text;
-        label4.size = [label4 sizeThatFits:CGSizeMake(labelWidth, 100)];
-        UILabel *label5 = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
-        label5.font = label.font;
-        label5.textAlignment = NSTextAlignmentCenter;
-        label5.numberOfLines = 0;
-        label5.textColor = shadowColor;
-        label5.text = label.text;
-        label5.size = [label5 sizeThatFits:CGSizeMake(labelWidth, 100)];
-        
-        
-        UIImageView* imgView = [[UIImageView alloc] initWithImage:markerIcon];
-        UIView *iconView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, MAX(imgView.frame.size.width, label.frame.size.width+2), imgView.frame.size.height+label.frame.size.height+2)];
-        [iconView addSubview:imgView];
-        
-        CGRect f = label.frame;
-        f.origin.x = 1;
-        f.origin.y = imgView.frame.size.height+1;
-        label.frame= f;
-  
-        f.origin.x--;
-        f.origin.y--;
-        label2.frame = f;
-        f.origin.x += 2;
-        label3.frame = f;
-        f.origin.y += 2;
-        label4.frame = f;
-        f.origin.x -= 2;
-        label5.frame = f;
-    
-        f = imgView.frame;
-        f.origin.x = (int)((iconView.frame.size.width-f.size.width)/2.0);
-        imgView.frame = f;
-        
-        [iconView addSubview:label5];
-        [iconView addSubview:label4];
-        [iconView addSubview:label3];
-        [iconView addSubview:label2];
-        [iconView addSubview:label];
-        
-        UIGraphicsBeginImageContextWithOptions(iconView.bounds.size, NO, [[UIScreen mainScreen] scale]);
-        [iconView.layer renderInContext:UIGraphicsGetCurrentContext()];
-        marker.iconWithText = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
+        [MBMarker renderTextIntoIconFor:marker markerIcon:markerIcon titleText:titleText zoomForIconWithText:zoomForIconWithText];
     }
     
     marker.zIndex = 750;
@@ -191,14 +117,32 @@ static NSDictionary* levelCodeToNumber = nil;
 }
 
 -(BOOL)hasOpeningInfo{
-    return self.day_1.length > 0 && self.time_1.length > 0;
+    return (self.openingTimes.count > 0)
+    || (self.day_1.length > 0 && self.time_1.length > 0); //old api
 }
 -(BOOL)isTrack{
-    return [self.type isEqualToString:@"Track"];
+    return
+       [self.type isEqualToString:@"PLATFROM"] //naming in new api (with typo!)
+    || [self.type isEqualToString:@"PLATFORM"] //naming in new api (without typo)
+    || [self.type isEqualToString:@"Track"]; //naming in old api
 }
 
 -(NSString *)allOpenTimes{
     NSMutableString* res = [[NSMutableString alloc] init];
+    
+    if(self.openingTimes.count > 0){
+        for(RIMapPoiOpenTime* ot in self.openingTimes){
+            if(res.length > 0){
+                [res appendString:@"\n"];
+            }
+            [res appendString:ot.daysDisplayString];
+            [res appendString:@": "];
+            [res appendString:ot.openTimesString];
+        }
+        return res;
+    }
+    
+    //old api:
     if(self.day_1.length > 0){
         if(self.time_1.length > 0){
             [res appendString:self.day_1];
@@ -261,6 +205,23 @@ static NSDictionary* levelCodeToNumber = nil;
     NSInteger currentMinutesFrom = [comps minute];
 
     //NSLog(@"compare %@,%ld:%ld with %@",currentWeekday,(long)currentHour,(long)currentMinutesFrom, self);
+    
+    if(self.openingTimes.count > 0){
+        //find the day:
+        for(RIMapPoiOpenTime* ot in self.openingTimes){
+            if([ot.days containsObject:currentWeekday]){
+                //find the time
+                for(NSString* openTime in ot.openTimes){
+                    NSTimeInterval time = [self isHour:currentHour minute:currentMinutesFrom inRange:openTime];
+                    if(time >= 0){
+                        return time;
+                    }
+                }
+            }
+        }
+    }
+
+    //old api
     
     //try to find the day
     if([self isDay:currentWeekday inRange:self.day_1]){
@@ -656,6 +617,9 @@ static NSDictionary* levelCodeToNumber = nil;
     } else if([poi.menucat isEqualToString:@"Dienstleistungen"]){
         return FAV_CAT_DIENSTLEISTUNG;
     } else if([poi.menucat isEqualToString:@"Tickets & Reiseauskunft"]){
+        if([poi.menusubcat isEqualToString:@"Fahrkarten"]){
+            return nil;//don't list tickets in the "Dienstleistungen" sections
+        }
         return FAV_CAT_DIENSTLEISTUNG;
     } else {
         return nil;

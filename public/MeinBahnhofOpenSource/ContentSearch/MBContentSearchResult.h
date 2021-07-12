@@ -55,10 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 +(MBContentSearchResult*)searchResultWithStore:(nullable MBEinkaufsbahnhofStore*)poi inCat:(MBEinkaufsbahnhofCategory*)cat;
 +(MBContentSearchResult*)searchResultWithPlatform:(NSString*)platform;
 +(MBContentSearchResult*)searchResultWithOPNV:(NSString*)lineIdentifier category:(HAFASProductCategory)category line:(NSString*)line;
-//these two are not used in the search but only for internal linking
+//these are not used in the search but only for internal linking
 +(MBContentSearchResult*)searchResultForChatbot;
 +(MBContentSearchResult *)searchResultForPickpack;
 +(MBContentSearchResult*)searchResultWithCoupon:(MBNews*)couponNews;
++(MBContentSearchResult*)searchResultForServiceNumbers;
 
 -(NSString*)title;
 -(NSString*)iconName;

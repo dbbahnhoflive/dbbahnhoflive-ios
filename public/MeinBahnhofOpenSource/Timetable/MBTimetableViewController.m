@@ -1028,14 +1028,16 @@
             tableCell.stationLabel.text = event.actualStation;
             tableCell.intermediateStationsLabel.text = event.actualStations;
             NSString* trainCat = [timetableStop formattedTransportType:event.lineIdentifier];
-            tableCell.trainStringForVoiceOver = trainCat;
             tableCell.trainLabel.text = trainCat;
             tableCell.platformLabel.text = [NSString stringWithFormat:@"Gl. %@",event.actualPlatform];
             //tableCell.platformTrainLabel.accessibilityLabel = [tableCell.platformTrainLabel.text stringByReplacingOccurrencesOfString:@"Gl." withString:@"Gleis"];
             
             [tableCell setExpanded:[self.selectedStopId isEqualToString: timetableStop.stopId] forIndexPath:indexPath];
             
-            tableCell.expectedTimeLabel.text = [event formattedExpectedTime];
+            NSArray *stations = event.departure ? [@[self.station.title] arrayByAddingObjectsFromArray:event.actualStationsArray] : [event.actualStationsArray arrayByAddingObject:self.station.title];
+            tableCell.viaListView.stations = stations;
+            
+            tableCell.expectedTimeLabel.text = event.formattedExpectedTime;
             if([event roundedDelay] >= 5){
                 tableCell.expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
@@ -1102,7 +1104,6 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"verbindung_auswahl"]];
     if (self.showFernverkehr) {
         if ((indexPath.section == 0 && indexPath.row > 0) || indexPath.section > 0) {
             
@@ -1112,6 +1113,7 @@
                 [self resetSelection];
                 [self.timetableView reloadData];
             } else {
+                [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"verbindung_auswahl"]];
                 NSInteger actualIndex = indexPath.row;
                 if(indexPath.section == 0){
                     actualIndex--;
@@ -1144,6 +1146,7 @@
                 self.hafasDataSource.selectedRow = self.selectedRow;
                 [self.timetableView reloadData];
             } else if(indexPath.row-1 < self.hafasDataSource.hafasDeparturesByDay.count){
+                [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"verbindung_auswahl"]];
                 NSInteger actualIndex = indexPath.row - 1;
                 HafasDeparture* departure = self.hafasDataSource.hafasDeparturesByDay[actualIndex];
                 if([departure isKindOfClass:NSString.class]){
@@ -1273,6 +1276,16 @@
             [self.timetableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionTop];
             [self.timetableView.delegate tableView:self.timetableView didSelectRowAtIndexPath:indexPath];
             [self.timetableView reloadData];
+            [self.timetableView layoutIfNeeded];
+            if(indexPath.row < [self tableView:self.timetableView numberOfRowsInSection:0]){
+                //tell voiceover to center on the selected cell
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    UIView* cell = [self tableView:self.timetableView cellForRowAtIndexPath:indexPath];
+                    if(cell){
+                        UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, cell);
+                    }
+                });
+            }
         } else {
             NSLog(@"stop not found");
             [self.timetableView reloadData];
@@ -1422,13 +1435,8 @@
     paragraphStyle.maximumLineHeight = 14.0;
     paragraphStyle.hyphenationFactor = 0.0;
     
-    NSMutableParagraphStyle *trainParagraphStyle = [[NSMutableParagraphStyle alloc] init];
-    trainParagraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-    trainParagraphStyle.maximumLineHeight = 14.0;
-    trainParagraphStyle.hyphenationFactor = 0.0;
-    
     NSMutableAttributedString *finalAttributed = [[NSMutableAttributedString alloc] initWithString:iris attributes:@{NSFontAttributeName:[UIFont db_RegularTwelve], NSForegroundColorAttributeName: [UIColor db_mainColor], NSParagraphStyleAttributeName:paragraphStyle}];
-    NSMutableAttributedString *trainPrefix = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ",train] attributes:@{NSFontAttributeName:[UIFont db_BoldTwelve], NSForegroundColorAttributeName: [UIColor db_mainColor], NSParagraphStyleAttributeName:trainParagraphStyle}];
+    NSMutableAttributedString *trainPrefix = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@: ",train] attributes:@{NSFontAttributeName:[UIFont db_BoldTwelve], NSForegroundColorAttributeName: [UIColor db_mainColor], NSParagraphStyleAttributeName:paragraphStyle}];
     [trainPrefix appendAttributedString:finalAttributed];
     NSAttributedString *finalMessageAttributed = [[NSAttributedString alloc] initWithAttributedString:trainPrefix];
     return finalMessageAttributed;

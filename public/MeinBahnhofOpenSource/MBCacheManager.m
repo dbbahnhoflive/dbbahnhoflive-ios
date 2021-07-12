@@ -22,19 +22,24 @@
     return sharedManager;
 }
 
-#define MBCACHE_VERSION 3
+#define MBCACHE_VERSION 5
 -(instancetype)init{
     self = [super init];
     if(self){
         NSLog(@"setup cache manager with directory %@",[self applicationDocumentsDirectory]);
         NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
         if([def integerForKey:@"mbcachemanager.version"] < MBCACHE_VERSION){
-            [[NSFileManager defaultManager] removeItemAtPath:[self applicationDocumentsDirectory] error:nil];
+            [self deleteCache];
             NSLog(@"cache version changed, clear cache dir");
             [def setInteger:MBCACHE_VERSION forKey:@"mbcachemanager.version"];
         }
     }
     return self;
+}
+
+-(void)deleteCache{
+    [[NSFileManager defaultManager] removeItemAtPath:[self applicationDocumentsDirectory] error:nil];
+    NSLog(@"cache deleted");
 }
 
 //cache for 24h = 60*60*24
@@ -50,7 +55,9 @@
         case MBCacheResponsePTS:
             return CACHE_TIME_PTS_REQUEST;
         case MBCacheResponseRIMapStatus:
+        case MBCacheResponseRIMapStatus07API:
         case MBCacheResponseRIMapPOIs:
+        case MBCacheResponseRIMapPOIs07Api:
             return CACHE_TIME_RIMAP;
         case MBCacheResponseParking:
             return CACHE_TIME_PARKING;
@@ -88,6 +95,12 @@
             break;
         case MBCacheResponseRIMapStatus:
             filename = @"rimapstatus.json";
+            break;
+        case MBCacheResponseRIMapStatus07API:
+            filename = @"rimapstatus07.json";
+            break;
+        case MBCacheResponseRIMapPOIs07Api:
+            filename = @"rimappois07.json";
             break;
         case MBCacheResponseRIMapPOIs:
             filename = @"rimappois.json";

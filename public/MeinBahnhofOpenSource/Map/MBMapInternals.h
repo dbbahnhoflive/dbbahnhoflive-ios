@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 +(NSString*)kGoogleMapsApiKey;
 +(NSString*)backgroundTileURLForZoom:(int)zoom x:(int)x y:(int)y;
-+(NSString*)indoorTileURLForLevel:(NSString*)level zoom:(NSUInteger)zoom x:(NSUInteger)x y:(NSUInteger)y;
++(NSString *)indoorTileURLForLevel:(NSString*)level zoom:(NSUInteger)zoom x:(NSUInteger)x y:(NSUInteger)y osm:(BOOL)useOSM;
 
 @end
 

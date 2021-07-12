@@ -5,7 +5,8 @@
 
 
 #import "MBService.h"
-
+#import "MBStation.h"
+#import "MBPlatformAccessibility.h"
 
 // Pattern to detect phone numbers in a text which also may be surrounded by anchor-tags or white spaces
 #define kPhoneRegexPattern @"(>|\\s)[\\d]{3,}\\/?([^\\D]|\\s)+[\\d]"
@@ -30,6 +31,7 @@
     NSDictionary *mappingTypes = @{
                                    @"mobilitaetsservice": @"app_mobilitaetservice",
                                    @"stufenfreier_zugang": @"IconBarrierFree",
+                                   @"barrierefreiheit": @"IconBarrierFree",
                                    @"3-s-zentrale": @"app_3s",
                                    @"bahnhofsmission": @"rimap_bahnhofsmission_grau",
                                    @"fundservice": @"app_fundservice",
@@ -101,8 +103,39 @@
     } else if ([self.type isEqualToString:@"pickpack"]) {
         return [self parsePickpackComponents:string];
     } else if ([self.type isEqualToString:@"mobilitaetsservice"] || [self.type hasPrefix:@"verschmutzung"] || [self.type isEqualToString:@"bewertung"] || [self.type isEqualToString:@"problemmelden"]
-               || [self.type isEqualToString:@"stufenfreier_zugang"]){
-        return [self parseConfigurableService:string];
+               || [self.type isEqualToString:@"stufenfreier_zugang"] || [self.type isEqualToString:@"barrierefreiheit"]){
+        NSArray* res = [self parseConfigurableService:string];
+        if([self.type isEqualToString:@"barrierefreiheit"]){
+            NSString* firstString = res.firstObject;
+            //replace [STATUS] in first string with the calculated status
+            NSString* status = @"";
+            MBPlatformAccessibilityType type = [MBPlatformAccessibility statusStepFreeAccessForAllPlatforms:self.station.platformAccessibility];
+            switch (type) {
+                case MBPlatformAccessibilityType_UNKNOWN:
+                    status = @"";
+                    break;
+                case MBPlatformAccessibilityType_AVAILABLE:
+                    status = @"Dieser Bahnhof bietet Ihnen stufenfreien Zugang.";
+                    break;
+                case MBPlatformAccessibilityType_NOT_AVAILABLE:
+                    status = @"Dieser Bahnhof bietet Ihnen leider <b>keinen</b> stufenfreien Zugang.";
+                    break;
+                case MBPlatformAccessibilityType_PARTIAL:
+                    status = @"Dieser Bahnhof bietet Ihnen <b>teilweise</b> stufenfreien Zugang.";
+                    break;
+                default:
+                    break;
+            }
+            
+            firstString = [firstString stringByReplacingOccurrencesOfString:@"[STATUS]" withString:status];
+            NSMutableArray* resAcc = [res mutableCopy];
+            [resAcc removeObjectAtIndex:0];
+            [resAcc insertObject:firstString atIndex:0];
+            //add UI elements
+            [resAcc addObject:@{kSpecialAction:kSpecialActionPlatformAccessibiltyUI}];
+            return resAcc;
+        }
+        return res;
     } else {
         return [self parseRegularComponents:string];
     }

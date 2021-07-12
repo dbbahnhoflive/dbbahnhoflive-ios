@@ -9,7 +9,6 @@
 @interface MBStationNavigationViewController ()
 @property (nonatomic, assign) BOOL behindViewSmall;
 @property (nonatomic, assign) BOOL behindViewHuge;
-@property (nonatomic, strong) UIView* contentSearchButtonShadow;//the shadow should not be visible above the image but only below, that's why we need a separate view for it
 
 @property (nonatomic, strong) UIView *redBar;
 
@@ -17,8 +16,6 @@
 
 @implementation MBStationNavigationViewController
 
-#define TAG_SEARCH_MAGNIFIER 142
-#define TAG_SEARCH_TEXT 143
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -83,38 +80,11 @@
     [self.view addConstraints:constraints];
     
     //NOTE: this is set in layoutcode!
-    self.contentSearchButton = [[UIButton alloc] initWithFrame:CGRectZero];
+    self.contentSearchButton = [[MBContentSearchButton alloc] init];
     self.contentSearchButton.hidden = YES;
-    self.contentSearchButton.accessibilityLabel = @"Suche am Bahnhof";
-    //[self.contentSearchButton addTarget:self action:@selector(openContentSearch) forControlEvents:UIControlEventTouchUpInside];
-    self.contentSearchButton.backgroundColor = [UIColor whiteColor];
-    
-    self.contentSearchButtonShadow = [[UIView alloc]initWithFrame:CGRectZero];
-    self.contentSearchButtonShadow.hidden = YES;
-    self.contentSearchButtonShadow.isAccessibilityElement = NO;
-    self.contentSearchButtonShadow.backgroundColor = [UIColor whiteColor];
-    self.contentSearchButtonShadow.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.contentSearchButtonShadow.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-    self.contentSearchButtonShadow.layer.shadowRadius = 2;
-    self.contentSearchButtonShadow.layer.shadowOpacity = 1.0;
-    [self.view insertSubview:self.contentSearchButtonShadow belowSubview:self.behindView];
-    
-    UIImageView* lupeImg = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_lupe"]];
-    lupeImg.tag = TAG_SEARCH_MAGNIFIER;
-    [self.contentSearchButton addSubview:lupeImg];
-    
-    UILabel* text = [[UILabel alloc] initWithFrame:CGRectZero];
-    text.isAccessibilityElement = NO;
-    text.tag = TAG_SEARCH_TEXT;
-    text.text = STATION_SEARCH_PLACEHOLDER;
-    text.font = [UIFont db_RegularFourteen];
-    text.textColor = [UIColor db_787d87];
-    text.alpha = 0.8;
-    [text sizeToFit];
-    [self.contentSearchButton addSubview:text];
-    
+    //the shadow should not be visible above the image but only below, that's why we need a separate view for it
+    [self.view insertSubview:self.contentSearchButton.contentSearchButtonShadow belowSubview:self.behindView];
     [self.view addSubview:self.contentSearchButton];
-
 
     
 }
@@ -127,26 +97,15 @@
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     
-    self.contentSearchButton.frame = CGRectMake(0, 0, (int)(self.view.sizeWidth*0.872), 60);
-    self.contentSearchButton.layer.cornerRadius = self.contentSearchButton.frame.size.height/2;
-    
-    UIView* magn = [self.contentSearchButton viewWithTag:TAG_SEARCH_MAGNIFIER];
-    [magn centerViewInSuperView];
-    [magn setGravityRight:30-3];
-    UIView* text = [self.contentSearchButton viewWithTag:TAG_SEARCH_TEXT];
-    [text centerViewInSuperView];
-    [text setGravityLeft:24];
-    
-    [self.contentSearchButton centerViewHorizontalInSuperView];
+    [self.contentSearchButton layoutForScreenWidth:self.view.sizeWidth];
     [self.contentSearchButton setGravityTop:self.behindView.sizeHeight- self.contentSearchButton.sizeHeight/2];
+    self.contentSearchButton.contentSearchButtonShadow.frame = self.contentSearchButton.frame;
+
     self.contentSearchButton.alpha = self.behindView.alpha;
     if(self.behindView.alpha < 1.0){
         //fade out button quicker
         self.contentSearchButton.alpha = (self.behindView.alpha*2)-1.;
     }
-    self.contentSearchButtonShadow.frame = self.contentSearchButton.frame;
-    self.contentSearchButtonShadow.layer.cornerRadius = self.contentSearchButton.layer.cornerRadius;
-    self.contentSearchButtonShadow.alpha = self.contentSearchButton.alpha;
 
     self.redBar.hidden = !self.showRedBar;
     self.behindView.hidden = self.hideEverything;
@@ -178,14 +137,17 @@
     if (showBackground) {
         self.behindViewHuge = YES;
         self.contentSearchButton.hidden = NO;
-        self.contentSearchButtonShadow.hidden = NO;
     } else {
         self.behindViewHuge = NO;
         self.contentSearchButton.hidden = YES;
-        self.contentSearchButtonShadow.hidden = YES;
     }
     [self setNeedsStatusBarAppearanceUpdate];
     [self.view setNeedsLayout];
+}
+
+-(void)removeSearchButton{
+    [self.contentSearchButton.contentSearchButtonShadow removeFromSuperview];
+    [self.contentSearchButton removeFromSuperview];
 }
 
 - (void)hideNavbar:(BOOL)hidden {

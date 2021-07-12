@@ -22,7 +22,7 @@
 
 #import "MBParkingManager.h"
 #import "MBParkingOccupancyManager.h"
-#import "RIMapManager.h"
+#import "RIMapManager2.h"
 #import "MBContentSearchResult.h"
 
 #import "FacilityStatusManager.h"
@@ -360,7 +360,7 @@
 
         
         //request map-poi data
-        [[RIMapManager client] requestMapPOI:station.mbId forcedByUser:forcedByUser success:^(NSArray *pois) {
+        [[RIMapManager2 client] requestMapPOI:station.mbId osm:station.useOSM forcedByUser:forcedByUser success:^(NSArray *pois) {
             //NSLog(@"got map pois: %@",pois);
             station.riPois = pois;
             if([self.rootDelegate respondsToSelector:@selector(didLoadMapPOIs:)] && del == self.rootDelegate){
@@ -433,10 +433,9 @@
 
 -(void)requestMapStationInfo:(MBStation*)station forcedByUser:(BOOL)forcedByUser del:(NSObject*)del{
     //request map-station info
-    [[RIMapManager client] requestMapStatus:station.mbId eva:station.stationEvaIds.firstObject forcedByUser:forcedByUser success:^(NSArray<LevelplanWrapper*> *levels, RIMapMetaData* additionalData) {
+    [[RIMapManager2 client] requestMapStatus:station.mbId osm:station.useOSM eva:station.stationEvaIds.firstObject forcedByUser:forcedByUser success:^(NSArray<LevelplanWrapper*> *levels) {
         // NSLog(@"got map levels: %@",levels);
         station.levels = levels;
-        station.additionalRiMapData = additionalData;
         if([self.rootDelegate respondsToSelector:@selector(didLoadIndoorMapLevels:)] && del == self.rootDelegate){
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.rootDelegate didLoadIndoorMapLevels:YES];
@@ -456,10 +455,8 @@
 
 -(void)requestOccupancy:(MBStation*)station forcedByUser:(BOOL)forcedByUser{
     if(station.hasOccupancy){
-        NSTimeInterval time = NSDate.timeIntervalSinceReferenceDate;
         [[MBStationOccupancyRequestManager sharedInstance] getOccupancyForStation:station.mbId forcedByUser:forcedByUser success:^(MBStationOccupancy *response) {
             station.occupancy = response;
-            NSLog(@"loaded occupancy in %f s: %@",(NSDate.timeIntervalSinceReferenceDate-time),response);
             [self changeOpenRequests:-1];
         } failureBlock:^(NSError *error) {
             NSLog(@"no occupancy: %@",error);
@@ -603,11 +600,14 @@
         [self.shopServiceListViewController.navigationController popToRootViewControllerAnimated:NO];
         self.shopServiceListViewController.searchResult = search;
         [self selectShopTab];
-    } else if(search.isStationInfoSearch){
+    } else if(search.isStationInfoSearch || search.isFeedbackSearch){
         [self.infoServiceListViewController.navigationController popToRootViewControllerAnimated:NO];
         self.infoServiceListViewController.searchResult = search;
+        if(search.isFeedbackSearch){
+            self.infoServiceListViewController.openServiceNumberScreen = true;
+        }
         [self selectInfoTab];
-    } else if(search.isMapSearch || search.isSettingSearch || search.isFeedbackSearch || search.isOPNVOverviewSearch || search.isStationFeatureSearch){
+    } else if(search.isMapSearch || search.isSettingSearch || search.isOPNVOverviewSearch || search.isStationFeatureSearch){
         [self selectStationTab];
         [self.stationContainerViewController.navigationController popToRootViewControllerAnimated:NO];
         UIViewController* finalVC = nil;
@@ -621,10 +621,6 @@
             finalVC = vc;
             vc.currentStation = self.station;
             vc.title = @"Einstellungen";
-        } else if(search.isFeedbackSearch){
-            MBServiceListCollectionViewController* vc = [[MBServiceListCollectionViewController alloc] initWithType:MBServiceCollectionTypeFeedback];
-            vc.station = self.station;
-            finalVC = vc;
         } else if(search.isOPNVOverviewSearch){
             [self.stationContainerViewController openOPNV];
             return;

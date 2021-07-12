@@ -26,6 +26,7 @@
 #import "MBTrainPositionViewController.h"
 #import "MBParkingInfo.h"
 #import "Constants.h"
+#import "MBCacheManager.h"
 
 @import UserNotifications;
 @import Sentry;
@@ -50,6 +51,15 @@
     NSUInteger capacity = 20 * 1024 * 1024;
     NSURLCache *cache = [[NSURLCache alloc] initWithMemoryCapacity:capacity diskCapacity:capacity diskPath:nil];
     [NSURLCache setSharedURLCache:cache];
+    
+    
+    NSString* currentBuildNumber = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    NSString* lastBuildNumber = [NSUserDefaults.standardUserDefaults stringForKey:@"LastCFBundleVersion"];
+    if(lastBuildNumber && ![lastBuildNumber isEqualToString:currentBuildNumber]){
+        //build number changed, disable rimaps debug feature
+        [NSUserDefaults.standardUserDefaults setBool:false forKey:@"RiMapUseProviderSetting"];
+    }
+    [NSUserDefaults.standardUserDefaults setObject:currentBuildNumber forKey:@"LastCFBundleVersion"];
 
 #ifdef DEBUG
     NSLog(@"Sentry: no crash reporting on debug builds");
@@ -68,6 +78,7 @@
 
 
     // initialize Google Maps
+    [GMSServices setAbnormalTerminationReportingEnabled:NO];
     [GMSServices provideAPIKey:[MBMapInternals kGoogleMapsApiKey]];
 
 
@@ -167,6 +178,11 @@
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     [[TimetableManager sharedManager] startTimetableScheduler];
+    
+    if([NSUserDefaults.standardUserDefaults boolForKey:@"DeleteCache"]){
+        [[MBCacheManager sharedManager] deleteCache];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"DeleteCache"];
+    }
     
     if(self.hasHadBeenActive){
         [MBTrackingManager setOptOut:!self.trackingEnabled];

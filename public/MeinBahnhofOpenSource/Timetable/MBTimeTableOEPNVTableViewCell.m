@@ -140,7 +140,7 @@
     NSString* line = self.lineLabel.text;
     line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
 
-    return [NSString stringWithFormat:@"%@ nach %@, %@ Uhr, %@, %@",
+    return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@, %@",
             line,
             self.destLabel.text,
             self.timeLabel.text,

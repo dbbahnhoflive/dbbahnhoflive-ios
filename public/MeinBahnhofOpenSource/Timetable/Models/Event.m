@@ -182,7 +182,11 @@
     }
     
     if ([self roundedDelay] > 0) {
-        NSString *delayMessage = [NSString stringWithFormat:@"ca. %ld Minuten später", (long)[self roundedDelay]];
+        NSString* caString = @"ca.";
+        if(UIAccessibilityIsVoiceOverRunning()){
+            caString = @"Circa";
+        }
+        NSString *delayMessage = [NSString stringWithFormat:@"%@ %ld Minuten später", caString, (long)[self roundedDelay]];
         [irisEventMessages addObject:delayMessage];
     }
     
@@ -298,7 +302,11 @@
         [extraMessage addObject:stop.referenceSplitMessage];
     }
     
-    NSString *composedIris = [extraMessage componentsJoinedByString:@" +++ "];
+    NSString* divider = @" +++ ";
+    if(UIAccessibilityIsVoiceOverRunning()){
+        divider = @". ";
+    }
+    NSString *composedIris = [extraMessage componentsJoinedByString:divider];
     
     self.composedIrisMessage = composedIris;    
 }

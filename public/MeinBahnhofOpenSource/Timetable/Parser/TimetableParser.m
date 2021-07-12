@@ -111,6 +111,7 @@ static NSDateFormatter *formatter = nil;
         if (arrivalElement) {
             Event *arrivalEvent = [TimetableParser parseEventFromElement: arrivalElement ofTypeDeparture:NO];
             if (arrivalEvent) {
+                arrivalEvent.stop = stop;
                 [stop setArrival:arrivalEvent];
             }
         }
@@ -118,6 +119,7 @@ static NSDateFormatter *formatter = nil;
         if (departureElement) {
             Event *departureEvent = [TimetableParser parseEventFromElement: departureElement ofTypeDeparture:YES];
             if (departureEvent) {
+                departureEvent.stop = stop;
                 [stop setDeparture:departureEvent];
             }
         }
@@ -252,7 +254,7 @@ static NSDateFormatter *formatter = nil;
 + (NSArray*) parseMessageFromElement:(TBXMLElement*)fromElement
 {
     NSMutableArray *messagesArray = [NSMutableArray array];
-    NSArray *relevantCodes = @[@80, @82, @83, @84, @85, @86, @87, @88, @89, @90, @91];
+    NSArray *relevantCodes = @[@80, @82, @83, @84, @85, @86, @87, @88, @89, @90, @91, @92, @93, @95];
 
     TBXMLElement *messageElement = [TBXML childElementNamed:@"m" parentElement:fromElement];
     while (messageElement) {
@@ -331,12 +333,15 @@ static NSDateFormatter *formatter = nil;
     NSDictionary *messages = @{
       @"80": @"Andere Reihenfolge der Wagen",
       @"82": @"Mehrere Wagen fehlen",
-      @"83": @"Fehlender Zugteil",
+      @"83": @"Störung fahrzeuggebundene Einstiegshilfe",
       @"85": @"Ein Wagen fehlt",
       @"86": @"Gesamter Zug ohne Reservierung",
       @"87": @"Einzelne Wagen ohne Reservierung",
       @"90": @"Kein gastronomisches Angebot",
-      @"91": @"Eingeschränkte Fahrradbeförderung"
+      @"91": @"Fehlende Fahrradbeförderung",
+      @"92": @"Eingeschränkte Fahrradbeförderung",
+      @"93": @"Keine behindertengerechte Einrichtung",
+      @"95": @"Ohne behindertengerechtes WC",
       };
     
     return [messages objectForKey:key];
@@ -345,8 +350,8 @@ static NSDateFormatter *formatter = nil;
 + (NSArray*) revocationCodesForKey:(NSString*)key
 {
     NSDictionary *revoke = @{
-                             @"84": @[@80,@82,@83,@85],
-                             @"88": @[@80,@82,@83,@85,@86,@87,@90,@91,@92,@93,@94,@96,@97,@98],
+                             @"84": @[@80,@82,@85],
+                             @"88": @[@80,@82,@83,@85,@86,@87,@90,@91,@92,@93,@94,@95,@96,@97,@98],
                              @"89": @[@86,@87]
                              };
     return [revoke objectForKey:key];

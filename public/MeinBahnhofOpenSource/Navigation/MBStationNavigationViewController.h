@@ -7,12 +7,13 @@
 #import <UIKit/UIKit.h>
 #import "MBStationTopView.h"
 #import "MBStation.h"
+#import "MBContentSearchButton.h"
 
 #define STATION_NAVIGATION_PICTURE_HEIGHT 280
 
 @interface MBStationNavigationViewController : UINavigationController
 
-@property (nonatomic, strong) UIButton* contentSearchButton;
+@property (nonatomic, strong) MBContentSearchButton* contentSearchButton;
 
 @property (nonatomic, strong) MBStationTopView *behindView;
 @property (nonatomic, strong) NSLayoutConstraint *behindHeightConstraint;
@@ -22,9 +23,9 @@
 
 - (void)showBackgroundImage:(BOOL)showBackground;
 - (void)hideNavbar:(BOOL)hidden;
+-(void)removeSearchButton;
 
 @property(nonatomic,strong) UIColor* behindViewBackgroundColor;
 
-#define STATION_SEARCH_PLACEHOLDER @"Suchen Sie etwas am Bahnhof?"
 
 @end

@@ -6,7 +6,7 @@ def base_db_dependencies
     pod 'AFNetworking', '~> 4.0'
     pod 'GTMNSStringHTMLAdditions', '~> 0.2.1'
     pod 'Mantle', '~> 2.1.6'
-    pod 'GoogleMaps', '~> 3.7.0'
+    pod 'GoogleMaps', '4.2.0'
     pod 'MBProgressHUD', '~> 1.1.0'
     pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '6.0.7'
 end

@@ -5,6 +5,7 @@
 
 
 #import "MBStationTafelTableViewCell.h"
+#import "MBTimeTableViewCell.h"
 
 @interface MBStationTafelTableViewCell()
 
@@ -70,23 +71,15 @@
         NSString* line = self.trainLabel.text;
         line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
 
-        return [NSString stringWithFormat:@"%@ nach %@, %@ Uhr; %@",
+        return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr; %@",
                 line,
                 self.destinationLabel.text,
                 self.timeLabel.text,
                 (![self.expectedTimeLabel.text isEqualToString:self.timeLabel.text] ? [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text] : @"")
                 ];
     }
-    NSString* gleis = [NSString stringWithFormat:@"Gleis %@", [_event actualPlatform]];
-    NSString* train = [self.stop formattedTransportType:_event.lineIdentifier];
-
-    return [NSString stringWithFormat:@"%@ nach %@, %@ Uhr, %@, %@.",
-            train,
-            self.destinationLabel.text,
-            self.timeLabel.text,
-            (![self.expectedTimeLabel.text isEqualToString:self.timeLabel.text] ? [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text] : @""),
-            gleis
-            ];
+    //else: fernverkehr
+    return [MBTimeTableViewCell voiceOverForEvent:_event];
 }
 
 - (void)layoutSubviews {

@@ -223,10 +223,6 @@
     if(!self.station.stationDetails.hasLockerSystem){
         //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung Schließfächer"];
     }
-    if(!self.station.stationDetails.hasSteplessAccess){
-        //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung Stufenfreier Zugang"];
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Zugang & Wege"];
-    }
     if(!self.station.stationDetails.hasTaxiRank){
         if(displaySomeEntriesOnlyWhenAvailable){
             [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Taxistand"];
@@ -341,6 +337,12 @@
 -(void)closeButtonTapped{
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+-(BOOL)accessibilityPerformEscape{
+    [self closeButtonTapped];
+    return YES;
+}
+
 
 -(void)accessoryButtonTapped:(id)sender{
     self.searchField.text = @"";
@@ -566,10 +568,7 @@
     if([tags containsObject:@"Bahnhofsinformation Parkplätze"]){
         [tags removeObject:@"Bahnhofsausstattung Parkplätze"];
     }
-    //??
-    if([tags containsObject:@"Bahnhofsinformation Zugang & Wege"]){
-        [tags removeObject:@"Bahnhofsausstattung Stufenfreier Zugang"];
-    }
+    //link only to the details page if it exists:
     if([tags containsObject:@"Bahnhofsinformation WLAN"]){
         [tags removeObject:@"Bahnhofsausstattung WLAN"];
     }
@@ -870,6 +869,9 @@
     MBContentSearchTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
     MBContentSearchResult* res = self.searchResults[indexPath.row];
     cell.titleLabel.text = res.title;
+    if([cell.titleLabel.text containsString:@" ICE "]){
+        cell.titleLabel.accessibilityLabel = [res.title stringByReplacingOccurrencesOfString:@" ICE " withString:@" I C E "];
+    }
     NSString* icon = res.iconName;
     cell.iconView.image = [UIImage db_imageNamed:icon];
     return cell;

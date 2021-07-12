@@ -16,7 +16,7 @@
     return nil;
 }
 
-+(NSString *)indoorTileURLForLevel:(NSString*)level zoom:(NSUInteger)zoom x:(NSUInteger)x y:(NSUInteger)y{
++ (NSString *)indoorTileURLForLevel:(NSString *)level zoom:(NSUInteger)zoom x:(NSUInteger)x y:(NSUInteger)y osm:(BOOL)useOSM{
     return nil;
 }
 

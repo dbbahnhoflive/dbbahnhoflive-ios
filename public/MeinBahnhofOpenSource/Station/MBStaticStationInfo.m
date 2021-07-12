@@ -35,6 +35,7 @@
     NSDictionary* data = [MBStaticStationInfo infoForType:type];
     MBService *service = [[MBService alloc] initWithDictionary:data error:nil];
     if(station){
+        service.station = station;
         if([type isEqualToString:@"3-s-zentrale"]){
             service.descriptionText = [service.descriptionText stringByReplacingOccurrencesOfString:@"[PHONENUMBER]" withString:station.stationDetails.phoneNumber3S];
         } else if([type isEqualToString:@"mobilitaetsservice"]){

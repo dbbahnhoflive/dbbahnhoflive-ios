@@ -56,6 +56,15 @@
     button.leftInset = 8;
     return button;
 }
++ (instancetype) boldButtonWithRedLink
+{
+    MBLinkButton *button = [super buttonWithType:UIButtonTypeCustom];
+    button.leftImage = [UIImage db_imageNamed:@"arrow-right-bold"];
+    button.labelFont = [UIFont db_BoldFourteen];
+    button.titleColor = [UIColor db_333333];
+    button.leftInset = 8;
+    return button;
+}
 
 
 - (void) setLabelText:(NSString *)labelText

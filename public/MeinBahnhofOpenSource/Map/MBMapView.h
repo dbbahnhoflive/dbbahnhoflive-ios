@@ -65,7 +65,6 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 @property (nonatomic, assign) BOOL cameraFollowsUser;
 
 @property (nonatomic, assign) int defaultZoomLevel;
-@property (nonatomic, assign) MAP_TYPE currentMapType;
 
 @property (nonatomic,strong) MBStation* station;
 
@@ -86,7 +85,7 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 -(void)configureMapForStation:(MBStation*)station;
 
 -(void)userDidTapOnPinToUserButton:(id)sender;
--(void)toggleMapType;
+
 -(void)setMapType:(MAP_TYPE)newMapType;
 -(void)setPOIs:(NSArray*)riPois;
 -(void)updateMobilityMarker:(NSArray*)mobilityMarker;

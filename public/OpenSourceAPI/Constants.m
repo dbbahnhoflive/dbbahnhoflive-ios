@@ -31,6 +31,12 @@
     return @"ris-stations/v1";
 }
 
++(NSString*)rimapKey{
+    return @"";
+}
++(NSString*)rimapHost{
+    return @"";
+}
 +(NSString*)kHafasKey{
     return @"";
 }

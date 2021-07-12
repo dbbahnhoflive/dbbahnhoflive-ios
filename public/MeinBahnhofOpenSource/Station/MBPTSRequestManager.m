@@ -203,5 +203,43 @@ static BOOL simulateSearchFailure = NO;
     return nil;
 }
 
+#pragma mark Platform api
+
+-(NSURLSessionTask *)requestAccessibility:(NSString *)eva success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure{
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/platforms/%@/?includeAccessibility=true",[Constants kBusinessHubProdBaseUrl], [Constants kRISStationsPath],eva];
+    [self.requestSerializer setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
+
+    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"db-api-key"];
+    self.responseSerializer.acceptableContentTypes = [self.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
+    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
+    return [self GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+        //
+    } success:^(NSURLSessionTask *operation, id responseObject) {
+        
+        if([responseObject isKindOfClass:NSDictionary.class]){
+            NSDictionary* dict = responseObject;
+            NSArray* platforms = [dict db_arrayForKey:@"platforms"];
+            if(platforms){
+                NSMutableArray* list = [NSMutableArray arrayWithCapacity:platforms.count];
+                for(NSDictionary* platformsDict in platforms){
+                    if(![platformsDict isKindOfClass:NSDictionary.class]){
+                        continue;
+                    }
+                    MBPlatformAccessibility* pa = [MBPlatformAccessibility parseDict:platformsDict];
+                    if(pa){
+                        [list addObject:pa];
+                    }
+                }
+                success(list);
+                return;
+            }
+        }
+        failure(nil);
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
+        NSLog(@"risstations platforms failed: %@",error.localizedDescription);
+        failure(error);
+    }];
+}
+
 
 @end

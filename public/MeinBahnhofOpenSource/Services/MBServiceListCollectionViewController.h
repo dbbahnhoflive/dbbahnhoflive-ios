@@ -14,7 +14,6 @@
 typedef enum : NSUInteger {
     MBServiceCollectionTypeInfo,
     MBServiceCollectionTypeShopping,
-    MBServiceCollectionTypeFeedback,
 } MBServiceCollectionType;
 
 @interface MBServiceListCollectionViewController : UIViewController<MBMapViewControllerDelegate>
@@ -22,6 +21,7 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) MBContentSearchResult* searchResult;
 @property (nonatomic) BOOL openChatBotScreen;
 @property (nonatomic) BOOL openPickPackScreen;
+@property (nonatomic) BOOL openServiceNumberScreen;
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, assign) BOOL showsBackButton;
 

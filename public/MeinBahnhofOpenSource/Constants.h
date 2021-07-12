@@ -15,7 +15,8 @@
 +(NSString*)kBusinessHubProdBaseUrl;
 +(NSString*)kPTSPath;
 +(NSString*)kRISStationsPath;
-
++(NSString*)rimapHost;
++(NSString*)rimapKey;
 +(NSString*)kHafasKey;
 +(NSString*)kMapsKey;
 +(NSString*)kSentryDNS;

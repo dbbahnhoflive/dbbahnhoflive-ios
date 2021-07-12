@@ -15,6 +15,7 @@
 //used for linking into the detail page
 @property(nonatomic) BOOL isChatBotSearch;
 @property(nonatomic) BOOL isPickpackSearch;
+@property(nonatomic) BOOL isServiceNumberSearch;
 
 @end
 
@@ -87,6 +88,7 @@
                                    @"Bahnhofsinformation Info & Services Fundservice": @"app_fundservice",
                                    @"Bahnhofsinformation WLAN": @"rimap_wlan_grau",
                                    @"Bahnhofsinformation Zugang & Wege": @"IconBarrierFree",
+                                   @"Bahnhofsinformation Barrierefreiheit": @"IconBarrierFree",
                                    @"Bahnhofsinformation Aufzüge": @"app_aufzug",
                                    @"Bahnhofsinformation Parkplätze": @"rimap_parkplatz_grau",
                                    };
@@ -139,6 +141,14 @@
     res.isPickpackSearch = YES;
     return res;
 }
++(MBContentSearchResult *)searchResultForServiceNumbers{
+    MBContentSearchResult* res = [MBContentSearchResult new];
+    res.searchText = @"Rufnummern";
+    res.displayTitle = @"Rufnummern";
+    res.keywordString = @"Bahnhofsinformation Info & Services";
+    res.isServiceNumberSearch = YES;
+    return res;
+}
 +(MBContentSearchResult*)searchResultWithSearchText:(NSString*)searchText{
     MBContentSearchResult* res = [MBContentSearchResult new];
     res.searchText = searchText;
@@ -152,7 +162,14 @@
     res.departure = departure;
     Event* event = [stop eventForDeparture:departure];
     NSString* line = [stop formattedTransportType:event.lineIdentifier];
-    res.displayTitle = [NSString stringWithFormat:@"%@ %@ / %@ %@",departure?@"Ab":@"An", event.formattedTime, line, event.actualStation];
+    NSString* formatString = @"%@ %@ / %@ %@";
+    if(UIAccessibilityIsVoiceOverRunning()){
+        formatString = @"%@ %@ Uhr, %@ %@";
+        //if([line hasPrefix:@"ICE"]){
+        //    line = [@"I C E" stringByAppendingString:[line substringFromIndex:3]];
+        //}
+    }
+    res.displayTitle = [NSString stringWithFormat:formatString,departure?@"Ab":@"An", event.formattedTime, line, event.actualStation];
     return res;
 }
 
@@ -309,7 +326,8 @@
     return [self isStationInfoPhoneMobility]
     || [self isStationInfoPhone3S]
     || [self isStationInfoPhoneLostservice]
-    || self.isChatBotSearch;
+    || self.isChatBotSearch
+    || self.isServiceNumberSearch;
 }
 -(BOOL)isStationInfoPhoneMobility{
     return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services Mobilitätsservice"];
@@ -324,7 +342,7 @@
     return [self.keywordString isEqualToString:@"Bahnhofsinformation Parkplätze"];
 }
 -(BOOL)isSteplessAccessSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Zugang & Wege"];
+    return [self.keywordString isEqualToString:@"Bahnhofsinformation Barrierefreiheit"];
 }
 -(BOOL)isWifiSearch{
     return [self.keywordString isEqualToString:@"Bahnhofsinformation WLAN"];

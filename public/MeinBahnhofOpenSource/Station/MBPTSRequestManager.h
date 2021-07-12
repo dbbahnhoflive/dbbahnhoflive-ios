@@ -9,6 +9,7 @@
 #import <AFNetworking/AFNetworking.h>
 #import "MBPTSStationResponse.h"
 #import "MBPTSStationFromSearch.h"
+#import "MBPlatformAccessibility.h"
 
 @interface MBPTSRequestManager  : AFHTTPSessionManager
 
@@ -27,4 +28,5 @@
 failureBlock:(void (^)(NSError *error))failure;
 
 
+-(NSURLSessionTask *)requestAccessibility:(NSString *)eva success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure;
 @end

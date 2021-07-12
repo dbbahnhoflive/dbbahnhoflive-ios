@@ -28,6 +28,7 @@
 @class LevelplanWrapper;
 @class MBPXRShopCategory;
 @class FacilityStatus;
+@class MBPlatformAccessibility;
 
 @interface MBStation : NSObject
 
@@ -73,17 +74,21 @@
 - (GMSMarker*)markerForStation;
 
 -(BOOL)displayStationMap;
-
+-(BOOL)hasDirtService;
 -(BOOL)hasShops;
 -(BOOL)isGreenStation;
 -(BOOL)hasChatbot;
 -(BOOL)hasPickPack;
 -(BOOL)hasOccupancy;
+-(BOOL)useOSM;
+
 + (NSArray<NSString*>*) categoriesForShoppen;
 
 -(NSArray<MBMarker*>*)getFacilityMapMarker;
 
 -(void)updateStationWithDetails:(MBPTSStationResponse*)details;
+-(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList;
+-(NSArray<MBPlatformAccessibility*>*)platformAccessibility;
 
 -(RIMapPoi*)poiForPlatform:(NSString*)platformNumber;
 

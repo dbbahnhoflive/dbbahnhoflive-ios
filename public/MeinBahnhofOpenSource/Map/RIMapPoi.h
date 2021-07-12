@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import "MBPXRShopCategory.h"
+#import "RIMapPoiOpenTime.h"
 
 @class MBMarker;
 
@@ -21,13 +22,13 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 
 @property(nonatomic,strong,readonly) NSNumber* idNum;
 
-@property(nonatomic,strong,readonly) NSString* src_layer;
+//@property(nonatomic,strong,readonly) NSString* src_layer;//no longer used
 @property(nonatomic,strong,readonly) NSString* levelcode;
 @property(nonatomic,strong,readonly) NSString* type;
-@property(nonatomic,strong,readonly) NSString* category;
+@property(nonatomic,strong,readonly) NSString* category;//no longer used
 @property(nonatomic,strong,readonly) NSString* name;
 @property(nonatomic,strong,readonly) NSString* displname;
-@property(nonatomic,strong,readonly) NSString* displmap;
+@property(nonatomic,strong,readonly) NSString* displmap;//no longer used
 @property(nonatomic,strong,readonly) NSString* detail;
 @property(nonatomic,strong,readonly) NSString* tags;
 
@@ -45,11 +46,13 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 @property(nonatomic,strong,readonly) NSString* time_3;
 @property(nonatomic,strong,readonly) NSString* time_4;
 
+@property(nonatomic,strong) NSArray<RIMapPoiOpenTime*>* openingTimes;
+
 @property(nonatomic,strong,readonly) NSArray* bbox;
 
-@property(nonatomic,strong,readonly) NSString* phone;
-@property(nonatomic,strong,readonly) NSString* email;
-@property(nonatomic,strong,readonly) NSString* website;
+@property(nonatomic,strong) NSString* phone;
+@property(nonatomic,strong) NSString* email;
+@property(nonatomic,strong) NSString* website;
 
 -(MBMarker*)mapMarker;
 -(NSInteger)mapZoomLevel;

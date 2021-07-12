@@ -24,6 +24,9 @@
 @property(nonatomic,strong) NSString* initialSelectedTransportType;
 @property (nonatomic) BOOL useHafas;
 
+//when set, used instead of timetable
+@property(nonatomic,strong) NSArray<NSString*>* platforms;
+
 @property (nonatomic,weak) id<MBTimetableFilterViewControllerDelegate> delegate;
 
 @end

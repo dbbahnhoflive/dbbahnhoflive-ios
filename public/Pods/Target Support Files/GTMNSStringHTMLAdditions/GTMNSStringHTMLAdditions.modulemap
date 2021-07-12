@@ -1,6 +1,0 @@
-framework module GTMNSStringHTMLAdditions {
-  umbrella header "GTMNSStringHTMLAdditions-umbrella.h"
-
-  export *
-  module * { export * }
-}

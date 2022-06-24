@@ -37,6 +37,7 @@
 -(void)storeStopLocations:(NSArray<HafasStopLocation*>*)stops;
 
 -(HAFASProductCategory)productCategory;
++(NSString*)stringForCat:(HAFASProductCategory)cat;
 -(NSString*)productLine;
 -(NSString*)productName;
 

@@ -5,6 +5,7 @@
 
 
 #import "MBPlatformAccessibilityFeature.h"
+#import <UIKit/UIKit.h>
 
 @implementation MBPlatformAccessibilityFeature
 

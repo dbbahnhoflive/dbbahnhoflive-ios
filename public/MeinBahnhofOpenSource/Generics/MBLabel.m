@@ -5,6 +5,7 @@
 
 
 #import "MBLabel.h"
+#import "MBUIHelper.h"
 
 @implementation MBLabel
 

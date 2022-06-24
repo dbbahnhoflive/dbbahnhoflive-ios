@@ -10,11 +10,13 @@
 #import "MBFavoriteStationManager.h"
 #import "MBTutorialManager.h"
 #import "MBStationSearchViewController.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBSettingViewController ()<UITableViewDelegate,UITableViewDataSource>
 
 @property(nonatomic,strong) UITableView* settingTableView;
-@property(nonatomic,strong) NSMutableArray<MBPTSStationFromSearch*>* favStations;
+@property(nonatomic,strong) NSMutableArray<MBStationFromSearch*>* favStations;
 @property(nonatomic,strong) NSIndexPath* selectedCell;
 
 @end
@@ -49,14 +51,14 @@
     self.favStations = [[[MBFavoriteStationManager client] favoriteStationsList] mutableCopy];
     //is current station in list?
     BOOL currentStationIsFavorite = NO;
-    for(MBPTSStationFromSearch* dict in self.favStations){
+    for(MBStationFromSearch* dict in self.favStations){
         if(dict.stationId && [self.currentStation.mbId isEqualToNumber:dict.stationId]){
             currentStationIsFavorite = YES;
             break;
         }
     }
     if(!currentStationIsFavorite){
-        MBPTSStationFromSearch* s = [MBPTSStationFromSearch new];
+        MBStationFromSearch* s = [MBStationFromSearch new];
         s.title = self.currentStation.title;
         s.stationId = self.currentStation.mbId;
         s.eva_ids = self.currentStation.stationEvaIds;
@@ -130,7 +132,7 @@
     MBSettingsTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
     if(indexPath.section == 0){
         cell.mainIcon.image = [UIImage db_imageNamed:@"app_bahnhof"];
-        MBPTSStationFromSearch* dict = self.favStations[indexPath.row];
+        MBStationFromSearch* dict = self.favStations[indexPath.row];
         cell.mainTitleLabel.text = dict.title;
         cell.subTitleLabel.text = @"Als Favorit hinzugefügt";
     } else if(indexPath.section == 1) {
@@ -148,7 +150,7 @@
     if(self.selectedCell.section == indexPath.section && self.selectedCell.row == indexPath.row){
         cell.showDetails = YES;
         if(indexPath.section == 0){
-            MBPTSStationFromSearch* dict = self.favStations[indexPath.row];
+            MBStationFromSearch* dict = self.favStations[indexPath.row];
             cell.aSwitch.on = [[MBFavoriteStationManager client] isFavorite:dict];
             [cell.aSwitch addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         } else if(indexPath.section == 1) {
@@ -166,7 +168,7 @@
 }
 -(void)switchChanged:(UISwitch*)sw{
     if(self.selectedCell.section == 0){
-        MBPTSStationFromSearch* dict = self.favStations[self.selectedCell.row];
+        MBStationFromSearch* dict = self.favStations[self.selectedCell.row];
         if(sw.on){
             [[MBFavoriteStationManager client] addStation:dict];
         } else {

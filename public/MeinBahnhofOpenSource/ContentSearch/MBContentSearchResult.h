@@ -18,6 +18,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 #define CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO @"Bahnhofsinformation Info & Services DB Information"
+#define CONTENT_SEARCH_KEY_STATIONINFO_SEV @"Bahnhofsinformation Schienenersatzverkehr"
 
 @interface MBContentSearchResult : NSObject
 
@@ -97,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)isParkingSearch;
 -(BOOL)isSteplessAccessSearch;
 -(BOOL)isWifiSearch;
+-(BOOL)isSEVSearch;
 -(BOOL)isElevatorSearch;
 
 -(BOOL)isShopOpenSearch;

@@ -5,6 +5,7 @@
 
 
 #import "MBTimetableFilterViewController.h"
+#import "MBUIHelper.h"
 
 #import "TimetableManager.h"
 #import "HafasRequestManager.h"
@@ -24,7 +25,7 @@
 @property (nonatomic, strong) UIView *buttonBackView;
 @property (nonatomic, strong) MBSwitch* filterSwitch;
 @property (nonatomic, strong) UIView* filterSegmentedView;
-
+@property (nonatomic, strong) UILabel* timeLabel;
 
 @property (nonatomic, strong) NSArray* filterTrainTypes;
 @property (nonatomic, strong) NSArray* filterPlatforms;
@@ -77,15 +78,21 @@
     [self.pickerContainer addSubview:backView];
     self.buttonBackView = backView;
     
+    if(self.availableDataUntilTime){
+        self.timeLabel = [UILabel new];
+        self.timeLabel.textAlignment = NSTextAlignmentCenter;
+        self.timeLabel.font = [UIFont db_RegularFourteen];
+        self.timeLabel.textColor = [UIColor db_878c96];
+        self.timeLabel.numberOfLines = 0;
+        [self.pickerContainer addSubview:self.timeLabel];
+    }
+    
     self.confirmButton = [[UIButton alloc] init];
     [self.confirmButton setTitle:@"Übernehmen" forState:UIControlStateNormal];
     self.confirmButton.accessibilityLanguage = @"de-DE";
-    
     [self.confirmButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.confirmButton setBackgroundColor:[UIColor db_GrayButton]];
     [self.confirmButton.titleLabel setFont:[UIFont db_BoldEighteen]];
-
-    
     [self.confirmButton addTarget:self action:@selector(confirmFilterSelection:) forControlEvents:UIControlEventTouchUpInside];
     
     [self.pickerContainer addSubview:self.platformPicker];
@@ -111,10 +118,42 @@
     }
     [self.transportTypePicker reloadAllComponents];
     [self preselectInitialValues];
+    [self updateTimeText];
 }
 
+-(void)updateTimeText{
+    if(self.platformPicker.hidden){
+        [self showTimeForTrainTypes];
+    } else {
+        [self showTimeForPlatforms];
+    }
+}
+
+-(void)showTimeForTrainTypes{
+    if(self.useHafas){
+        self.timeLabel.text = [NSString stringWithFormat:@"Verkehrsmittel %@",self.availableDataUntilTime];
+    } else {
+        self.timeLabel.text = [NSString stringWithFormat:@"Verkehrende Zugtypen %@",self.availableDataUntilTime];
+    }
+}
+-(void)showTimeForPlatforms{
+    self.timeLabel.text = [NSString stringWithFormat:@"Bediente Gleise %@",self.availableDataUntilTime];
+}
+
+
 -(NSInteger)expectedContentHeight{
+    [self resizeTimeLabel];
+    if(self.timeLabel){
+        return 410+5+self.timeLabel.sizeHeight;
+    }
     return 410;//switch+picker+button
+}
+
+-(void)resizeTimeLabel{
+    if(self.timeLabel){
+        CGSize size = [self.timeLabel sizeThatFits:CGSizeMake(self.contentView.frame.size.width-2*30, 1000)];
+        [self.timeLabel setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
+    }
 }
 
 -(void)viewDidLayoutSubviews{
@@ -128,6 +167,12 @@
     [self.filterSegmentedView setGravityTop:30];
     
     self.transportTypePicker.frame = self.platformPicker.frame = CGRectMake(0,CGRectGetMaxY(self.filterSegmentedView.frame)+10, self.pickerContainer.sizeWidth, 216);
+    
+    if(self.timeLabel){
+        [self resizeTimeLabel];
+        [self.timeLabel centerViewHorizontalInSuperView];
+        [self.timeLabel setBelow:self.transportTypePicker withPadding:5];
+    }
     
     [self.buttonBackView setGravityBottom:0];
     self.confirmButton.size = CGSizeMake(MIN(self.pickerContainer.sizeWidth*0.8, 290), 60);
@@ -173,6 +218,7 @@
         self.platformPicker.hidden = YES;
         self.transportTypePicker.hidden = NO;
     }
+    [self updateTimeText];
 }
 
 

@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import <Mantle/Mantle.h>
-#import "MBPTSStationResponse.h"
+#import "MBStationDetails.h"
 
 
 #define STATION_ID_BERLIN_HBF 1071
@@ -16,11 +16,12 @@
 #define STATION_ID_MUENCHEN_HBF 4234
 #define STATION_ID_KOELN_HBF 3320
 
-@class MBPTSTravelcenter;
+@class MBTravelcenter;
 @class MBOPNVStation;
 @class MBMarker;
 @class RIMapPoi;
 @class RIMapMetaData;
+@class RIMapSEV;
 @class GMSMarker;
 @class MBNews;
 @class MBParkingInfo;
@@ -35,8 +36,6 @@
 @property (nonatomic, copy, readonly) NSNumber *mbId;//station id (stada)
 @property (nonatomic, copy, readonly) NSString *title;
 
-@property (nonatomic, copy, readonly) NSNumber *category;
-
 @property (nonatomic, strong) NSArray<MBEinkaufsbahnhofCategory*> *einkaufsbahnhofCategories;
 @property (nonatomic) BOOL isEinkaufsbahnhof;
 
@@ -44,10 +43,11 @@
 @property (nonatomic, strong, readwrite) NSArray<LevelplanWrapper*> *levels;
 @property(nonatomic,strong) RIMapMetaData* additionalRiMapData;
 
-@property(nonatomic,strong) MBPTSTravelcenter* travelCenter;
+@property(nonatomic,strong) MBTravelcenter* travelCenter;
 
 @property (nonatomic, strong) NSArray<RIMapPoi*>* riPois;
 @property (nonatomic, strong) NSArray<MBPXRShopCategory*>* riPoiCategories;
+@property (nonatomic, strong) NSArray<RIMapSEV*>* sevPois;
 
 // FacilityStatus
 @property (nonatomic, strong) NSArray<FacilityStatus*> *facilityStatusPOIs;
@@ -55,8 +55,8 @@
 // Parking
 @property( nonatomic,strong) NSArray<MBParkingInfo*>* parkingInfoItems;
 
-// PTS Details
-@property(nonatomic,strong) MBPTSStationResponse* stationDetails;
+// RIS:Station Details
+@property(nonatomic,strong) MBStationDetails* stationDetails;
 
 // Hafas
 @property(nonatomic,strong) NSArray<MBOPNVStation*>* nearestStationsForOPNV;
@@ -81,15 +81,21 @@
 -(BOOL)hasPickPack;
 -(BOOL)hasOccupancy;
 -(BOOL)useOSM;
+-(BOOL)hasSEVStations;
++(BOOL)stationShouldBeLoadedAsOPNV:(NSString*)stationId;
 
 + (NSArray<NSString*>*) categoriesForShoppen;
 
 -(NSArray<MBMarker*>*)getFacilityMapMarker;
+-(NSArray<MBMarker*>*)getSEVMapMarker;
 
--(void)updateStationWithDetails:(MBPTSStationResponse*)details;
+-(void)updateStationWithDetails:(MBStationDetails*)details;
+-(void)parseOpeningTimesWithCompletion:(void (^)(void))completion;
 -(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList;
 -(NSArray<MBPlatformAccessibility*>*)platformAccessibility;
 
 -(RIMapPoi*)poiForPlatform:(NSString*)platformNumber;
+
++(NSString*)platformNumberFromPlatform:(NSString*)platform;
 
 @end

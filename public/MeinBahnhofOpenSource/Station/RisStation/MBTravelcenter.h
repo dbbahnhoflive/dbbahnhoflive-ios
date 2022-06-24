@@ -5,11 +5,14 @@
 
 
 #import <Foundation/Foundation.h>
+#import "MBOSMOpeningWeek.h"
 @import CoreLocation;
 
-@interface MBPTSTravelcenter : NSObject
+@interface MBTravelcenter : NSObject
 
 -(instancetype)initWithDict:(NSDictionary*)json;
+
+@property (nonatomic, strong) MBOSMOpeningWeek *openingTimesOSM;
 
 -(CLLocationCoordinate2D)coordinate;
 -(CLLocation*)location;
@@ -18,7 +21,7 @@
 -(NSString*)address;
 -(NSString*)postCode;
 -(NSString*)city;
--(NSString*)openingTimes;
+-(NSString*)openingHoursOSMString;
 
 @end
 

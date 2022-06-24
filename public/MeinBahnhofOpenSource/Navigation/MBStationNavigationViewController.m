@@ -5,6 +5,7 @@
 
 
 #import "MBStationNavigationViewController.h"
+#import "MBUIHelper.h"
 
 @interface MBStationNavigationViewController ()
 @property (nonatomic, assign) BOOL behindViewSmall;

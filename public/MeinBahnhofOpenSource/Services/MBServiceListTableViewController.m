@@ -22,7 +22,9 @@
 #import "MBContentSearchResult.h"
 #import "MBCouponCategory.h"
 #import "MBCouponTableViewCell.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 
 typedef NS_ENUM(NSUInteger, MBServiceType)  {
@@ -52,6 +54,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
     if([item isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
         self.type = MBServiceType_Shop_Einkaufsbahnhof;
         self.subItems = [(MBEinkaufsbahnhofCategory*)item shops];
+        self.trackingTitle = [(MBEinkaufsbahnhofCategory*)item name];
     } else if([item isKindOfClass:[MBMenuItem class]]) {
         self.type = MBServiceType_Info;
         NSArray *subItems = [(MBMenuItem *)item services];
@@ -62,14 +65,57 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
                 return NSOrderedAscending;
             }
         }];
+        MBMenuItem* menuItem = (MBMenuItem*)item;
+        //NSLog(@"tap MBMenuItem %@",service);
+        if([menuItem.type isEqualToString:@"aufzuegeundfahrtreppen"]){
+            self.trackingTitle = @"aufzuege";
+        } else if([menuItem.type isEqualToString:@"rufnummern"]){
+            self.trackingTitle = @"service_und_rufnummern";
+        } else if([menuItem.type isEqualToString:kServiceType_Parking]){
+            self.trackingTitle = @"parkplaetze";
+        } else if([menuItem.type isEqualToString:@"infoservices"]){
+            self.trackingTitle = @"infos_und_services";
+        } else if([menuItem.type isEqualToString:kServiceType_Barrierefreiheit]){
+            self.trackingTitle = @"barrierefreiheit";
+        } else if([menuItem.type isEqualToString:kServiceType_WLAN]){
+            self.trackingTitle = @"wlan";
+        } else if([menuItem.type hasPrefix:kServiceType_SEV]){
+            self.trackingTitle = @"schienenersatzverkehr";
+        } else if([menuItem.type isEqualToString:kServiceType_Rating]){
+            self.trackingTitle = nil;
+            [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"bewerten"]];
+        } else if([menuItem.type isEqualToString:kServiceType_Problems]){
+            self.trackingTitle = nil;
+            [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"kontakt"]];
+        } else if([menuItem.type hasPrefix:kServiceType_Dirt_Prefix]){
+            self.trackingTitle = nil;
+            [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"verschmutzung"]];
+        } else {
+            NSLog(@"no tracking key defined for %@",menuItem);
+        }
+
     } else if([item isKindOfClass:[MBPXRShopCategory class]]) {
         self.type = MBServiceType_Shop_Pxr;
         self.subItems = ((MBPXRShopCategory *)item).items;
+        self.trackingTitle = [(MBPXRShopCategory*)item title];
     } else if([item isKindOfClass:MBCouponCategory.class]){
         self.type = MBServiceType_Coupons;
         self.subItems = ((MBCouponCategory*)item).items;
+        self.trackingTitle = [(MBCouponCategory*)item title];
     }
     return self;
+}
+
+-(void)setTrackingTitle:(NSString *)trackingTitle{
+    if(trackingTitle){
+        trackingTitle = [trackingTitle lowercaseString];
+        trackingTitle = [trackingTitle stringByReplacingOccurrencesOfString:@" " withString:@"_"];
+        trackingTitle = [trackingTitle stringByReplacingOccurrencesOfString:@"ä" withString:@"ae"];
+        trackingTitle = [trackingTitle stringByReplacingOccurrencesOfString:@"&" withString:@"und"];
+        _trackingTitle = trackingTitle;
+    } else {
+        _trackingTitle = nil;
+    }
 }
 
 - (void)viewDidLoad {
@@ -217,7 +263,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         //[self.tableView beginUpdates];
     }
     MBExpandableTableViewCell *tableCell = [self.tableView cellForRowAtIndexPath:indexPath];
-    NSLog(@"didSelectRowAtIndexPath %@ with selectedRow %@",indexPath,self.selectedRow);
+    //NSLog(@"didSelectRowAtIndexPath %@ with selectedRow %@",indexPath,self.selectedRow);
     if (self.selectedRow && self.selectedRow.row == indexPath.row) {
         self.selectedRow = [NSIndexPath indexPathForRow:-1 inSection:-1];
         tableCell.expanded = NO;
@@ -298,15 +344,15 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
                 id item = [self.subItems objectAtIndex:self.selectedRow.row];
                 if([item isKindOfClass:[MBService class]]){
                     MBService* service = (MBService*)item;
-                    if([service.type isEqualToString:@"local_travelcenter"]){
+                    if([service.type isEqualToString:kServiceType_LocalTravelCenter]){
                         return @[ PRESET_TRIPCENTER ];
-                    } else if([service.type isEqualToString:@"local_db_lounge"]) {
+                    } else if([service.type isEqualToString:kServiceType_LocalDBLounge]) {
                         return @[ PRESET_DB_LOUNGE ];
-                    } else if([service.type isEqualToString:@"db_information"]){
+                    } else if([service.type isEqualToString:kServiceType_DBInfo]){
                         return @[ PRESET_DB_INFO ];
-                    } else if([service.type isEqualToString:@"bahnhofsmission"]){
+                    } else if([service.type isEqualToString:kServiceType_Bahnhofsmission]){
                         return @[ PRESET_INFO_MISSION ];
-                    } else if([service.type isEqualToString:@"local_lostfound"]){
+                    } else if([service.type isEqualToString:kServiceType_LocalLostFound]){
                         return @[ PRESET_LOSTFOUND ];
                     }
                 }
@@ -334,7 +380,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         phoneURLString = [phoneURLString stringByReplacingOccurrencesOfString:@"-" withString:@""];
         
         NSURL *phoneURL = [NSURL URLWithString:phoneURLString];
-        [[AppDelegate appDelegate] openURL:phoneURL];
+        [MBUrlOpening openURL:phoneURL];
         
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
@@ -343,7 +389,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
 
 - (void) didOpenUrl:(NSURL *)url
 {
-    [[AppDelegate appDelegate] openURL:url];
+    [MBUrlOpening openURL:url];
 
 }
 
@@ -352,7 +398,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
     if ([mailAddress rangeOfString:@"mailto:"].location == NSNotFound) {
         mailAddress = [NSString stringWithFormat:@"mailto:%@",mailAddress];
     }
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:mailAddress]];
+    [MBUrlOpening openURL:[NSURL URLWithString:mailAddress]];
 }
 
 @end

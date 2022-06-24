@@ -5,6 +5,7 @@
 
 
 #import "MBContentSearchInputField.h"
+#import "MBUIHelper.h"
 
 @implementation MBContentSearchInputField
 

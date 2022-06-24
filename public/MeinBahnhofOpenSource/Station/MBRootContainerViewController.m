@@ -23,6 +23,7 @@
 #import "MBParkingManager.h"
 #import "MBParkingOccupancyManager.h"
 #import "RIMapManager2.h"
+#import "RIMapSEVManager.h"
 #import "MBContentSearchResult.h"
 
 #import "FacilityStatusManager.h"
@@ -32,11 +33,13 @@
 #import "MBOverlayViewController.h"
 
 
-#import "MBPTSRequestManager.h"
+#import "MBRISStationsRequestManager.h"
 #import "MBNewsRequestManager.h"
 #import "MBEinkaufsbahnhofManager.h"
 #import "MBStationOccupancyRequestManager.h"
 #import "MBSettingViewController.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBRootContainerViewController ()
 
@@ -227,48 +230,59 @@
     MBStation* station = self.station;
     NSObject* del = self.rootDelegate;
     
-    BOOL requestNewsAndCoupons = YES;
+    BOOL requestNewsAndCoupons = NO;
     BOOL requestParking = YES;
     BOOL requestOccupancy = YES;
     
-    _openRequests = 5;
-    // - StationData (PTS)
+    _openRequests = 6;
+    // - StationData (RIS:Station)
     // - RIMapStatus
     // - EinkaufsbahnhofOverview
     // - MapPOIs
+    // - RiMaps SEV
     // - FacilityStatus
     if(requestParking){
         _openRequests = _openRequests+1;
     }
     
     if(requestNewsAndCoupons){
-        _openRequests = _openRequests+1;
+        //NOTE: news does not count as a request to wait for, the inferface can be buildup before the api answers. Reason for this is a large delay in the api when its offline (30s) which would block buildup of the interface.
+        //_openRequests = _openRequests+1;
     }
     if(requestOccupancy){
         _openRequests = _openRequests+1;
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber* requestId = station.mbId;
+        //NSString* mainEva = station.stationEvaIds.firstObject;
+        //if(mainEva){
+        //    requestId = [NSNumber numberWithLongLong:mainEva.longLongValue];
+        //}
         
-        [[MBPTSRequestManager sharedInstance] requestStationData:station.mbId forcedByUser:forcedByUser success:^(MBPTSStationResponse *response) {
+        if([self.rootDelegate respondsToSelector:@selector(willStartLoadingData)] && del == self.rootDelegate){
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.rootDelegate willStartLoadingData];
+            });
+        }
+
+        [[HafasCacheManager sharedManager] addKnownEvaIds:station.stationEvaIds];
+
+        [[MBRISStationsRequestManager sharedInstance] requestStationData:requestId forcedByUser:forcedByUser success:^(MBStationDetails *response) {
             
             [station updateStationWithDetails:response ];
+            [station parseOpeningTimesWithCompletion:^{
+                if([self.rootDelegate respondsToSelector:@selector(didLoadStationData:)] && del == self.rootDelegate){
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.rootDelegate didLoadStationData:YES];
+                    });
+                }
+                
+                [self changeOpenRequests:-1];
+            }];
             
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[HafasCacheManager sharedManager] addKnownEvaIds:station.stationEvaIds];
-            });
-            
-            if([self.rootDelegate respondsToSelector:@selector(didLoadStationData:)] && del == self.rootDelegate){
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.rootDelegate didLoadStationData:YES];
-                });
-            }
-            
-            [self changeOpenRequests:-1];
-            [self requestMapStationInfo:station forcedByUser:forcedByUser del:del];
-            [self requestOccupancy:station forcedByUser:forcedByUser];
         } failureBlock:^(NSError *error) {
-            NSLog(@"PTS: %@",error);
+            NSLog(@"RIS:Station: %@",error);
             if([self.rootDelegate respondsToSelector:@selector(didLoadStationData:)] && del == self.rootDelegate){
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self.rootDelegate didLoadStationData:NO];
@@ -276,8 +290,11 @@
             }
 
             [self changeOpenRequests:-1];
-            [self requestMapStationInfo:station forcedByUser:forcedByUser del:del];
         }];
+
+        [self requestMapStationInfo:station forcedByUser:forcedByUser del:del];
+
+        [self requestOccupancy:station forcedByUser:forcedByUser];
         
         [self loadEinkaufsbahnhofListStation:station forcedByUser:forcedByUser del:del];
 
@@ -290,10 +307,23 @@
                 //debugdata:
                 //station.newsList = [MBNews debugData]; station.couponsList = station.newsList;
                 
-                [self changeOpenRequests:-1];
+                if([self.rootDelegate respondsToSelector:@selector(didLoadNewsData:)] && del == self.rootDelegate){
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.rootDelegate didLoadNewsData:YES];
+                    });
+                }
+                
+                //[self changeOpenRequests:-1];
             } failureBlock:^(NSError *error) {
                 NSLog(@"news failure: %@",error);
-                [self changeOpenRequests:-1];
+                
+                if([self.rootDelegate respondsToSelector:@selector(didLoadNewsData:)] && del == self.rootDelegate){
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.rootDelegate didLoadNewsData:NO];
+                    });
+                }
+                
+                //[self changeOpenRequests:-1];
             }];
         }
 
@@ -391,6 +421,12 @@
             [self changeOpenRequests:-1];
         }];
         
+        [RIMapSEVManager.shared requestSEV:station.mbId forcedByUser:forcedByUser success:^(NSArray<RIMapSEV *> * _Nonnull list) {
+            station.sevPois = list;
+            [self changeOpenRequests:-1];
+        } failureBlock:^(NSError * _Nullable error) {
+            [self changeOpenRequests:-1];
+        }];
         
         [[FacilityStatusManager client] requestFacilityStatus:station.mbId success:^(NSArray *facilityStatusItems) {
             
@@ -509,11 +545,7 @@
     });
 }
 
-+(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc {
-    [self presentViewControllerAsOverlay:vc allowNavigation:NO];
-}
-
-+(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc allowNavigation:(BOOL)allowNavigation{
++(UIViewController*)rootViewController{
     AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
     MBStationSearchViewController* search = (MBStationSearchViewController*) app.viewController;
     UIViewController* root = search.stationMapController;//MBRootContainerViewController*
@@ -526,6 +558,15 @@
             root = root.presentedViewController;
         }
     }
+    return root;
+}
+
++(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc {
+    [self presentViewControllerAsOverlay:vc allowNavigation:NO];
+}
+
++(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc allowNavigation:(BOOL)allowNavigation{
+    UIViewController* root = [self rootViewController];
     if(root){
         if(allowNavigation){
             vc.overlayIsPresentedAsChildViewController = NO;
@@ -594,46 +635,48 @@
         [self.timetableViewController handleSearchResult:search];
         [self selectTimetableTab];
         if(self.timetableViewController.navigationController.presentedViewController != self.timetableViewController){
-            [self.timetableViewController.navigationController popToRootViewControllerAnimated:NO];
+            [self popThisControllerToRootController:self.timetableViewController];
         }
     } else if(search.isShopSearch){
-        [self.shopServiceListViewController.navigationController popToRootViewControllerAnimated:NO];
         self.shopServiceListViewController.searchResult = search;
         [self selectShopTab];
+        [self popThisControllerToRootController:self.shopServiceListViewController];
     } else if(search.isStationInfoSearch || search.isFeedbackSearch){
-        [self.infoServiceListViewController.navigationController popToRootViewControllerAnimated:NO];
         self.infoServiceListViewController.searchResult = search;
         if(search.isFeedbackSearch){
             self.infoServiceListViewController.openServiceNumberScreen = true;
         }
         [self selectInfoTab];
+        [self popThisControllerToRootController:self.infoServiceListViewController];
     } else if(search.isMapSearch || search.isSettingSearch || search.isOPNVOverviewSearch || search.isStationFeatureSearch){
         [self selectStationTab];
-        [self.stationContainerViewController.navigationController popToRootViewControllerAnimated:NO];
-        UIViewController* finalVC = nil;
+        [self popThisControllerToRootController:self.stationContainerViewController];
         if(search.isMapSearch){
-            MBMapViewController* vc = [MBMapViewController new];
-            [vc configureWithStation:self.station];
-            [self.stationTabBarViewController presentViewController:vc animated:YES completion:nil];
-            return;
+            [MBMapConsent.sharedInstance showConsentDialogInViewController:self.stationTabBarViewController completion:^{
+                MBMapViewController* vc = [MBMapViewController new];
+                [vc configureWithStation:self.station];
+                [self.stationTabBarViewController presentViewController:vc animated:YES completion:nil];
+            }];
         } else if(search.isSettingSearch){
             MBSettingViewController* vc = [MBSettingViewController new];
-            finalVC = vc;
             vc.currentStation = self.station;
             vc.title = @"Einstellungen";
+            [self.stationContainerViewController.navigationController pushViewController:vc animated:YES];
         } else if(search.isOPNVOverviewSearch){
             [self.stationContainerViewController openOPNV];
-            return;
         } else if(search.isStationFeatureSearch){
             [self.stationContainerViewController openStationFeatures];
-            return;
-        }
-        if(finalVC){
-            [self.stationContainerViewController.navigationController pushViewController:finalVC animated:YES];
         }
     } else {
         NSLog(@"unknown search action, not implemented %@",search);
     }
+}
+
+-(void)popThisControllerToRootController:(UIViewController*)vc{
+    //popToRootViewControllerAnimated creates a "unbalanced calls" warning from UIKit
+    //[vc.navigationController popToRootViewControllerAnimated:false];
+    //this method does not create this warning:
+    [vc.navigationController setViewControllers:@[vc.navigationController.viewControllers.firstObject] animated:NO];
 }
 
 -(void)cleanup{

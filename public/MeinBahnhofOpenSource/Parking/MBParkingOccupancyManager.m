@@ -15,7 +15,7 @@
     static MBParkingOccupancyManager *sharedClient = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSURL *baseUrl = [NSURL URLWithString:[Constants kBusinessHubProdBaseUrl]];
+        NSURL *baseUrl = [NSURL URLWithString:[Constants kDBAPI]];
         sharedClient = [[self alloc] initWithBaseURL:baseUrl];
     });
     return sharedClient;
@@ -30,10 +30,11 @@
         return nil;
     }
     
-    NSString* endPoint = [NSString stringWithFormat:@"%@/parking-information/v1/parking-facilities/%@/capacities", [Constants kBusinessHubProdBaseUrl], siteId ];
+    NSString* endPoint = [NSString stringWithFormat:@"%@/parking-information/db-bahnpark/v2/parking-facilities/%@/capacities", [Constants kDBAPI], siteId ];
     NSLog(@"endPoint %@",endPoint);
     [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
+    [self.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
+    [self.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
 
     return [self GET:endPoint parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //

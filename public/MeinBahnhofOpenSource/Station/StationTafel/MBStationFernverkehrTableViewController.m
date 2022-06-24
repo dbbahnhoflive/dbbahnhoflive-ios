@@ -6,6 +6,7 @@
 
 #import "MBStationFernverkehrTableViewController.h"
 #import "MBStationTafelTableViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBStationFernverkehrTableViewController ()
 
@@ -95,7 +96,7 @@
         UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"Empty" forIndexPath:indexPath];
         cell.textLabel.text = @"Daten nicht verfügbar.";
         cell.textLabel.font = [UIFont db_RegularFourteen];
-        cell.textLabel.textColor = [UIColor redColor];
+        cell.textLabel.textColor = [UIColor db_mainColor];
         cell.imageView.image = [UIImage db_imageNamed:@"app_error"];
         cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
         cell.textLabel.numberOfLines = 0;

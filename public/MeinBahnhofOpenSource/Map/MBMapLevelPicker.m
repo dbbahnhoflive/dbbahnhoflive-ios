@@ -5,6 +5,7 @@
 
 
 #import "MBMapLevelPicker.h"
+#import "MBUIHelper.h"
 
 @interface MBMapLevelPicker()
 

@@ -5,6 +5,7 @@
 
 
 #import "WagenstandPushHeader.h"
+#import "MBUIHelper.h"
 
 @interface WagenstandPushHeader()
 

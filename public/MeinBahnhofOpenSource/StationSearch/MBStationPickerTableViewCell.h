@@ -5,7 +5,8 @@
 
 
 #import <UIKit/UIKit.h>
-#import "MBPTSStationFromSearch.h"
+#import "MBStationFromSearch.h"
+#import "MBStationListTableView.h"
 
 @class MBStationPickerTableViewCell;
 
@@ -20,9 +21,10 @@
 
 @interface MBStationPickerTableViewCell : UITableViewCell
 
-@property(nonatomic,strong) MBPTSStationFromSearch* station;
+@property(nonatomic,strong) MBStationFromSearch* station;
 @property(nonatomic,weak) id<MBStationPickerTableViewCellDelegate> delegate;
 @property(nonatomic) BOOL showDetails;
 @property(nonatomic) BOOL showDistance;
+@property(nonatomic,weak) MBStationListTableView* tableView;
 
 @end

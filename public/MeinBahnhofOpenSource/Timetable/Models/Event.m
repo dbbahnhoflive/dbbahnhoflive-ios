@@ -6,6 +6,7 @@
 
 #import "Event.h"
 #import "Stop.h"
+#import <UIKit/UIKit.h>
 
 @implementation Event
 
@@ -146,6 +147,16 @@
     if(self.plannedDistantEndpoint.length > 0){
         return self.plannedDistantEndpoint;
     }
+    
+    if(station.length == 0 && (!self.eventIsCanceled && self.changedStations.count > 0)){
+        //fallback for the case where the train was not cancelled but the changed stations is empty. Display the destination from the plan data.
+        if (self.departure) {
+            station = [self.stations lastObject];
+        } else {
+            station = [self.stations firstObject];
+        }
+    }
+    
     return station;
 }
 
@@ -173,6 +184,12 @@
         [irisEventMessages addObject:changedPlatformMessage];
         // if the trip was cancelled, this is the only relevant message
         return irisEventMessages;
+    }
+    
+    if(self.eventIsAdditional){
+        self.shouldShowRedWarnIcon = YES;
+        NSString *changedPlatformMessage = @"Zusätzlicher Halt";
+        [irisEventMessages addObject:changedPlatformMessage];
     }
     
     if (self.changedPlatform) {
@@ -235,6 +252,15 @@
     }
     return NO;
 }
+- (BOOL) eventIsAdditional
+{
+    if (self.plannedStatus
+        && [self.plannedStatus isEqualToString:@"a"]) {
+        return YES;
+    }
+    return NO;
+}
+
 
 - (NSString*) cancelledMessage
 {
@@ -320,4 +346,7 @@
     return components.day == componentsOther.day && components.month == componentsOther.month;
 }
 
+-(NSArray<NSString*>*)stationListWithCurrentStation:(NSString*)currentStation{
+    return self.departure ? [@[currentStation] arrayByAddingObjectsFromArray:self.actualStationsArray] : [self.actualStationsArray arrayByAddingObject:currentStation];
+}
 @end

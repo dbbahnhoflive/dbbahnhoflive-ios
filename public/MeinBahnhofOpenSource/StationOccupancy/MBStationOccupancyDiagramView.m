@@ -4,8 +4,7 @@
 //
 
 #import "MBStationOccupancyDiagramView.h"
-#import "UIFont+DBFont.h"
-#import "UIView+Frame.h"
+#import "MBUIHelper.h"
 
 @interface MBStationOccupancyDiagramView()
 @property(nonatomic,strong) NSMutableArray<UIView*>* hourBars;
@@ -80,12 +79,6 @@
 
 -(void)setOccupancy:(MBStationOccupancy *)occupancy{
     _occupancy = occupancy;
-    if(occupancy.currentCount > 0 && self.currentWeekday == self.occupancy.currentDay){
-        self.isAccessibilityElement = YES;
-        self.accessibilityLabel = [NSString stringWithFormat:@"Aktuell: %ld bis %ld Uhr, %ld Prozent.",_occupancy.currentHour,_occupancy.currentHour+1,(long)((_occupancy.currentCount/255.)*100.)];
-    } else {
-        self.isAccessibilityElement = NO;
-    }
     [self setNeedsLayout];
 }
 

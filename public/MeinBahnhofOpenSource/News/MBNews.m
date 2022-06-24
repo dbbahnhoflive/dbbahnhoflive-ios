@@ -69,6 +69,7 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
         NSInteger groupId = [[group db_numberForKey:@"id"] integerValue];
         if(groupId == MBNewsTypeOffer
            || groupId == MBNewsTypeDisruption
+           || groupId == MBNewsTypeMajorDisruption
            || groupId == MBNewsTypePoll
            || groupId == MBNewsTypeProductsServices){
             self.groupId = groupId;
@@ -167,6 +168,8 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
         return MBNewsTypeOffer;
     } else if(self.groupId == MBNewsTypeDisruption){
         return MBNewsTypeDisruption;
+    } else if(self.groupId == MBNewsTypeMajorDisruption){
+        return MBNewsTypeMajorDisruption;
     } else if(self.groupId == MBNewsTypePoll){
         return MBNewsTypePoll;
     } else if(self.groupId == MBNewsTypeProductsServices){
@@ -181,7 +184,7 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
         return NSOrderedSame;
     } else {
         if(!groupSortOrder){
-            groupSortOrder = @[ @(MBNewsTypeDisruption), @(MBNewsTypePoll), @(MBNewsTypeOffer), @(MBNewsTypeProductsServices) ];
+            groupSortOrder = @[ @(MBNewsTypeMajorDisruption), @(MBNewsTypeDisruption), @(MBNewsTypePoll), @(MBNewsTypeOffer), @(MBNewsTypeProductsServices) ];
         }
         NSInteger selfSortIndex = [groupSortOrder indexOfObject:@(self.newsType)];
         NSInteger otherSortIndex = [groupSortOrder indexOfObject:@(news.newsType)];

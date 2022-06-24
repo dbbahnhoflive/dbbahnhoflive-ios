@@ -39,6 +39,6 @@
 
 - (BOOL)filterIsActive;
 -(void)showTrack:(NSString*)track trainOrder:(Stop*)trainStop;
-+(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop;
+
 -(void)handleSearchResult:(MBContentSearchResult*)search;
 @end

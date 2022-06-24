@@ -13,6 +13,7 @@
 #import "MBTutorialManager.h"
 #import "MBOPNVStation.h"
 #import "MBMarker.h"
+#import "UIImage+MBImage.h"
 
 @interface MBMarkerMerger ()
 
@@ -22,30 +23,33 @@
 
 #define MAX_NUMBER_OF_ENTRIES 20
 
-+(MBMarker*)markerForSearchStation:(MBPTSStationFromSearch*)ptsstation{
-    if(ptsstation.isOPNVStation){
-        MBMarker *marker = [MBMarker markerWithPosition:ptsstation.coordinate andType:OEPNV_SELECTABLE];
++(MBMarker*)markerForSearchStation:(MBStationFromSearch*)searchStation{
+    if(searchStation.isOPNVStation){
+        MBMarker *marker = [MBMarker markerWithPosition:searchStation.coordinate andType:OEPNV_SELECTABLE];
+        if(UIAccessibilityIsVoiceOverRunning()){
+            marker.title = searchStation.title;
+        }
         marker.zoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
         marker.icon = [UIImage db_imageNamed:@"app_karte_haltestelle"];
         marker.appearAnimation = kGMSMarkerAnimationPop;
         NSMutableDictionary* dict = [@{
-                            @"name":ptsstation.title,
-                            @"title":ptsstation.title,
+                            @"name":searchStation.title,
+                            @"title":searchStation.title,
                             } mutableCopy];
         
-        if(ptsstation.distanceInKm){
-            dict[@"distanceInKm"] = ptsstation.distanceInKm;
+        if(searchStation.distanceInKm){
+            dict[@"distanceInKm"] = searchStation.distanceInKm;
         }
-        if(ptsstation.eva_ids){
-            dict[@"eva_ids"] = ptsstation.eva_ids;
+        if(searchStation.eva_ids){
+            dict[@"eva_ids"] = searchStation.eva_ids;
         }        
         marker.userData = dict;
         return marker;
     }
     
-    NSDictionary *fakeDict = ptsstation.dictRepresentation;
+    NSDictionary *fakeDict = searchStation.dictRepresentation;
             
-    MBStation* station = [[MBStation alloc] initWithId:ptsstation.stationId name:ptsstation.title evaIds:ptsstation.eva_ids location:ptsstation.location];
+    MBStation* station = [[MBStation alloc] initWithId:searchStation.stationId name:searchStation.title evaIds:searchStation.eva_ids location:searchStation.location];
                     
     MBMarker *marker = (MBMarker *)[station markerForStation];
     marker.zoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
@@ -67,6 +71,9 @@
     NSMutableArray *trainMarkers = [NSMutableArray new];
     for (MBOPNVStation *station in oepnvStations) {
         MBMarker *marker = [MBMarker markerWithPosition:station.coordinate andType:OEPNV_SELECTABLE];
+        if(UIAccessibilityIsVoiceOverRunning()){
+            marker.title = station.name;
+        }
         marker.zoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
         marker.icon = [UIImage db_imageNamed:@"app_karte_haltestelle"];
         marker.appearAnimation = kGMSMarkerAnimationPop;

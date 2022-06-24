@@ -10,6 +10,9 @@
 
 @property (nonatomic, strong) NSString* transportCategoryType;
 @property (nonatomic, strong) NSString* transportCategoryNumber;
+
+@property (nonatomic, strong) NSString* transportCategoryOriginalNumber;
+
 @property (nonatomic, strong) NSString* transportCategoryGenericNumber;
 
 @end

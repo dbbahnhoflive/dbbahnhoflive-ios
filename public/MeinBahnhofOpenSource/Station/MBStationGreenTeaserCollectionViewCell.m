@@ -6,7 +6,9 @@
 
 #import "MBStationGreenTeaserCollectionViewCell.h"
 #import "MBExternalLinkButton.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBStationGreenTeaserCollectionViewCell()
 @property(nonatomic,strong) UILabel* mainLabel;
@@ -64,7 +66,7 @@
 
 -(void)buttonTapped:(id)sender{
     [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"oekostrom-teaser"]];
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://gruen.deutschebahn.com/de/projekte/oekostrombahnhof"]];
+    [MBUrlOpening openURL:[NSURL URLWithString:@"https://gruen.deutschebahn.com/de/projekte/oekostrombahnhof"]];
 }
 
 - (void)layoutSubviews {

@@ -26,7 +26,9 @@
 #import "MBStaticStationInfo.h"
 #import "MBEinkaufsbahnhofCategory.h"
 #import "MBContentSearchResult.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBServiceListCollectionViewController () <UICollectionViewDelegateFlowLayout, UICollectionViewDelegate, UICollectionViewDataSource>
 
@@ -117,10 +119,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     if(self.searchResult){
         if(self.searchResult.isShopSearch){
             if(self.searchResult.isPickpackSearch){
-                MBService* service = [MBStaticStationInfo serviceForType:@"pickpack" withStation:_station];
-                MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station];
-                [vc setItem:service];
-                [self.navigationController pushViewController:vc animated:NO];
+                [self pushServiceViewForType:kServiceType_PickPack];
                 self.searchResult = nil;
                 return;
             }
@@ -141,26 +140,26 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         } else if(self.searchResult.isStationInfoSearch){
             if(self.searchResult.isStationInfoLocalServicesSearch){
                 if(self.searchResult.isLocalServiceDBInfo){
-                    self.searchResult.service = [self findServiceWithType:@"db_information"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_DBInfo];
                 } else if(self.searchResult.isLocalServiceMobileService){
-                    self.searchResult.service = [self findServiceWithType:@"mobiler_service"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_MobilerService];
                 } else if(self.searchResult.isLocalMission){
-                    self.searchResult.service = [self findServiceWithType:@"bahnhofsmission"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_Bahnhofsmission];
                 } else if(self.searchResult.isLocalTravelCenter){
-                    self.searchResult.service = [self findServiceWithType:@"local_travelcenter"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_LocalTravelCenter];
                 } else if(self.searchResult.isLocalLounge){
-                    self.searchResult.service = [self findServiceWithType:@"local_db_lounge"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_LocalDBLounge];
                 }
                 [self collectionView:self.collectionView didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
             } else if(self.searchResult.isStationInfoPhoneSearch){
                 if(self.searchResult.isStationInfoPhoneMobility){
-                    self.searchResult.service = [self findServiceWithType:@"mobilitaetsservice"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_MobilityService];
                 } else if(self.searchResult.isStationInfoPhone3S){
-                    self.searchResult.service = [self findServiceWithType:@"3-s-zentrale"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_3SZentrale];
                 } if(self.searchResult.isStationInfoPhoneLostservice){
-                    self.searchResult.service = [self findServiceWithType:@"local_lostfound"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_LocalLostFound];
                 } if(self.searchResult.isChatBotSearch){
-                    self.searchResult.service = [self findServiceWithType:@"chatbot"];
+                    self.searchResult.service = [self findServiceWithType:kServiceType_Chatbot];
                 }
                 //find the index of the "rufnummern & services" tile
                 NSIndexPath* servicePath = [self indexPathForServiceCategoryType:@"rufnummern"];
@@ -172,23 +171,25 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 [vc setParkingList:self.station.parkingInfoItems];
                 [self.navigationController pushViewController:vc animated:NO];
             } else if(self.searchResult.isSteplessAccessSearch){
-                MBService* service = [self findServiceWithType:@"barrierefreiheit"];
-                MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station];
-                [vc setItem:service];
-                [self.navigationController pushViewController:vc animated:NO];
+                [self pushServiceViewForType:kServiceType_Barrierefreiheit];
             } else if(self.searchResult.isWifiSearch){
-                MBService* service = [self findServiceWithType:@"wlan"];
-                MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station];
-                [vc setItem:service];
-                [self.navigationController pushViewController:vc animated:NO];
+                [self pushServiceViewForType:kServiceType_WLAN];
             } else if(self.searchResult.isElevatorSearch){
                 MBFacilityStatusViewController *facilityVC = [[MBFacilityStatusViewController alloc] init];
                 facilityVC.station = self.station;
                 [self.navigationController pushViewController:facilityVC animated:NO];
+            } else if(self.searchResult.isSEVSearch){
+                [self pushServiceViewForType:kServiceType_SEV];
             }
         }
         self.searchResult = nil;
     }
+}
+
+-(void)pushServiceViewForType:(NSString*)serviceType{
+    MBService* service = [self findServiceWithType:serviceType];
+    MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
+    [self.navigationController pushViewController:vc animated:NO];
 }
 
 -(NSIndexPath*)indexPathForServiceCategoryType:(NSString*)type{
@@ -303,16 +304,15 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     
     if(self.openChatBotScreen || self.openServiceNumberScreen){
         BOOL isChat = self.openChatBotScreen;
-        NSString* serviceName = @"chatbot";
+        NSString* serviceName = kServiceType_Chatbot;
         if(!isChat){
             //pickpack
-            serviceName = @"pickpack";
+            serviceName = kServiceType_PickPack;
         }
         BOOL displayAsSingleScreen = NO;
         if(displayAsSingleScreen){
             MBService* service = [MBStaticStationInfo serviceForType:serviceName withStation:_station];
-            UIViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station];
-            [(MBDetailViewController *)vc setItem:service];
+            UIViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
             [self.navigationController pushViewController:vc animated:NO];
         } else {
             //we simulate a search to reuse the exiting code for displaying a service item
@@ -387,83 +387,82 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     
     NSMutableArray *rufnummernServices = [NSMutableArray arrayWithCapacity:3];
     
-    MBPTSStationResponse* details = _station.stationDetails;
+    MBStationDetails* details = _station.stationDetails;
     
     if(details.hasDBInfo){
-        MBService* service = [MBStaticStationInfo serviceForType:@"db_information" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_DBInfo withStation:_station];
         [filteredInfoServices addObject:service];
     }
     
     if(details.hasLocalServiceStaff){
-        MBService* service = [MBStaticStationInfo serviceForType:@"mobiler_service" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_MobilerService withStation:_station];
         [filteredInfoServices addObject:service];
     }
     
     if(details.hasRailwayMission){
-        [filteredInfoServices addObject:[MBStaticStationInfo serviceForType:@"bahnhofsmission" withStation:_station]];
+        [filteredInfoServices addObject:[MBStaticStationInfo serviceForType:kServiceType_Bahnhofsmission withStation:_station]];
     }
     
     if(details.hasTravelCenter || _station.travelCenter != nil){
-        MBService* service = [MBStaticStationInfo serviceForType:@"local_travelcenter" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalTravelCenter withStation:_station];
         [filteredInfoServices addObject:service];
     }
     if(details.hasDBLounge){
-        MBService* service = [MBStaticStationInfo serviceForType:@"local_db_lounge" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalDBLounge withStation:_station];
         [filteredInfoServices addObject:service];
     }
     
     if(_station.hasChatbot){
-        MBService* service = [MBStaticStationInfo serviceForType:@"chatbot" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Chatbot withStation:_station];
         [rufnummernServices addObject:service];
     }
 
     if(details.hasMobilityService){
-        MBService* service = [MBStaticStationInfo serviceForType:@"mobilitaetsservice" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_MobilityService withStation:_station];
         [rufnummernServices addObject:service];
     }
     
     if(details.has3SZentrale){
-        MBService* service = [MBStaticStationInfo serviceForType:@"3-s-zentrale" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_3SZentrale withStation:_station];
         [rufnummernServices addObject:service];
     }
     
     if(details.hasLostAndFound){
-        MBService* service = [MBStaticStationInfo serviceForType:@"local_lostfound" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalLostFound withStation:_station];
         [rufnummernServices addObject:service];
     }
     
     if(self.station.hasDirtService){
-        AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
-        BOOL hasWhatsApp = [app canOpenURL:[NSURL URLWithString:@"whatsapp://send?text=Hallo"]];
-        MBService* service = [MBStaticStationInfo serviceForType:hasWhatsApp ? @"verschmutzung_mitwhatsapp" : @"verschmutzung_ohnewhatsapp" withStation:_station];
+        BOOL hasWhatsApp = [MBUrlOpening canOpenURL:[NSURL URLWithString:@"whatsapp://send?text=Hallo"]];
+        MBService* service = [MBStaticStationInfo serviceForType:hasWhatsApp ? kServiveType_Dirt_Whatsapp : kServiceType_Dirt_NoWhatsapp withStation:_station];
         [rufnummernServices addObject:service];
     }
     if(true){
-        MBService* service = [MBStaticStationInfo serviceForType:@"problemmelden" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Problems withStation:_station];
         [rufnummernServices addObject:service];
     }
     if(true){
-        MBService* service = [MBStaticStationInfo serviceForType:@"bewertung" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Rating withStation:_station];
         [rufnummernServices addObject:service];
     }
 
     
     if(details.hasWiFi){
-        MBService* wlanService = [MBStaticStationInfo serviceForType:@"wlan" withStation:_station];
+        MBService* wlanService = [MBStaticStationInfo serviceForType:kServiceType_WLAN withStation:_station];
         MBMenuItem *wlanItem = [[MBMenuItem alloc] initWithDictionary:@{ @"position":@(2),
                                                                          @"services":@[wlanService],
                                                                          @"title":@"WLAN",
-                                                                         @"type":@"wlan",
+                                                                         @"type":kServiceType_WLAN,
                                                                          } error:nil];
         [infoServices addObject:wlanItem];
     }
     
     if(true){
-        MBService* service = [MBStaticStationInfo serviceForType:@"barrierefreiheit" withStation:_station];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Barrierefreiheit withStation:_station];
         NSMutableDictionary *newItemDict = [NSMutableDictionary new];
         [newItemDict setValue:@"Barrierefreiheit" forKey:@"title"];
         [newItemDict setObject:@[service] forKey:@"services"];
-        [newItemDict setObject:@"barrierefreiheit" forKey:@"type"];
+        [newItemDict setObject:kServiceType_Barrierefreiheit forKey:@"type"];
         [newItemDict setObject:@(3) forKey:@"position"];
         MBMenuItem *infoItem = [[MBMenuItem alloc] initWithDictionary:newItemDict error:nil];
         [infoServices addObject:infoItem];
@@ -472,7 +471,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     if(self.station.parkingInfoItems.count > 0){
         NSMutableDictionary *newItemDict = [NSMutableDictionary new];
         [newItemDict setValue:@"Parkplätze" forKey:@"title"];
-        [newItemDict setObject:@"parkplaetze" forKey:@"type"];
+        [newItemDict setObject:kServiceType_Parking forKey:@"type"];
         [newItemDict setObject:@(4) forKey:@"position"];
         MBMenuItem *infoItem = [[MBMenuItem alloc] initWithDictionary:newItemDict error:nil];
         [infoServices addObject:infoItem];
@@ -486,6 +485,14 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         [infoServices addObject:aufzuegeItem];
     }
 
+    if(self.station.hasSEVStations){
+        MBService* sevService = [MBStaticStationInfo serviceForType:kServiceType_SEV withStation:_station];
+        MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": kServiceType_SEV,
+                                                                            @"title": @"Schienenersatzverkehr",
+                                                                            @"services": @[sevService],
+                                                                            @"position": @"9"} error:nil];
+        [infoServices addObject:sevItem];
+    }
     
     if(filteredInfoServices.count > 0){
         NSMutableDictionary *newItemDict = [NSMutableDictionary new];
@@ -640,6 +647,8 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     // Tell this VC to keep the back button because the user proceeds on this VC
     self.preserveBackButton = YES;
     
+    NSString* trackingTitle = nil;
+    
     if([service isKindOfClass:MBMenuItem.class]){
         MBMenuItem* menuItem = (MBMenuItem*)service;
         NSArray* services = menuItem.services;
@@ -649,104 +658,64 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
             facilityVC.title = menuItem.title;
             facilityVC.station = self.station;
             vc = facilityVC;
-        } else if ([menuItem.type isEqualToString:@"parkplaetze"]) {
-            vc = [MBParkingTableViewController new];
-            [(MBParkingTableViewController *)vc setParkingList:self.station.parkingInfoItems];
+            trackingTitle = facilityVC.trackingTitle;
+        } else if ([menuItem.type isEqualToString:kServiceType_Parking]) {
+            MBParkingTableViewController* pc = [MBParkingTableViewController new];
+            [pc setParkingList:self.station.parkingInfoItems];
+            vc = pc;
+            trackingTitle = pc.trackingTitle;
         } else {
             if (services.count > 1) {
                 MBServiceListTableViewController* vclist = [[MBServiceListTableViewController alloc] initWithItem:menuItem station:self.station];
                 vclist.searchResult = self.searchResult;
                 vc = vclist;
+                trackingTitle = vclist.trackingTitle;
             } else {
                 id service = services.firstObject;
                 if([service isKindOfClass:MBService.class]){
-                    vc = [[MBDetailViewController alloc] initWithStation:self.station];
-                    [(MBDetailViewController *)vc setItem:service];
+                    MBDetailViewController*dv = [[MBDetailViewController alloc] initWithStation:self.station service:service];
+                    trackingTitle = dv.trackingTitle;
+                    vc = dv;
                 }
             }
         }
     } else if([service isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
         MBEinkaufsbahnhofCategory* category = (MBEinkaufsbahnhofCategory*)service;
-        vc = [[MBServiceListTableViewController alloc] initWithItem:category station:self.station];
+        MBServiceListTableViewController* serviceList = [[MBServiceListTableViewController alloc] initWithItem:category station:self.station];
+        trackingTitle = serviceList.trackingTitle;
+        vc = serviceList;
     } else if([service isKindOfClass:[MBPXRShopCategory class]]){
-        vc = [[MBServiceListTableViewController alloc] initWithItem:service station:self.station];
+        MBServiceListTableViewController* serviceList = [[MBServiceListTableViewController alloc] initWithItem:service station:self.station];
+        trackingTitle = serviceList.trackingTitle;
+        vc = serviceList;
     } else if([service isKindOfClass:MBAdContainer.class]){
         MBAdContainer* adContainer = (MBAdContainer*)service;
         if(adContainer.trackingAction){
             [MBTrackingManager trackActionsWithStationInfo:adContainer.trackingAction];
         }
         if(adContainer.type == MBAdContainerTypePickPack){
-            MBService* service = [MBStaticStationInfo serviceForType:@"pickpack" withStation:_station];
-            UIViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station];
-            [(MBDetailViewController *)vc setItem:service];
+            MBService* service = [MBStaticStationInfo serviceForType:kServiceType_PickPack withStation:_station];
+            UIViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
             [self.navigationController pushViewController:vc animated:YES];
         } else {
-            [[AppDelegate appDelegate] openURL:adContainer.url];
+            [MBUrlOpening openURL:adContainer.url];
         }
         return;
     } else if([service isKindOfClass:MBCouponCategory.class]){
         MBCouponCategory* couponCat = (MBCouponCategory*)service;
-        vc = [[MBServiceListTableViewController alloc] initWithItem:couponCat station:self.station];
+        MBServiceListTableViewController* serviceList = [[MBServiceListTableViewController alloc] initWithItem:couponCat station:self.station];
+        trackingTitle = serviceList.trackingTitle;
+        vc = serviceList;
     }
     if(vc){
-        
-        //get the title for tracking
-        NSString* title = nil;
-        if([service isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
-            title = [(MBEinkaufsbahnhofCategory*)service name];
-        } else if([service isKindOfClass:[MBPXRShopCategory class]]){
-            title = [(MBPXRShopCategory *)service title];
-        } else if([service isKindOfClass:[MBMenuItem class]]) {
-            MBMenuItem* menuItem = (MBMenuItem*)service;
-            //NSLog(@"tap MBMenuItem %@",service);
-            if([menuItem.type isEqualToString:@"aufzuegeundfahrtreppen"]){
-                title = @"aufzuege";
-            } else if([menuItem.type isEqualToString:@"rufnummern"]){
-                title = @"service_und_rufnummern";
-            } else if([menuItem.type isEqualToString:@"parkplaetze"]){
-                title = @"parkplaetze";
-            } else if([menuItem.type isEqualToString:@"infoservices"]){
-                title = @"infos_und_services";
-            } else if([menuItem.type isEqualToString:@"barrierefreiheit"]){
-                title = @"barrierefreiheit";
-            } else if([menuItem.type isEqualToString:@"wlan"]){
-                title = @"wlan";
-            } else if([menuItem.type isEqualToString:@"bewertung"]){
-                title = nil;
-                [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"bewerten"]];
-            } else if([menuItem.type isEqualToString:@"problemmelden"]){
-                title = nil;
-                [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"kontakt"]];
-            } else if([menuItem.type hasPrefix:@"verschmutzung"]){
-                title = nil;
-                [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"verschmutzung"]];
-            } else {
-                NSLog(@"no tracking key defined for %@",service);
-            }
-        } else if([service isKindOfClass:MBCouponCategory.class]) {
-            title = [(MBCouponCategory *)service title];
-        }
-        title = [title lowercaseString];
-        title = [title stringByReplacingOccurrencesOfString:@" " withString:@"_"];
-        title = [title stringByReplacingOccurrencesOfString:@"ä" withString:@"ae"];
-        title = [title stringByReplacingOccurrencesOfString:@"&" withString:@"und"];
-        if(title.length > 0){
+        if(trackingTitle.length > 0){
             switch(_serviceType){
                 case MBServiceCollectionTypeInfo:
-                    [MBTrackingManager trackActionsWithStationInfo:@[@"h3", @"info", @"tap", title]];
+                    [MBTrackingManager trackActionsWithStationInfo:@[@"h3", @"info", @"tap", trackingTitle]];
                     break;
                 case MBServiceCollectionTypeShopping:
-                    [MBTrackingManager trackActionsWithStationInfo:@[@"h3", @"shops", @"tap", title]];
+                    [MBTrackingManager trackActionsWithStationInfo:@[@"h3", @"shops", @"tap", trackingTitle]];
                     break;
-                
-            }
-            
-            if([vc isKindOfClass:MBServiceListTableViewController.class]){
-                MBServiceListTableViewController* sl = (MBServiceListTableViewController*)vc;
-                sl.trackingTitle = title;
-            } else if([vc isKindOfClass:MBUITrackableViewController.class]){
-                MBUITrackableViewController* tv = (MBUITrackableViewController*)vc;
-                tv.trackingTitle = title;
             }
         }
         BOOL animated = YES;

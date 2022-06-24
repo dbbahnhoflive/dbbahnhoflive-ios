@@ -5,22 +5,27 @@
 
 
 #import <Foundation/Foundation.h>
-#import "MBPTSAvailabilityTimes.h"
-#import "MBPTSTravelcenter.h"
 
-@interface MBPTSStationResponse : NSObject
+#import "MBTravelcenter.h"
+#import "MBOSMOpeningWeek.h"
+
+@interface MBStationDetails : NSObject
+
+@property(nonatomic) NSInteger category;
+@property(nonatomic) CLLocationCoordinate2D coordinate;
+
+@property (nonatomic, strong) NSString *country;
+@property (nonatomic, strong) NSString *state;
+
+@property (nonatomic, strong) MBOSMOpeningWeek *dbInfoOpeningTimesOSM;
+@property(nonatomic,strong) MBOSMOpeningWeek* localServiceOpeningTimesOSM;
+
 
 -(instancetype)initWithResponse:(NSDictionary*)json;
 -(BOOL)isValid;
 
-
--(NSNumber*)stadaIdNumber;
--(NSArray<NSString*>*)evaIds;
--(NSNumber*)category;
--(NSArray<NSNumber*>*)position;
-
 //facility status
--(BOOL)hasSteplessAccess;
+
 -(BOOL)hasPublicFacilities;
 -(BOOL)hasWiFi;
 -(BOOL)hasLockerSystem;
@@ -44,8 +49,8 @@
 -(BOOL)has3SZentrale;
 -(NSString*)phoneNumber3S;
 
--(MBPTSTravelcenter*)travelCenter;
+-(MBTravelcenter*)nearestTravelCenter;
 
--(MBPTSAvailabilityTimes*)dbInfoAvailabilityTimes;
--(MBPTSAvailabilityTimes*)localServiceStaffAvailabilityTimes;
+-(NSString*)dbInfoOSMTimes;
+-(NSString*)localServiceOSMTimes;
 @end

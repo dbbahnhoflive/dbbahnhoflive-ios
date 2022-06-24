@@ -5,8 +5,7 @@
 
 #import "MBStationOccupancyDropdownMenuView.h"
 #import "MBStationOccupancyDayView.h"
-#import "UIColor+DBColor.h"
-#import "UIFont+DBFont.h"
+#import "MBUIHelper.h"
 
 @interface MBStationOccupancyDropdownMenuView()
 @end

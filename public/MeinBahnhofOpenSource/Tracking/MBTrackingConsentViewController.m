@@ -6,11 +6,11 @@
 #import "MBTrackingConsentViewController.h"
 #import "AppDelegate.h"
 #import "MBLargeButton.h"
-#import "UIFont+DBFont.h"
-#import "UIView+Frame.h"
+#import "MBUIHelper.h"
 #import "MBImprintViewController.h"
 #import "MBNavigationController.h"
 #import "MBStationSearchViewController.h"
+#import "MBTrackingManager.h"
 
 @interface MBTrackingConsentViewController ()<UITextViewDelegate>
 @property(nonatomic,strong) UIImageView* topImage;

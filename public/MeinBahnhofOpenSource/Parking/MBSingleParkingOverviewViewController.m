@@ -7,7 +7,8 @@
 #import "MBSingleParkingOverviewViewController.h"
 #import "MBParkingOccupancyManager.h"
 #import "MBLabel.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
 
 @interface MBSingleParkingOverviewViewController ()<UIScrollViewDelegate>
 
@@ -247,7 +248,7 @@
 
 - (void)didInteractWithURL:(NSURL *)url
 {
-    [[AppDelegate appDelegate] openURL:url];
+    [MBUrlOpening openURL:url];
 }
 
 @end

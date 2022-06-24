@@ -7,7 +7,8 @@
 #import "OnboardingViewController.h"
 #import "MBGPSLocationManager.h"
 #import "MBStationSearchViewController.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
 
 @interface OnboardingViewController()
 
@@ -177,7 +178,7 @@
         if(status == kCLAuthorizationStatusNotDetermined){
             [[MBGPSLocationManager sharedManager] requestAuthorization];
         } else {
-            [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+            [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
         }
     }
 }

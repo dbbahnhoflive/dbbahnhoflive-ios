@@ -11,12 +11,17 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
     MBCacheResponseRIMapPOIs = 3,
     MBCacheResponseParking = 4,
     MBCacheResponseEinkaufsbahnhof = 5,
-    MBCacheResponsePTS = 6,
     MBCacheResponseEinkaufsbahnhofOverview = 7,
     MBCacheResponseTravelCenter = 8,
     MBCacheResponseNews = 9,
     MBCacheResponseRIMapPOIs07Api = 10,
     MBCacheResponseRIMapStatus07API = 11,
+
+    MBCacheResponseRISStationData = 12,
+    MBCacheResponseRISStationServices = 13,
+
+    MBCacheResponseRIMapSEV07API = 14,
+
 };
 
 typedef NS_ENUM(NSUInteger, MBCacheState){

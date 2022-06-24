@@ -18,6 +18,7 @@
 
 @interface MBTimetableFilterViewController : MBOverlayViewController
 
+@property(nonatomic,strong) NSString* availableDataUntilTime;
 @property (nonatomic,strong) HafasTimetable* hafasTimetable;
 @property (nonatomic) BOOL departure;
 @property(nonatomic,strong) NSString* initialSelectedPlatform;

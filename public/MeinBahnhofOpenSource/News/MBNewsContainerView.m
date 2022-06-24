@@ -11,7 +11,9 @@
 #import "MBNewsOverlayViewController.h"
 #import "MBContentSearchResult.h"
 #import "MBNewsContainerViewController.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBNewsContainerView()
 
@@ -143,7 +145,7 @@
 }
 
 -(void)linkButtonPressed:(id)sender{
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:self.news.link]];
+    [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 -(void)touchAreaButtonPressed:(id)sender{
     if(self.news.newsType == MBNewsTypeOffer && self.containerVC.station.hasShops){
@@ -177,6 +179,7 @@
         case MBNewsTypeOffer:
             iconName = @"news_coupon";
             break;
+        case MBNewsTypeMajorDisruption:
         case MBNewsTypeDisruption:
             iconName = @"news_malfunction";
             break;

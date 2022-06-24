@@ -4,6 +4,8 @@
 //
 
 #import "TimetableParser.h"
+#import "GTMNSString+HTML.h"
+#import "NSDateFormatter+MBDateFormatter.h"
 
 #define DB_DATE_FORMAT_FULL @"YYMMddHHmm"
 #define DB_STATION_LIST_DELIMITER @"|"
@@ -13,7 +15,7 @@
 
 static NSDateFormatter *formatter = nil;
 
-+ (NSArray*) parseTimeTableFromData:(NSData*)data
++ (NSArray*) parseTimeTableFromData:(NSData*)data evaNumber:(NSString *)evaNumber
 {
     if (data) {
         
@@ -21,13 +23,13 @@ static NSDateFormatter *formatter = nil;
         TBXML *xmlRootInstance = [TBXML tbxmlWithXMLData:data error:&error];
         
         if (!error) {
-            return [TimetableParser parseStops:[xmlRootInstance rootXMLElement]];
+            return [TimetableParser parseStops:[xmlRootInstance rootXMLElement] evaNumber:evaNumber];
         }
     }
     return nil;
 }
 
-+ (NSArray*) parseChangesForTimetable:(NSData*)data;
++ (NSArray*) parseChangesForTimetable:(NSData*)data evaNumber:(NSString *)evaNumber;
 {
     if (data) {
         
@@ -35,7 +37,7 @@ static NSDateFormatter *formatter = nil;
         TBXML *xmlRootInstance = [TBXML tbxmlWithXMLData:data error:&error];
         
         if (!error) {
-            return [TimetableParser parseStops:[xmlRootInstance rootXMLElement]];
+            return [TimetableParser parseStops:[xmlRootInstance rootXMLElement] evaNumber:evaNumber];
         }
     }
     return nil;
@@ -47,14 +49,14 @@ static NSDateFormatter *formatter = nil;
 	
  </s>
  **/
-+ (NSArray*) parseStops:(TBXMLElement*)fromElement
++ (NSArray*) parseStops:(TBXMLElement*)fromElement evaNumber:(NSString*)evaNumber
 {
     NSMutableArray *stops = [NSMutableArray array];
     TBXMLElement *firstChildStopElement = [TBXML childElementNamed:@"s" parentElement:fromElement];
     TBXMLElement *element = firstChildStopElement;
     
     while (element) {
-        [stops addObject:[TimetableParser parseStopDetail:element]];
+        [stops addObject:[TimetableParser parseStopDetail:element evaNumber:evaNumber]];
         element = element->nextSibling;
     }
     return stops;
@@ -81,11 +83,11 @@ static NSDateFormatter *formatter = nil;
  
  **/
 
-+ (Stop*) parseStopDetail:(TBXMLElement*)fromElement
++ (Stop*) parseStopDetail:(TBXMLElement*)fromElement evaNumber:(NSString*)evaNumber
 {
     @autoreleasepool {
         Stop *stop = [[Stop alloc] init];
-        
+        stop.evaNumber = evaNumber;
         TBXMLElement *transportTypeElement = [TBXML childElementNamed:@"tl" parentElement:fromElement];
         TBXMLElement *arrivalElement = [TBXML childElementNamed:@"ar" parentElement:fromElement];
         TBXMLElement *departureElement = [TBXML childElementNamed:@"dp" parentElement:fromElement];
@@ -113,6 +115,7 @@ static NSDateFormatter *formatter = nil;
             if (arrivalEvent) {
                 arrivalEvent.stop = stop;
                 [stop setArrival:arrivalEvent];
+                [arrivalEvent updateComposedIrisWithStop:stop];
             }
         }
         
@@ -121,8 +124,11 @@ static NSDateFormatter *formatter = nil;
             if (departureEvent) {
                 departureEvent.stop = stop;
                 [stop setDeparture:departureEvent];
+                [departureEvent updateComposedIrisWithStop:stop];
             }
         }
+        
+        
         return stop;
     }
 }
@@ -151,11 +157,12 @@ static NSDateFormatter *formatter = nil;
     }
     
     NSString *transportCategoryGenericNumber = [TBXML valueOfAttributeNamed:@"l" forElement:fromElement];
-    
+
     [transportCategory setTransportCategoryType:transportCategoryType];
     [transportCategory setTransportCategoryNumber:transportCategoryNumber];
     [transportCategory setTransportCategoryGenericNumber:transportCategoryGenericNumber];
-    
+    transportCategory.transportCategoryOriginalNumber = [TBXML valueOfAttributeNamed:@"n" forElement:fromElement];
+
     return transportCategory;
 }
 +(BOOL)isReplacementTrain:(TBXMLElement*)tlElement{
@@ -229,7 +236,7 @@ static NSDateFormatter *formatter = nil;
         NSInteger minutes = [components minute];
         [event setFormattedTime:[NSString stringWithFormat:kTimeFormatPattern, (long)hour, (long)minutes]];
     }
-        
+     
     return event;
 }
 

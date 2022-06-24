@@ -5,6 +5,7 @@
 
 
 #import "MBCouponCategory.h"
+#import "MBUIHelper.h"
 
 @implementation MBCouponCategory
 

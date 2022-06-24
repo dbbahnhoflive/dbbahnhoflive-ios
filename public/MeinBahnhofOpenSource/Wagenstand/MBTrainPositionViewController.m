@@ -11,9 +11,13 @@
 #import "WagenstandPushHeader.h"
 #import "WagenstandRequestManager.h"
 #import "AppDelegate.h"
+#import "MBUrlOpening.h"
 #import "MBStationNavigationViewController.h"
 #import "MBMapViewController.h"
 #import "RIMapPoi.h"
+#import "MBUIHelper.h"
+#import "NSDateFormatter+MBDateFormatter.h"
+#import "MBTrackingManager.h"
 
 @import UserNotifications;
 
@@ -380,7 +384,7 @@ static NSString *kHeadCell = @"HeadCell";
         
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Sie müssen der App in den Einstellungen Mitteilungen erlauben um diese Funktion nutzen zu können." preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"Einstellungen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+            [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
         }]];
         [alert addAction:[UIAlertAction actionWithTitle:@"Schließen" style:UIAlertActionStyleCancel handler:nil]];
         [self presentViewController:alert animated:YES completion:nil];

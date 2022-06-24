@@ -6,6 +6,7 @@
 
 #import "MBStationTafelTableViewCell.h"
 #import "MBTimeTableViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBStationTafelTableViewCell()
 
@@ -61,26 +62,10 @@
     [self.contentView addSubview:self.platformLabel];
     [self.contentView addSubview:self.warningLabel];
     
-    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
-    self.accessibilityHint = @"Zur Anzeige der Abfahrtstafel doppeltippen.";
+    self.isAccessibilityElement = NO;
+    self.accessibilityElementsHidden = YES;
 }
 
-- (NSString *)accessibilityLabel
-{
-    if(_hafas){
-        NSString* line = self.trainLabel.text;
-        line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
-
-        return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr; %@",
-                line,
-                self.destinationLabel.text,
-                self.timeLabel.text,
-                (![self.expectedTimeLabel.text isEqualToString:self.timeLabel.text] ? [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text] : @"")
-                ];
-    }
-    //else: fernverkehr
-    return [MBTimeTableViewCell voiceOverForEvent:_event];
-}
 
 - (void)layoutSubviews {
     [super layoutSubviews];
@@ -115,7 +100,7 @@
     if([hafas delayInMinutes] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_38a63d];
+        self.expectedTimeLabel.textColor = [UIColor db_76c030];
     }
     self.expectedTimeLabel.hidden = NO;
     [self setNeedsLayout];
@@ -128,7 +113,7 @@
     if([event roundedDelay] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_38a63d];
+        self.expectedTimeLabel.textColor = [UIColor db_76c030];
     }
     //hide time when train is canceled
     self.expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -136,9 +121,11 @@
     self.destinationLabel.text = [event actualStation];
     self.trainLabel.text = [self.stop formattedTransportType:event.lineIdentifier];
     self.platformLabel.text = [NSString stringWithFormat:@"Gl. %@", [event actualPlatform]];
-    
-    [event updateComposedIrisWithStop:self.stop];
-    
+    self.platformLabel.textColor = self.trainLabel.textColor;
+    if(event.changedPlatform){
+        self.platformLabel.textColor = [UIColor db_mainColor];
+    }
+        
     self.warningLabel.hidden = event.composedIrisMessage.length == 0;
     if(!self.warningLabel.hidden){
         //what icon do we need?

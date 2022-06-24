@@ -24,7 +24,6 @@
 + (UIColor *)db_76c030;
 + (UIColor *)db_787d87;
 
-+ (UIColor *)db_38a63d;
 + (UIColor *)db_mainColor;
 
 + (UIColor *)db_eaeef1;

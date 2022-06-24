@@ -12,6 +12,7 @@
 #import "HafasTimetable.h"
 #import "TimetableManager.h"
 #import "MBTimeTableViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBStationPickerTableViewCell ()
 
@@ -64,6 +65,7 @@
 }
 
 -(void)setup{
+    self.isAccessibilityElement = NO;
     self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds = YES;
         
@@ -157,9 +159,10 @@
         warnIcon.isAccessibilityElement = NO;
         platformLabel.isAccessibilityElement = NO;
         expTimeLabel.isAccessibilityElement = NO;
-        UILabel* accessibilityView = [[UILabel alloc] initWithFrame:CGRectMake(0, originTop, self.frame.size.width, 60)];
+        UILabel* accessibilityView = [[UILabel alloc] initWithFrame:CGRectMake(0, originTop, self.frame.size.width, 45)];
         accessibilityView.autoresizingMask = UIViewAutoresizingNone;
         accessibilityView.hidden = YES;
+        accessibilityView.isAccessibilityElement = YES;
         [self.departureContainer addSubview:accessibilityView];
         //this label never has a text, only an acc-label
         [abfahrtDict setObject:accessibilityView forKey:@"accLabel"];
@@ -177,6 +180,7 @@
     
     
     self.stationTitleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    self.stationTitleLabel.accessibilityIdentifier = @"stationTitleLabel";
     self.stationTitleLabel.text = @"";
     [self.stationTitleLabel setFont:[UIFont db_RegularSeventeen]];
     //self.stationTitleLabel.font = [UIFontMetrics.defaultMetrics scaledFontForFont:[UIFont db_RegularSeventeen]];
@@ -187,6 +191,7 @@
     self.favBtnImgView = [[UIImageView alloc] initWithImage:favBtnImg];
     
     self.favButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.favButton.accessibilityIdentifier = @"FavButton";
     [self.favButton addTarget:self action:@selector(favBtnPressed:) forControlEvents:UIControlEventTouchUpInside];
     [self.favButton addSubview:self.favBtnImgView];
     [self.favButton setTintColor:[UIColor whiteColor]];
@@ -269,9 +274,14 @@
         [self.delegate stationPickerCell:self changedFavStatus:YES];
     }
 }
--(void)setStation:(MBPTSStationFromSearch*)station{
+-(void)setStation:(MBStationFromSearch*)station{
     _station = station;
     self.stationTitleLabel.text = station.title;
+    if(station.isOPNVStation){
+        self.stationTitleLabel.accessibilityLabel = [NSString stringWithFormat:@"%@, Ö P N V Haltestelle",station.title];
+    } else {
+        self.stationTitleLabel.accessibilityLabel = station.title;
+    }
     NSNumber* distanceKM = station.distanceInKm;
     MKDistanceFormatter* df = [[MKDistanceFormatter alloc] init];
     df.locale = [NSLocale currentLocale];
@@ -312,24 +322,35 @@
 }
 
 
+-(void)refreshTimetableForStation{
+    NSArray *eva_ids = self.station.eva_ids;
+    if(nil == eva_ids || eva_ids.count == 0){
+        [self.spinner stopAnimating];
+        return;
+    }
+    [self.spinner startAnimating];
+    if (nil == self.localTimeTableManager) {
+        self.localTimeTableManager = [[TimetableManager alloc] init];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveTimetableUpdate:)
+                                                     name:NOTIF_TIMETABLE_UPDATE
+                                                   object:nil];
+    }
+    [self.localTimeTableManager reloadTimetableWithEvaIds:eva_ids];
+}
+
 -(void)updateDepartures{
     NSArray *eva_ids = self.station.eva_ids;
     NSLog(@"updateDepartures: %@",eva_ids);
     if (!self.station.isOPNVStation) {
-        if(nil == eva_ids || eva_ids.count == 0){
-            [self.spinner stopAnimating];
-            return;
+        //DB-Station, may need eva update
+        if([MBStationFromSearch needToUpdateEvaIdsForStation:self.station]){
+            [self.station updateEvaIds:^(BOOL success) {
+                [self refreshTimetableForStation];
+            }];
+        } else {
+            [self refreshTimetableForStation];
         }
-        [self.spinner startAnimating];
-        if (nil == self.localTimeTableManager) {
-            self.localTimeTableManager = [[TimetableManager alloc] init];
-            [[NSNotificationCenter defaultCenter] addObserver:self
-                                                     selector:@selector(didReceiveTimetableUpdate:)
-                                                         name:NOTIF_TIMETABLE_UPDATE
-                                                       object:nil];
-        }
-        [self.localTimeTableManager setEvaIds:eva_ids];
-        [self.localTimeTableManager startTimetableScheduler];
     } else if (eva_ids.count > 0) {
         [self.spinner startAnimating];
         // may be Hafas
@@ -341,7 +362,7 @@
         
         NSString* idString = eva_ids.firstObject;
         HafasTimetable* timetable = [[HafasTimetable alloc] init];
-        timetable.includeLongDistanceTrains = true;
+        timetable.includeLongDistanceTrains = false;
         [self.localHafasManager loadDeparturesForStopId:idString timetable:timetable withCompletion:^(HafasTimetable *timetable) {
             [self setupViewsForHafas:timetable];
         }];
@@ -408,7 +429,7 @@
         if([departure delayInMinutes] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_38a63d];
+            expectedTimeLabel.textColor = [UIColor db_76c030];
         }
         [expectedTimeLabel sizeToFit];
         expectedTimeLabel.hidden = NO;
@@ -485,7 +506,7 @@
             if(stop.departure.roundedDelay >= 5){
                 expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
-                expectedTimeLabel.textColor = [UIColor db_38a63d];
+                expectedTimeLabel.textColor = [UIColor db_76c030];
             }
             [expectedTimeLabel setBelow:timeLabel withPadding:8.0];
             expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -494,6 +515,10 @@
             [platformLabel sizeToFit];
             [platformLabel setGravityRight:timeLabel.frame.origin.x];
             platformLabel.hidden = NO;
+            platformLabel.textColor = [UIColor db_787d87];
+            if(stop.departure.changedPlatform){
+                platformLabel.textColor = [UIColor db_mainColor];
+            }
             
             UILabel *lineLabel = [abfahrtDict objectForKey:@"lineLabel"];
             NSString* trainCat = [stop formattedTransportType:event.lineIdentifier];
@@ -510,7 +535,6 @@
             [destLabel setRight:timeLabel withPadding:30.0];
             destLabel.hidden = NO;
             
-            [event updateComposedIrisWithStop:stop];
             UIImageView* warnIcon = [abfahrtDict objectForKey:@"warnIcon"];
             warnIcon.hidden = event.composedIrisMessage.length == 0;
             if(!warnIcon.hidden){
@@ -538,7 +562,7 @@
             [accLabel setGravityTop:timeLabel.frame.origin.y];
             [accLabel setSize:CGSizeMake(self.size.width-2*timeLabel.frame.origin.x, 45)];
             accLabel.hidden = NO;
-            NSLog(@"setting label %@",accLabel);
+            //NSLog(@"setting label %@",accLabel);
         } else {
             break;
         }

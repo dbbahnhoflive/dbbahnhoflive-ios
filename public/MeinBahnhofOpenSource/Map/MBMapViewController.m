@@ -14,7 +14,9 @@
 #import "SharedMobilityMappable.h"
 #import "MBPoiFilterView.h"
 #import "RIMapFilterCategory.h"
+#import "MBUrlOpening.h"
 #import "AppDelegate.h"
+#import "MBRoutingHelper.h"
 
 #import "MBGPSLocationManager.h"
 #import "MBParkingManager.h"
@@ -26,6 +28,9 @@
 #import "MBStationSearchViewController.h"
 #import "MBRootContainerViewController.h"
 #import "MBStationNavigationViewController.h"
+
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBMapViewController ()<MBMapLevelPickerDelegate,MBMapViewDelegate,UIScrollViewDelegate,MBPoiFilterViewDelegate,MBMapFlyoutDelegate>
 
@@ -335,7 +340,7 @@
 
 - (void) handleOSMLabelTap:(id)sender
 {
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://www.openstreetmap.org/copyright"]];
+    [MBUrlOpening openURL:[NSURL URLWithString:@"https://www.openstreetmap.org/copyright"]];
 }
 
 
@@ -443,7 +448,7 @@
 }
 
 -(void)showRoutingForParking:(MBParkingInfo *)parking{
-    [AppDelegate showRoutingForParking:parking fromViewController:self];
+    [MBRoutingHelper showRoutingForParking:parking fromViewController:self];
 }
 
 - (void) showFacilityFavorites{}
@@ -735,5 +740,10 @@
     }
 
 }
+
++(BOOL)canDisplayMap{
+    return !UIAccessibilityIsVoiceOverRunning();
+}
+
 
 @end

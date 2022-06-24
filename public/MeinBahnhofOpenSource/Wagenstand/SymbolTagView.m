@@ -5,6 +5,7 @@
 
 
 #import "SymbolTagView.h"
+#import "MBUIHelper.h"
 
 @interface SymbolTagView()
 

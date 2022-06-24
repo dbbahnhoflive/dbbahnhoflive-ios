@@ -13,6 +13,10 @@
 #import "RIMapPoi.h"
 #import "RIMapMetaData.h"
 #import "MBPlatformAccessibility.h"
+#import "MBOSMOpeningHoursParser.h"
+#import "UIImage+MBImage.h"
+#import "RIMapSEV.h"
+#import "RIMapConfigItem.h"
 
 @interface MBStation()
 
@@ -44,7 +48,7 @@
 
 - (CLLocationCoordinate2D) positionAsLatLng
 {
-    //prefer PTS, fallback to rimaps
+    //prefer RIS:Station, fallback to rimaps
     if(self.position.count == 2){
         return CLLocationCoordinate2DMake([[self.position firstObject] doubleValue], [[self.position lastObject] doubleValue]);
     } else {
@@ -87,6 +91,9 @@
     // add station pin annotation to map
 
     MBMarker *marker = [MBMarker markerWithPosition:position andType:STATION];
+    if(UIAccessibilityIsVoiceOverRunning()){
+        marker.title = self.title;
+    }
     marker.icon = [UIImage db_imageNamed:@"DBMapPin"];
     marker.appearAnimation = kGMSMarkerAnimationPop;
     
@@ -101,6 +108,9 @@
     NSMutableArray* facilityMarker = [NSMutableArray arrayWithCapacity:self.facilityStatusPOIs.count];
     for (FacilityStatus *facilityStatusPOI in self.facilityStatusPOIs) {
         MBMarker *marker = [MBMarker markerWithPosition:[facilityStatusPOI centerLocation] andType:FACILITY];
+        if(UIAccessibilityIsVoiceOverRunning()){
+            marker.title = facilityStatusPOI.title;
+        }
         marker.userData = @{@"venue": facilityStatusPOI};
         marker.category = @"Wegeleitung";
         marker.secondaryCategory = @"Aufzug";
@@ -111,7 +121,30 @@
     }
     return facilityMarker;
 }
-
+-(NSArray<MBMarker*>*)getSEVMapMarker{
+    NSMutableArray* sevMarker = [NSMutableArray arrayWithCapacity:self.sevPois.count];
+    
+    NSString* cat = @"Öffentlicher Nahverkehr";
+    NSString* subcat = @"Schienenersatzverkehr";
+    RIMapConfigItem* config = [RIMapPoi configForMenuCat:cat subCat:subcat];
+    
+    for (RIMapSEV *sev in self.sevPois) {
+        if(CLLocationCoordinate2DIsValid(sev.coordinate)){
+            MBMarker *marker = [MBMarker markerWithPosition:sev.coordinate andType:SEV];
+            if(UIAccessibilityIsVoiceOverRunning()){
+                marker.title = sev.text;
+            }
+            marker.userData = @{@"venue": sev};
+            marker.category = cat;
+            marker.secondaryCategory = subcat;
+            marker.zoomLevel = config.zoom.integerValue;
+            marker.icon = [UIImage db_imageNamed:config.icon];
+            marker.zIndex = 800;
+            [sevMarker addObject:marker];
+        }
+    }
+    return sevMarker;
+}
 
 - (NSArray*)levels
 {
@@ -650,7 +683,7 @@
 
 -(BOOL)isGreenStation{
     NSString* stationId = self.mbId.stringValue;
-    return [self isFutureStation] ||
+    return
            [@[ @"2514", // Hamburg Hbf
                @"1866", // Frankfurt (Main) Hbf
                @"4234", // München Hbf
@@ -665,32 +698,31 @@
                @"528", // Berlin Gesundbrunnen
                @"4859", // Berlin Südkreuz
                @"4240", // München Marienplatz
-               @"53" // Berlin Alexanderplatz
+               @"53", // Berlin Alexanderplatz
+               @"27", // Ahrensburg
+               @"2516", // Sternschanze
+               @"6859", // Wolfsburg Hbf
+               @"1059", // Coburg
+               @"1908", // Freising
+               @"5226", // Renningen (noch unklar, wird vll kein Zukunftsbahnhof sein)
+               @"2648", // Heilbronn Hbf
+               @"2498", // Halle (Saale) Hbf
+               @"6692", // Wernigerode
+               @"4280", // Münster Hbf (Anm. Maik: Münster (Westfalen))
+               @"2510", // Haltern am See
+               @"4859", // Berlin Südkreuz
+               @"791", // Berlin Bornholmer Straße
+               @"1077", // Cottbus
+               @"7171", // Offenbach Marktplatz
+               @"2827" // Hofheim (Anm. Maik: Hofheim(Taunus))
                ] containsObject:stationId];
-}
--(BOOL)isFutureStation{
-    NSString* stationId = self.mbId.stringValue;
-    BOOL res = [@[ @"27", // Ahrensburg
-                               @"2516", // Sternschanze
-                               @"6859", // Wolfsburg Hbf
-                               @"1059", // Coburg
-                               @"1908", // Freising
-                               @"5226", // Renningen (noch unklar, wird vll kein Zukunftsbahnhof sein)
-                               @"2648", // Heilbronn Hbf
-                               @"2498", // Halle (Saale) Hbf
-                               @"6692", // Wernigerode
-                               @"4280", // Münster Hbf (Anm. Maik: Münster (Westfalen))
-                               @"2510", // Haltern am See
-                               @"4859", // Berlin Südkreuz
-                               @"791", // Berlin Bornholmer Straße
-                               @"1077", // Cottbus
-                               @"7171", // Offenbach Marktplatz
-                               @"2827" // Hofheim (Anm. Maik: Hofheim(Taunus))
-                               ] containsObject:stationId];
-    return res;
 }
 -(BOOL)hasChatbot{
     return true;
+}
+
+-(BOOL)hasSEVStations{
+    return self.sevPois.count > 0;
 }
 
 -(NSDate*)dateForYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day{
@@ -762,7 +794,6 @@
              @"6323",
              @"3898",
              @"187",
-             @"6077",
              @"1343",
              @"1856",
              @"2498",
@@ -804,6 +835,10 @@
     return !useDB;
 }
 
++(BOOL)stationShouldBeLoadedAsOPNV:(NSString *)stationId{
+    return [@[@"5274", @"5530", @"6192", @"519", @"6762", @"4424", @"8309", @"424", @"2698", @"4399", @"6235"] containsObject:stationId];//BAHNHOFLIVE-2094
+}
+
 -(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList{
     if(!self.platformAccessibiltyData){
         self.platformAccessibiltyData = [NSMutableArray arrayWithCapacity:20];
@@ -814,21 +849,57 @@
     return self.platformAccessibiltyData;
 }
 
--(void)updateStationWithDetails:(MBPTSStationResponse *)details{
+-(void)updateStationWithDetails:(MBStationDetails *)details{
     self.stationDetails = details;
-    _category = details.category;
-    _travelCenter = details.travelCenter;
-    if(!CLLocationCoordinate2DIsValid(self.positionAsLatLng)){
+    _travelCenter = details.nearestTravelCenter;
+    if(!CLLocationCoordinate2DIsValid(self.positionAsLatLng) && CLLocationCoordinate2DIsValid(details.coordinate)){
         //only update position if it is missing
-        _position = details.position;
-    }
-    if(self.eva_ids.count == 0){
-        //only update eva_ids if they are missing
-        _eva_ids = details.evaIds;
+        _position = @[ @(details.coordinate.latitude), @(details.coordinate.longitude) ];
     }
 }
+
+-(void)parseOpeningTimesWithCompletion:(void (^)(void))completion{
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_group_enter(group);
+    NSString* times = self.stationDetails.dbInfoOSMTimes;
+    //testdata:
+    //times = @"Mo-Su 00:00-24:00;PH 00:00-24:00";
+    //times = @"Mo-Su 10:00-12:00,15:00-18:00; Di 21:00-02:00";
+    //times = @"Mo-Sa 10:00-20:00; Tu off";
+    //times = @"Mo-Sa 08:00-13:00,14:00-17:00 || \"by appointment\"";
+    //times = @"Tu,Do-Fr 10:00-13:00,15:00-18:00; Tu 12:00-14:00,15:00-01:01; Mo 12:00-13:00 open \"nur an Vollmond\", Mo 18:00-18:05; Su 00:00-24:00; PH 10:00-10:05";
+    [MBOSMOpeningHoursParser.sharedInstance parseOSM:times forStation:self completion:^(MBOSMOpeningWeek * _Nullable week) {
+        //NSLog(@"parsed DB_Information times %@",week);
+        self.stationDetails.dbInfoOpeningTimesOSM = week;
+        dispatch_group_leave(group);
+    }];
+    
+    dispatch_group_enter(group);
+    times = self.stationDetails.localServiceOSMTimes;
+    [MBOSMOpeningHoursParser.sharedInstance parseOSM:times forStation:self completion:^(MBOSMOpeningWeek * _Nullable week) {
+        //NSLog(@"parsed DB_Information times %@",week);
+        self.stationDetails.localServiceOpeningTimesOSM = week;
+        dispatch_group_leave(group);
+    }];
+
+    
+    times = self.travelCenter.openingHoursOSMString;
+    if(times.length > 0){
+        dispatch_group_enter(group);
+        [MBOSMOpeningHoursParser.sharedInstance parseOSM:times forStation:self completion:^(MBOSMOpeningWeek * _Nullable week) {
+            //NSLog(@"parsed Travelcenter times %@",week);
+            self.travelCenter.openingTimesOSM = week;
+            dispatch_group_leave(group);
+        }];
+    }
+
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        completion();
+    });
+}
+
 -(NSArray *)stationEvaIds{
-    //prefer PTS, fallback to rimaps
+    //prefer RIS:Station, fallback to rimaps
     if(_eva_ids){
         return _eva_ids;
     }
@@ -861,10 +932,14 @@
     return self.riPoiCategories.count > 0 || self.einkaufsbahnhofCategories.count > 0;
 }
 
--(RIMapPoi *)poiForPlatform:(NSString *)platformNumber{
++(NSString*)platformNumberFromPlatform:(NSString*)platform{
     //remove characters (e.g. transform "5A-G" into "5")
-    platformNumber = [[platformNumber componentsSeparatedByCharactersInSet:
+    return [[platform componentsSeparatedByCharactersInSet:
                             [[NSCharacterSet decimalDigitCharacterSet] invertedSet]] componentsJoinedByString:@""];
+}
+
+-(RIMapPoi *)poiForPlatform:(NSString *)platformNumber{
+    platformNumber = [MBStation platformNumberFromPlatform:platformNumber];
     
     for(RIMapPoi* poi in self.riPois){
         if([poi.title isEqualToString:platformNumber] && [poi.menusubcat isEqualToString:@"Bahngleise"]){

@@ -4,6 +4,7 @@
 //
 
 #import "MBContentSearchButton.h"
+#import "MBUIHelper.h"
 
 @interface MBContentSearchButton()
 @property(nonatomic,strong) UIImageView* lupeImg;

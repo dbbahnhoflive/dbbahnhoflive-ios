@@ -40,6 +40,10 @@ typedef NS_ENUM(NSUInteger, TimetableResponseStatus) {
 
 - (void) resetTimetable;
 
+-(void)reloadTimetableWithEvaIds:(NSArray*)eva_ids;
+
 -(BOOL)canRequestAdditionalData;
 -(void)requestAdditionalData;
+
+-(BOOL)hasLoadingError;
 @end

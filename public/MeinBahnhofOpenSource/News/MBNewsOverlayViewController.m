@@ -5,7 +5,9 @@
 
 
 #import "MBNewsOverlayViewController.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBNewsOverlayViewController ()
 @property(nonatomic,strong) UIScrollView* contentScrollView;
@@ -121,7 +123,7 @@
     [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"newsbox",@"link"]];
     [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"newstype",[NSString stringWithFormat:@"%lu",(unsigned long)self.news.newsType], @"link"]];
 
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:self.news.link]];
+    [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 
 -(void)viewDidLayoutSubviews{

@@ -15,6 +15,8 @@
 #import "RIMapBackgroundTileLayer.h"
 #import "RIMapIndoorTileLayer.h"
 #import "FacilityStatus.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBMapView()
 
@@ -40,6 +42,7 @@
 @property (nonatomic, strong) NSMutableArray *facilityMarker;
 @property (nonatomic, strong) NSMutableArray *poiMarker;
 @property (nonatomic, strong) NSMutableArray *nearbyStationsMarker;
+@property (nonatomic, strong) NSMutableArray *sevMarker;
 
 //these arrays contain the markers that are available for the current filter settings. They may be shown on the map or hidden (depending on the zoom level and selected level)
 @property (nonatomic, strong) NSMutableArray *outdoorMarkers;
@@ -65,7 +68,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 {
     GMSMapView *mapView = [[GMSMapView alloc] initWithFrame:frame];
     mapView.camera = cameraPosition;
-    
+    //mapView.accessibilityElementsHidden = false;//enable this line to make markers accessible
     mapView.frame = frame;
     mapView.selectedMarker = nil;
     self.showLinkToDetail = YES;
@@ -83,6 +86,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         self.mobilityMarker = [NSMutableArray array];
         self.facilityMarker = [NSMutableArray array];
         self.poiMarker = [NSMutableArray array];
+        self.sevMarker = [NSMutableArray array];
         
         BOOL debugZoomLevel = NO;
         if(debugZoomLevel){
@@ -130,7 +134,11 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         [self setPOIs:station.riPois];
     }
     [self setStationMarker:[station markerForStation]];
-    [self updateFacilityMarker];
+    [self removeMarkersFromMap:self.facilityMarker];
+    [self.facilityMarker addObjectsFromArray:self.station.getFacilityMapMarker];
+    [self removeMarkersFromMap:self.sevMarker];
+    [self.sevMarker addObjectsFromArray:self.station.getSEVMapMarker];
+    [self updateMarkers];
     
     if(fallbackToUserPosition){
         self.currentUserLocation = [[MBGPSLocationManager sharedManager] lastKnownLocation];
@@ -307,9 +315,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 - (void) setLevels:(NSArray *)levels
 {
     _levels = levels;
-    //configure google map style, style created with https://mapstyle.withgoogle.com/
-    NSBundle *mainBundle = [NSBundle mainBundle];
-    NSURL *styleUrl = [mainBundle URLForResource:@"MapStyle" withExtension:@"json"];
     
     if(levels.count == 0){
         //if the station has no indoor map, we should limit the zoom-factor to 16 and remove the indoorLayer.map
@@ -319,7 +324,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         
         [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_REST];
 
-        styleUrl = [mainBundle URLForResource:@"mapstyle_noindoor" withExtension:@"json"];
     } else {
         
         self.defaultZoomLevel = DEFAULT_ZOOM_LEVEL_WITH_INDOOR;
@@ -330,17 +334,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         
         [self.gmsMapView setMinZoom:0 maxZoom:MAX_ZOOM_REST];
     }
-    
-    // Set the map style by passing the URL for style.json.
-    NSError *error;
-    GMSMapStyle *style = [GMSMapStyle styleWithContentsOfFileURL:styleUrl error:&error];
-    
-    if (!style) {
-        // NSLog(@"The style definition could not be loaded: %@", error);
-    } else {
-        self.gmsMapView.mapStyle = style;
-    }
-
 }
 
 - (void)setSupportsIndoor:(BOOL)supportsIndoor
@@ -456,6 +449,9 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         oldBearing = self.userMarker.rotation;
     } else {
         self.userMarker = [MBMarker markerWithPosition:location.coordinate andType:USER];
+        if(UIAccessibilityIsVoiceOverRunning()){
+            self.userMarker.title = @"Aktuelle Position";
+        }
         self.userMarker.icon = [UIImage db_imageNamed:@"UserLocationPin"];
         self.userMarker.groundAnchor = CGPointMake(.5,.5);
         self.userMarker.zIndex = 999;
@@ -751,20 +747,15 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     [self updateMarkers];
 }
 
--(void)updateFacilityMarker{
-    [self.facilityMarker enumerateObjectsUsingBlock:^(GMSMarker *marker, NSUInteger idx, BOOL * _Nonnull stop) {
+-(void)removeMarkersFromMap:(NSMutableArray<GMSMarker*>*)list{
+    [list enumerateObjectsUsingBlock:^(GMSMarker *marker, NSUInteger idx, BOOL * _Nonnull stop) {
         marker.map = nil;
     }];
-    [self.facilityMarker removeAllObjects];
-    [self.facilityMarker addObjectsFromArray:self.station.getFacilityMapMarker];
-    [self updateMarkers];
+    [list removeAllObjects];
 }
 
 -(void)updateMobilityMarker:(NSArray*)mobilityMarker{
-    [self.mobilityMarker enumerateObjectsUsingBlock:^(GMSMarker *marker, NSUInteger idx, BOOL * _Nonnull stop) {
-        marker.map = nil;
-    }];
-    [self.mobilityMarker removeAllObjects];
+    [self removeMarkersFromMap:self.mobilityMarker];
     [self.mobilityMarker addObjectsFromArray:mobilityMarker];
     [self updateMarkers];
 }
@@ -781,6 +772,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     
     //add facility
     [allOutdoorMarker addObjectsFromArray:self.facilityMarker];
+    [allOutdoorMarker addObjectsFromArray:self.sevMarker];
     //parking
     for (MBParkingInfo* parking in self.station.parkingInfoItems) {
         MBMarker* m = [parking markerForParkingWithSelectable:YES];

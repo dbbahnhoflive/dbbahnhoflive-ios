@@ -26,6 +26,7 @@
 -(void)setGlobalPushActive:(BOOL)active;
 -(BOOL)isGlobalPushActive;
 -(BOOL)isPushActiveForFacility:(NSString*)equipmentNumber;
+-(BOOL)isFavoriteFacility:(NSString*)equipmentNumber;
 -(void)removeFromFavorites:(NSString*)equipmentNumber;
 -(NSSet*)storedFavorites;
 -(void)removeAll;

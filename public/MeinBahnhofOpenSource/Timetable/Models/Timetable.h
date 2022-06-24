@@ -24,8 +24,8 @@
 @property (nonatomic, strong) NSDate* lastRequestedDate;
 @property (nonatomic, assign) NSInteger additionalRequestHours;
 
-- (void) initializeTimetableFromData:(NSData*)data;
-- (void) updateTimetableFromData:(NSData*)data;
+- (void) initializeTimetableFromData:(NSData*)data evaNumber:(NSString*)evaNumber;
+- (void) updateTimetableFromData:(NSData*)data evaNumber:(NSString *)evaNumber;
 
 - (void) clearTimetable;
 - (BOOL) hasTimetableData;

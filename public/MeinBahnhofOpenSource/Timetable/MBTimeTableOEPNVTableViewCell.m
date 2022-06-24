@@ -7,6 +7,7 @@
 #import "MBTimeTableOEPNVTableViewCell.h"
 #import "MBStationListView.h"
 #import "HafasStopLocation.h"
+#import "MBUIHelper.h"
 
 @interface MBTimeTableOEPNVTableViewCell()
 @property (nonatomic, strong) UIView *topView;
@@ -117,7 +118,7 @@
     if([hafas delayInMinutes] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_38a63d];
+        self.expectedTimeLabel.textColor = [UIColor db_76c030];
     }
 //    [self.expectedTimeLabel sizeToFit];
     //[self.delayLabel setWidth:40];//needs to be fixed for layout

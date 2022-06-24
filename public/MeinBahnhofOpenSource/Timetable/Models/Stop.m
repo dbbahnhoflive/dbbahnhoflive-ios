@@ -5,6 +5,7 @@
 
 
 #import "Stop.h"
+#import "NSDateFormatter+MBDateFormatter.h"
 
 @implementation Stop
 
@@ -49,36 +50,51 @@
     return event;
 }
 
+-(BOOL)isFlixtrain:(TransportCategory*)cat{
+    return [cat.transportCategoryType isEqualToString:@"FLX"];
+}
+
 - (NSString*) formattedTransportType:(NSString*)lineIdentifier
 {
-    if (lineIdentifier) {
+    return [self formattedTransportTypeForCat:self.transportCategory line:lineIdentifier];
+}
+- (NSString*) formattedTransportTypeForCat:(TransportCategory*)cat line:(NSString*)lineIdentifier{
+    if([self isFlixtrain:cat]){
+        //for Flixtrains we display the trainnumber and not the line number
         return[NSString stringWithFormat: @"%@ %@",
-               self.transportCategory.transportCategoryType,
-               lineIdentifier];
+               cat.transportCategoryType,
+               cat.transportCategoryOriginalNumber
+               ];
+    }
+    
+    if (lineIdentifier) {
+//        if([self.transportCategory.transportCategoryType isEqualToString:@"S"]){
+            return[NSString stringWithFormat: @"%@ %@",
+                   cat.transportCategoryType,
+                   lineIdentifier];
+/*        }
+ //prepared display of train number (will this help the user?)
+        return[NSString stringWithFormat: @"%@ %@ (%@)",
+               cat.transportCategoryType,
+               lineIdentifier,
+               cat.transportCategoryOriginalNumber];*/
     }
     if(self.transportCategory.transportCategoryNumber){
         return[NSString stringWithFormat: @"%@ %@",
-               self.transportCategory.transportCategoryType,
-               self.transportCategory.transportCategoryNumber];
+               cat.transportCategoryType,
+               cat.transportCategoryNumber];
     } else {
-        return self.transportCategory.transportCategoryType;
+        return cat.transportCategoryType;
     }
 }
 
 - (NSString*) replacementTrainMessage:(NSString*)lineIdentifier
 {
     if (self.oldTransportCategory) {
+        NSString* train = [self formattedTransportTypeForCat:self.oldTransportCategory line:lineIdentifier];
+        return [NSString stringWithFormat:@"Ersatzzug für %@",
+                train];
         
-        if (lineIdentifier) {
-            return [NSString stringWithFormat:@"Ersatzzug für %@ %@",
-                    self.oldTransportCategory.transportCategoryType,
-                    lineIdentifier];
-            
-        }
-        
-        return [NSString stringWithFormat:@"Ersatzzug für %@ %@",
-                self.oldTransportCategory.transportCategoryType,
-                self.oldTransportCategory.transportCategoryNumber];
     } else if(self.isReplacementTrain){
         return @"Ersatzzug";
     } else if(self.isExtraTourTrain){
@@ -90,16 +106,21 @@
 - (NSString*) changedTrainMessage:(NSString*)lineIdentifier
 {
     if (self.changedTransportCategory) {
-        if (lineIdentifier) {
-            return [NSString stringWithFormat:@"Heute als %@ %@",
-                    self.changedTransportCategory.transportCategoryType,
-                    lineIdentifier];
-        }
-        return [NSString stringWithFormat:@"Heute als %@ %@",
-                self.changedTransportCategory.transportCategoryType,
-                self.changedTransportCategory.transportCategoryNumber];
+        NSString* train = [self formattedTransportTypeForCat:self.changedTransportCategory line:lineIdentifier];
+        return [NSString stringWithFormat:@"Heute als %@",
+                train];
     }
     return nil;
+}
+
++(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop{
+    if ([timetableStop.transportCategory.transportCategoryType isEqualToString:@"ICE"]
+        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"IC"]
+        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"EC"])
+    {
+        return YES;
+    }
+    return NO;
 }
 
 @end

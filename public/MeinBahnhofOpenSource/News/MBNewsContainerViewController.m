@@ -6,6 +6,7 @@
 
 #import "MBNewsContainerViewController.h"
 #import "MBNewsContainerView.h"
+#import "MBUIHelper.h"
 
 
 @interface MBNewsContainerViewController ()<UIScrollViewDelegate>

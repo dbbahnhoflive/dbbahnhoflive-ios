@@ -14,7 +14,7 @@
     static MBStationOccupancyRequestManager *sharedClient = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSURL *baseUrl = [NSURL URLWithString:[Constants kBusinessHubProdBaseUrl]];
+        NSURL *baseUrl = [NSURL URLWithString:[Constants kDBAPI]];
         sharedClient = [[self alloc] initWithBaseURL:baseUrl];
         
     });

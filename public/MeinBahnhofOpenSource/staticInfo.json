@@ -12,19 +12,19 @@
 		},
 
 		{
-			"descriptionText": "<p>Die Bahnhofsmission bietet Rat und Informationen in Notsituationen und vermittelt Fachstellen für weitergehende Hilfen. Außerdem betreut sie allein reisende Kinder und mobilitätseingeschränkte Reisende.<br><a href=\"http://www.bahnhofsmission.de\">Hier</a> finden Sie eine Übersicht sämtlicher Bahnhofsmissionen in Deutschland und deren Leistungsangebote. Näheres erfahren Sie auch von den Service-Mitarbeitern an der DB Information vor Ort.</p>",
+			"descriptionText": "<p>Die Bahnhofsmission bietet Rat und Informationen in Notsituationen und vermittelt Fachstellen für weitergehende Hilfen. Außerdem betreut sie allein reisende Kinder und mobilitätseingeschränkte Reisende.<br><a href=\"https://www.bahnhofsmission.de\">Hier</a> finden Sie eine Übersicht sämtlicher Bahnhofsmissionen in Deutschland und deren Leistungsangebote. Näheres erfahren Sie auch von den Service-Mitarbeitern an der DB Information vor Ort.</p>",
 			"title": "Bahnhofsmission",
 			"type": "bahnhofsmission"
 		},
 
 		{
-            "descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich bis spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-hilfe.specials-bahn.de/\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
+            "descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich bis spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-bahn.de\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
 			"title": "Mobilitätsservice",
 			"type": "mobilitaetsservice"
 		},
 
 		{
-			"descriptionText": "<p>Das 3-S-Konzept (Service, Sicherheit und Sauberkeit) steht für den sicheren und kundenorientierten Betrieb des Bahnhofs.<br><br>In der 3-S-Zentrale laufen rund um die Uhr alle wichtigen Informationen zum Betriebsablauf im Bahnhof zusammen. Über vorhandene Notruf- und Informationssäulen können Sie jederzeit direkt Kontakt zu der 3-S-Zentrale aufnehmen.<br><br>Zusätzlich sind unsere Sicherheits-Teams im Bahnhof präsent. Für polizeiliche Aufgaben ist auf dem Gebiet der Bahnanlagen des Bundes die Bundespolizei zuständig.</p> [PHONENUMBER]",
+			"descriptionText": "<p>Das 3-S-Konzept (Service, Sicherheit und Sauberkeit) steht für den sicheren und kundenorientierten Betrieb des Bahnhofs.<br><br>In der 3-S-Zentrale laufen rund um die Uhr alle wichtigen Informationen zum Betriebsablauf im Bahnhof zusammen. Über vorhandene Notruf- und Informationssäulen können Sie jederzeit direkt Kontakt zu der 3-S-Zentrale aufnehmen.<br><br>Zusätzlich sind unsere Sicherheits-Teams im Bahnhof präsent. Für polizeiliche Aufgaben ist auf dem Gebiet der Bahnanlagen des Bundes die Bundespolizei zuständig. <dbactionbutton href=\"tel:[PHONENUMBER]\">[PHONENUMBER]</dbactionbutton></p>",
 			"title": "3-S-Zentrale",
 			"type": "3-s-zentrale"
 		},
@@ -33,12 +33,6 @@
 			"descriptionText": "<p>An diesem Bahnhof bieten wir Ihnen kostenloses WLAN an. Damit können Sie mit dem Smartphone oder Laptop surfen, E-Mails bearbeiten und vieles mehr.</p><p>Informationen zu den verschiedenen WLAN-Angeboten an unseren Bahnhöfen finden Sie <a href=\"https://www.bahnhof.de/bahnhof-de/service/WLAN-519242\">hier</a></p>",
 			"title": "WLAN",
 			"type": "wlan"
-		},
-
-		{
-			"descriptionText": "<p>Dieser Bahnhof bietet Ihnen stufenfreien Zugang.</p><p>Bei Fragen wenden Sie sich bitte an die zuständige 3-S-Zentrale oder an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>",
-			"title": "Zugang & Wege",
-			"type": "stufenfreier_zugang"
 		},
 
         {
@@ -60,7 +54,7 @@
          },
                    
          {
-            "descriptionText": "<p>Sie haben im Zug oder Bahnhof etwas verloren oder gefunden? Teilen Sie uns dies einfach und kostenlos unter <a href=\"https://www.bahn.de/p/view/service/fundservice.shtml\">https://www.bahn.de/p/view/service/fundservice.shtml</a> mit. Telefonisch erreichen Sie uns unter 030 586020909Dieser Weg steht Ihnen rund um die Uhr zur Verfügung. An einigen Bahnhöfen gibt es darüber hinaus weitere Fundservices.</p>",
+            "descriptionText": "<p>Sie haben im Zug oder Bahnhof etwas verloren oder gefunden? Teilen Sie uns dies einfach und kostenlos unter <a href=\"https://www.bahn.de/p/view/service/fundservice.shtml\">https://www.bahn.de/p/view/service/fundservice.shtml</a> mit. Telefonisch erreichen Sie uns unter <dbactionbutton href=\"tel:030586020909\">030 586020909</dbactionbutton>Dieser Weg steht Ihnen rund um die Uhr zur Verfügung. An einigen Bahnhöfen gibt es darüber hinaus weitere Fundservices.</p>",
             "title": "Fundservice",
             "type": "local_lostfound"
          },

@@ -4,6 +4,7 @@
 //
 
 #import "MBFilterButton.h"
+#import "MBUIHelper.h"
 
 @implementation MBFilterButton
 

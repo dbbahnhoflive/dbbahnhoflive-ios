@@ -6,6 +6,7 @@
 
 #import "MBFacilityTableViewCell.h"
 #import "FacilityStatusManager.h"
+#import "MBUIHelper.h"
 
 @interface MBFacilityTableViewCell()
 
@@ -15,7 +16,6 @@
 @property (nonatomic, strong) UILabel *nameLabel;
 @property (nonatomic, strong) UILabel *descriptionLabel;
 @property (nonatomic, strong) UIImageView *statusImageView;
-@property (nonatomic, strong) UILabel *statusLabelVoiceOver;
 @property (nonatomic, strong) UIImageView *bookmarkImageView;
 @property (nonatomic, strong) UISwitch *merkenSwitch;
 @property (nonatomic, strong) UILabel *merkenLabel;
@@ -35,24 +35,26 @@
     [self.merkenSwitch setOn:[[FacilityStatusManager client] isPushActiveForFacility:status.equipmentNumber.description]];
 
     self.bookmarkImageView.hidden = !self.merkenSwitch.on;
-    
+
+    NSString* statusString = nil;
     self.descriptionLabel.text = status.shortDescription;
     if (status.state == ACTIVE) {
         self.statusImageView.image = [UIImage db_imageNamed:@"app_check"];
-        self.statusLabelVoiceOver.accessibilityLabel = @"Status: Aktiv";
+        statusString = @"Status: Aktiv";
         self.descriptionLabel.textColor = [UIColor db_76c030];
     } else if(status.state == UNKNOWN){
         self.statusImageView.image = [UIImage db_imageNamed:@"app_unbekannt"];
-        self.statusLabelVoiceOver.accessibilityLabel = @"Status: Unbekannt";
+        statusString = @"Status: Unbekannt";
         self.descriptionLabel.textColor = [UIColor db_787d87];
     } else {
         self.statusImageView.image = [UIImage db_imageNamed:@"app_kreuz"];
-        self.statusLabelVoiceOver.accessibilityLabel = @"Status: Defekt";
+        statusString = @"Status: Defekt";
         self.descriptionLabel.textColor = [UIColor db_mainColor];
     }
-    
+    NSString* voiceOverString = [NSString stringWithFormat:@"%@. %@. Aufzug in Merkliste speichern %@. Zum Umschalten doppeltippen.",status.shortDescription, statusString, self.bookmarkImageView.hidden ? @"Aus" : @"Ein"];
+    self.descriptionLabel.accessibilityLabel = voiceOverString;
+
     [self.statusImageView sizeToFit];
-    self.statusLabelVoiceOver.frame = self.statusImageView.frame;
     [self.descriptionLabel sizeToFit];
     NSString *stationName = [[FacilityStatusManager client] stationNameForStationNumber:status.stationNumber.description];
     if (nil == stationName) {
@@ -94,10 +96,7 @@
     
     self.statusImageView = [[UIImageView alloc] init];
     [self.topView addSubview:self.statusImageView];
-    
-    self.statusLabelVoiceOver = [UILabel new];
-    [self.topView addSubview:self.statusLabelVoiceOver];
-    
+        
     self.bookmarkImageView = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_bookmark"]];
     [self.topView addSubview:self.bookmarkImageView];
 
@@ -121,10 +120,8 @@
     self.merkenSwitch = [UISwitch new];
     [self.merkenSwitch addTarget:self action:@selector(toggleSwitch:) forControlEvents:UIControlEventValueChanged];
     [self.bottomView addSubview:self.merkenSwitch];
-    self.merkenSwitch.accessibilityHint = @"Aufzug in Merkliste speichern.";
     
     self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
-    self.accessibilityHint = @"Zur Verwaltung von Favoriten doppeltippen.";
 
 }
 
@@ -166,11 +163,6 @@
     _expanded = expanded;
     self.bottomView.hidden = !expanded;
     
-    if(expanded){
-        self.accessibilityHint = nil;
-    } else {
-        self.accessibilityHint = @"Zur Verwaltung von Favoriten doppeltippen.";
-    }
 }
 
 - (void)prepareForReuse {

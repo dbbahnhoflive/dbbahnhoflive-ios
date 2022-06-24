@@ -7,6 +7,7 @@
 #import "MBWagenstandHeaderRedesigned.h"
 #import "Wagenstand.h"
 #import "Train.h"
+#import "MBUIHelper.h"
 
 @interface MBWagenstandHeaderRedesigned()
 

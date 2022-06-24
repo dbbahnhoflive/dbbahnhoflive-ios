@@ -14,9 +14,10 @@
 #import "MBParkingInfo.h"
 
 #import "FacilityStatusManager.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
 
 #import "RIMapPoi.h"
+#import "RIMapSEV.h"
 
 #import "TimetableManager.h"
 #import "HafasRequestManager.h"
@@ -27,6 +28,8 @@
 #import "MBTimetableViewController.h"
 #import "MBRootContainerViewController.h"
 #import "MBContentSearchResult.h"
+#import "MBUIHelper.h"
+#import "AppDelegate.h"
 
 @interface MBMapFlyout()
 @property (nonatomic) BOOL isCentral;//some flyouts change their layout when they are central or not
@@ -226,8 +229,7 @@
         if (nil == self.localTimeTableManager) {
             self.localTimeTableManager = [[TimetableManager alloc] init];
         }
-        [self.localTimeTableManager setEvaIds:eva_ids];
-        [self.localTimeTableManager startTimetableScheduler];
+        [self.localTimeTableManager reloadTimetableWithEvaIds:eva_ids];
     } else if (self.poi.markerType == OEPNV_SELECTABLE && ((nil != eva_ids && eva_ids.count > 0))) {
         [self.spinner startAnimating];
         // may be Hafas
@@ -269,6 +271,16 @@
     int y = 10;
     
     switch(poi.markerType) {
+        case SEV:
+        {
+            RIMapSEV* sev = (RIMapSEV*)_payload;
+            self.titleLabel.text = @"Schienenersatzverkehr";
+            self.headerIcon.image = [UIImage db_imageNamed:@"rimap_sev"];
+            y = [self addStatusLineWithIcon:nil text:sev.text color:[self colorBlack] font:UIFont.db_BoldFourteen externalLink:nil internalLink:nil orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
+            y += 10;
+            y = [self addStatusLineWithIcon:nil text:@"Eine Wegbeschreibung finden Sie unter Bahnhofsinformationen" color:UIColor.blackColor font:[UIFont db_RegularFourteen] externalLink:nil internalLink:@selector(internalLink:) orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
+            break;
+        }
         case RIMAPPOI:
         {
             RIMapPoi* riMapPoi = poi.riMapPoi;
@@ -299,9 +311,7 @@
             }
             //add internal links
             if(riMapPoi.isDBInfoPOI && self.station.stationDetails.hasDBInfo){
-                UIButton* internalLinkButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, 60, 60)];
-                [internalLinkButton setImage:[UIImage db_imageNamed:@"MapInternalLinkButton"] forState:UIControlStateNormal];
-                [internalLinkButton addTarget:self action:@selector(internalLink:) forControlEvents:UIControlEventTouchUpInside];
+                UIButton* internalLinkButton = [self createInternalLinkButton];
                 [self.contentScrollView addSubview:internalLinkButton];
                 [internalLinkButton setGravityRight:10];
                 [internalLinkButton setGravityTop:y];
@@ -478,14 +488,27 @@
     
 }
 
+-(UIButton*)createInternalLinkButton{
+    UIButton* internalLinkButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, 60, 60)];
+    [internalLinkButton setImage:[UIImage db_imageNamed:@"MapInternalLinkButton"] forState:UIControlStateNormal];
+    internalLinkButton.accessibilityLabel = @"Inhalt öffnen";
+    [internalLinkButton addTarget:self action:@selector(internalLink:) forControlEvents:UIControlEventTouchUpInside];
+    return internalLinkButton;
+}
+
 -(void)internalLink:(id)sender{
+    NSString* searchString = nil;
     if(self.poi.riMapPoi.isDBInfoPOI){
+        searchString = CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO;
+    } else if([self.payload isKindOfClass:RIMapSEV.class]){
+        searchString = CONTENT_SEARCH_KEY_STATIONINFO_SEV;
+    }
+    if(searchString){
         [self.viewController dismissViewControllerAnimated:YES completion:^{
-            MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO];
+            MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:searchString];
             MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
             [root handleSearchResult:res];
         }];
-
     }
 }
 
@@ -531,6 +554,7 @@
     } else {
         UIButton* externalLinkButton = [[UIButton alloc] initWithFrame:CGRectMake(0,y-5, 60, 60)];
         [externalLinkButton setImage:[UIImage db_imageNamed:@"MapExternalLinkButton"] forState:UIControlStateNormal];
+        externalLinkButton.accessibilityLabel = @"Externes Routing öffnen";
         [externalLinkButton addTarget:self action:@selector(routeButtonPressed) forControlEvents:UIControlEventTouchUpInside];
         [self.moveableContentView addSubview:externalLinkButton];
         [externalLinkButton setGravityRight:10];
@@ -624,7 +648,7 @@
         [destLabel setWidth:self.frame.size.width-80-16];
         [self.moveableContentView addSubview:destLabel];
         
-        if(event.trainRecordAvailable || [MBTimetableViewController stopShouldHaveTrainRecord:stop]){
+        if([Stop stopShouldHaveTrainRecord:stop]){
             MBButtonWithData* wagenstandButton = [[MBButtonWithData alloc] initWithFrame:CGRectMake(0, y, 50, 50)];
             wagenstandButton.data = stop;
             [wagenstandButton addTarget:self action:@selector(wagenstandForTrain:) forControlEvents:UIControlEventTouchUpInside];
@@ -648,7 +672,7 @@
         if([event roundedDelay] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_38a63d];
+            expectedTimeLabel.textColor = [UIColor db_76c030];
         }
         [expectedTimeLabel sizeToFit];
         [self.moveableContentView addSubview:expectedTimeLabel];
@@ -665,7 +689,6 @@
         
         y += lineLabel.sizeHeight + 20;
         
-        [event updateComposedIrisWithStop:stop];
         UILabel* messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, y, self.sizeWidth-2*15, 44)];
         messageLabel.numberOfLines = 2;
         messageLabel.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -724,9 +747,12 @@
 }
 
 -(CGFloat)addStatusLineWithIcon:(NSString*)icon text:(NSString*)text color:(UIColor*)color externalLink:(SEL)linkSelector orSwitch:(UISwitch*)aSwitch atY:(CGFloat)y{
-    return [self addStatusLineWithIcon:icon text:text color:color externalLink:linkSelector orSwitch:aSwitch atY:y inView:self.contentScrollView withExtraSpaceRight:0];
+    return [self addStatusLineWithIcon:icon text:text color:color font:[UIFont db_RegularFourteen] externalLink:linkSelector internalLink:nil orSwitch:aSwitch atY:y inView:self.contentScrollView withExtraSpaceRight:0];
 }
--(CGFloat)addStatusLineWithIcon:(NSString*)icon text:(NSString*)text color:(UIColor*)color externalLink:(SEL)linkSelector orSwitch:(UISwitch*)aSwitch atY:(CGFloat)y inView:(UIView*)targetView withExtraSpaceRight:(NSInteger)extraSpaceRight{
+-(CGFloat)addStatusLineWithIcon:(NSString*)icon text:(NSString*)text color:(UIColor*)color externalLink:(SEL)linkSelectorExtern orSwitch:(UISwitch*)aSwitch atY:(CGFloat)y inView:(UIView*)targetView withExtraSpaceRight:(NSInteger)extraSpaceRight{
+    return [self addStatusLineWithIcon:icon text:text color:color font:[UIFont db_RegularFourteen] externalLink:linkSelectorExtern internalLink:nil orSwitch:aSwitch atY:y inView:targetView withExtraSpaceRight:extraSpaceRight];
+}
+-(CGFloat)addStatusLineWithIcon:(NSString*)icon text:(NSString*)text color:(UIColor*)color font:(UIFont*)font externalLink:(SEL)linkSelectorExtern internalLink:(SEL)linkSelectorIntern orSwitch:(UISwitch*)aSwitch atY:(CGFloat)y inView:(UIView*)targetView withExtraSpaceRight:(NSInteger)extraSpaceRight{
     int x = 13;
     UIImageView* iconView = nil;
     NSInteger textWidth = self.frame.size.width-2*13 - extraSpaceRight;
@@ -746,10 +772,17 @@
         }
     }
     UIButton* externalLinkButton = nil;
-    if(linkSelector){
+    if(linkSelectorExtern || linkSelectorIntern){
         externalLinkButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, 60, 60)];
-        [externalLinkButton setImage:[UIImage db_imageNamed:@"MapExternalLinkButton"] forState:UIControlStateNormal];
-        [externalLinkButton addTarget:self action:linkSelector forControlEvents:UIControlEventTouchUpInside];
+        if(linkSelectorIntern){
+            [externalLinkButton addTarget:self action:linkSelectorIntern forControlEvents:UIControlEventTouchUpInside];
+            [externalLinkButton setImage:[UIImage db_imageNamed:@"MapInternalLinkButton"] forState:UIControlStateNormal];
+            externalLinkButton.accessibilityLabel = @"Inhalt öffnen";
+        } else {
+            [externalLinkButton addTarget:self action:linkSelectorExtern forControlEvents:UIControlEventTouchUpInside];
+            [externalLinkButton setImage:[UIImage db_imageNamed:@"MapExternalLinkButton"] forState:UIControlStateNormal];
+            externalLinkButton.accessibilityLabel = @"Externer Link";//could be passed in as parameter, is not used right now
+        }
         [targetView addSubview:externalLinkButton];
         [externalLinkButton setGravityRight:10];
         [externalLinkButton setGravityTop:y];
@@ -766,11 +799,11 @@
     label.numberOfLines = 0;
     label.text = text;
     label.textColor = color;
-    label.font = [UIFont db_RegularFourteen];
+    label.font = font;
     CGSize size = [label sizeThatFits:label.size];
     label.size = CGSizeMake(ceilf(size.width), ceilf(size.height));
     
-    if(linkSelector){
+    if(linkSelectorExtern || linkSelectorIntern){
         //center with text
         [externalLinkButton setY:ceilf(label.frame.origin.y + label.frame.size.height/2 - externalLinkButton.frame.size.height/2)];
         if(externalLinkButton.frame.origin.y < y){
@@ -893,7 +926,7 @@
         if([departure delayInMinutes] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_38a63d];
+            expectedTimeLabel.textColor = [UIColor db_76c030];
         }
         
         UILabel *lineLabel = [abfahrtDict objectForKey:@"lineLabel"];
@@ -973,7 +1006,7 @@
                     if(stop.departure.roundedDelay >= 5){
                         expectedTimeLabel.textColor = [UIColor db_mainColor];
                     } else {
-                        expectedTimeLabel.textColor = [UIColor db_38a63d];
+                        expectedTimeLabel.textColor = [UIColor db_76c030];
                     }
                     //hide time when train is canceled
                     expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -989,7 +1022,6 @@
                     [destLabel setRight:timeLabel withPadding:30.0];
                     destLabel.hidden = NO;
                     
-                    [event updateComposedIrisWithStop:stop];
                     UIImageView* warnIcon = [abfahrtDict objectForKey:@"warnIcon"];
                     warnIcon.hidden = event.composedIrisMessage.length == 0;
                     if(!warnIcon.hidden){
@@ -1092,16 +1124,16 @@
     
     NSURL *urlForProvider = [self.mobilityMappable urlScheme];
     
-    BOOL canOpenApp = [[UIApplication sharedApplication] canOpenURL:urlForProvider];
+    BOOL canOpenApp = [MBUrlOpening canOpenURL:urlForProvider];
     if (canOpenApp) {
-        [[AppDelegate appDelegate] openURL:urlForProvider];
+        [MBUrlOpening openURL:urlForProvider];
     } else {
         // show dialog and guide to the App Store
         
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"App nicht installiert" message:@"App jetzt im App Store herunterladen?" preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"Zum App Store" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             NSString *storeUrl = self.mobilityMappable.appStoreUrlForProvider;
-            [[AppDelegate appDelegate] openURL:[NSURL URLWithString:storeUrl]];
+            [MBUrlOpening openURL:[NSURL URLWithString:storeUrl]];
         }]];
         [alert addAction:[UIAlertAction actionWithTitle:@"Nein, danke" style:UIAlertActionStyleCancel handler:nil]];
         [self.viewController presentViewController:alert animated:YES completion:nil];

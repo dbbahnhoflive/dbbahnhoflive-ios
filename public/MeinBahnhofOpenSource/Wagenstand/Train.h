@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#import <Foundation/Foundation.h>
 #import <Mantle/Mantle.h>
 
 @interface Train : MTLModel <MTLJSONSerializing>

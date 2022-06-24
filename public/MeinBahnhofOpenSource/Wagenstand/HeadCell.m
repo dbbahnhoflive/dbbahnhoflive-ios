@@ -5,6 +5,7 @@
 
 
 #import "HeadCell.h"
+#import "MBUIHelper.h"
 
 @interface HeadCell()
 

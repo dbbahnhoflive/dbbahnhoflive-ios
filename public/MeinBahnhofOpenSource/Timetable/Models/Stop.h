@@ -19,6 +19,7 @@
 @property (nonatomic) BOOL isReplacementTrain;
 @property (nonatomic) BOOL isExtraTourTrain;
 
+@property (nonatomic, strong) NSString *evaNumber;
 @property (nonatomic, strong) Event *arrival;
 @property (nonatomic, strong) Event *departure;
 @property (nonatomic, strong) Message *message;
@@ -36,4 +37,5 @@
 - (Event*)eventForDeparture:(BOOL)departure;
 - (NSDictionary*) requestParamsForWagenstandWithEvent:(Event*)event;
 
++(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop;
 @end

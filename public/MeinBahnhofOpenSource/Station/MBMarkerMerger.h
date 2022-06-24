@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MBOPNVStation.h"
-#import "MBPTSStationFromSearch.h"
+#import "MBStationFromSearch.h"
 
 @class MBMarker;
 
@@ -14,7 +14,7 @@
 
 +(NSArray*)oepnvStationsToMBMarkerList:(NSArray<MBOPNVStation*>*)oepnvStations;
 
-+(MBMarker*)markerForSearchStation:(MBPTSStationFromSearch*)ptsstation;
++(MBMarker*)markerForSearchStation:(MBStationFromSearch*)station;
 
 
 @end

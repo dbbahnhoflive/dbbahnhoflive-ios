@@ -15,7 +15,9 @@
 #import "MBRootContainerViewController.h"
 #import "MBParkingOccupancyManager.h"
 #import "MBTutorialManager.h"
-#import "AppDelegate.h"
+#import "MBRoutingHelper.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBParkingTableViewController () <MBMapViewControllerDelegate, MBParkingInfoDelegate>
 @property (nonatomic, strong) NSIndexPath *selectedRow;
@@ -25,10 +27,18 @@
 
 @implementation MBParkingTableViewController
 
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.trackingTitle = @"parkplaetze";
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [MBTrackingManager trackStatesWithStationInfo:@[@"d1", @"parkplaetze"]];
+    [MBTrackingManager trackStatesWithStationInfo:@[@"d1", self.trackingTitle]];
 
     [MBUIViewController addBackButtonToViewController:self andActionBlockOrNil:nil];
 
@@ -138,7 +148,7 @@
         [self presentViewController:alert animated:YES completion:nil];
         return;
     }
-    [AppDelegate showRoutingForParking:parking fromViewController:self];
+    [MBRoutingHelper showRoutingForParking:parking fromViewController:self];
 }
 
 

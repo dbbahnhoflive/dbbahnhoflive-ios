@@ -5,6 +5,7 @@
 
 
 #import "MBOverlayViewController.h"
+#import "MBUIHelper.h"
 
 @interface MBOverlayViewController ()
 

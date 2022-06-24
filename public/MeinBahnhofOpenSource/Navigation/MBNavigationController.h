@@ -13,8 +13,5 @@
 @property (nonatomic, assign) BOOL rotationEnabled;
 
 
-- (void) showLaunchImage;
-- (void) hideLaunchImage;
-
 
 @end

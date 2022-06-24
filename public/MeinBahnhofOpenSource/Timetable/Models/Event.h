@@ -95,12 +95,14 @@ enum EventType {
 @property (nonatomic, strong) NSString *composedIrisMessage;
 @property (nonatomic, strong) NSAttributedString *composedIrisMessageAttributed;
 
-@property (nonatomic, assign) BOOL trainRecordAvailable;
 //@property (nonatomic, strong) NSString* evaId;//optional evaId where is trainRecord is available
 @property (nonatomic, assign) BOOL departure;
 
 @property (nonatomic, assign) BOOL hasOnlySplitMessage;
 @property (nonatomic, assign) BOOL shouldShowRedWarnIcon;
+
+@property (nonatomic, strong) NSString* journeyID;//stored after successful ris:journeys request
+
 
 - (NSString *) actualStation;
 - (NSString *) actualStations;
@@ -116,6 +118,7 @@ enum EventType {
 - (NSArray*) qosMessages;
 
 - (BOOL) eventIsCanceled;
+- (BOOL) eventIsAdditional;
 
 - (double) rawDelay;
 - (BOOL) hasChanges;
@@ -123,4 +126,6 @@ enum EventType {
 -(void) updateComposedIrisWithStop:(Stop*)stop;
 
 -(BOOL)sameDayEvent:(Event*)event;
+
+-(NSArray<NSString*>*)stationListWithCurrentStation:(NSString*)currentStation;
 @end

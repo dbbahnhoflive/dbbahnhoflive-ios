@@ -6,6 +6,7 @@
 
 #import "Waggon.h"
 #import "FahrzeugAusstattung.h"
+#import "MBUIHelper.h"
 
 @interface Waggon()
 

@@ -5,6 +5,7 @@
 
 
 #import "MBServiceCollectionViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBServiceCollectionViewCell()
 @property (nonatomic, strong) UIView* line;
@@ -45,7 +46,7 @@
     self.errorLabel.text = @"Daten nicht verfügbar";
     self.errorLabel.font = [UIFont db_RegularFourteen];
     self.errorLabel.numberOfLines = 0;
-    self.errorLabel.textColor = [UIColor redColor];
+    self.errorLabel.textColor = [UIColor db_mainColor];
     self.errorLabel.textAlignment = NSTextAlignmentCenter;
     [self.errorView addSubview:self.errorLabel];
     self.errorView.hidden = YES;

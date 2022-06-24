@@ -7,15 +7,16 @@
 #import "MBDetailViewController.h"
 #import "MBNavigationController.h"
 #import "NSString+MBString.h"
+#import "MBUIHelper.h"
 #import "MBLabel.h"
 #import "MBStationNavigationViewController.h"
-#import "AppDelegate.h"
-#import "MBPTSRequestManager.h"
+#import "MBUrlOpening.h"
+#import "MBRISStationsRequestManager.h"
+#import "MBTrackingManager.h"
 
 @interface MBDetailViewController()
 
 @property (nonatomic, strong) MBService *service;
-
 @property (nonatomic, strong) MBMarker *marker;
 @property(nonatomic,strong) UIActivityIndicatorView* act;
 
@@ -23,12 +24,12 @@
 
 @implementation MBDetailViewController
 
-@synthesize item = _item;
 
-- (instancetype) initWithStation:(MBStation *)station
+- (instancetype) initWithStation:(MBStation *)station service:(MBService *)service
 {
     if (self = [super init]) {
         self.station = station;
+        self.service = service;
     }
     return self;
 }
@@ -38,26 +39,23 @@
     [super viewDidLoad];
 }
 
-- (void) setItem:(id)item
-{
-    _item = item;
-    
+-(void)setService:(MBService *)service{
+    _service = service;
     [self.view.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
-    if ([item isKindOfClass:MBService.class]) {
-        self.service = (MBService*)item;
-        self.title = self.service.title;
+    self.title = self.service.title;
+    self.trackingTitle = self.service.trackingKey;
 
-        if(self.serviceNeedsAdditionalData){
-            [self loadServiceData];
-        } else {
-            [self configureServiceView:self.service];
-        }
+    if(self.serviceNeedsAdditionalData){
+        [self loadServiceData];
+    } else {
+        [self configureServiceView:self.service];
     }
 }
 
+
 -(BOOL)serviceNeedsAdditionalData{
-    return [self.service.type isEqualToString:@"barrierefreiheit"] && self.station.platformAccessibility == nil;
+    return [self.service.type isEqualToString:kServiceType_Barrierefreiheit] && self.station.platformAccessibility == nil;
 }
 -(void)loadServiceData{
     self.act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -70,7 +68,7 @@
     for(NSString* eva in self.station.stationEvaIds){
         dispatch_group_enter(group);
         //NSLog(@"loading platform data for eva %@",eva);
-        [[MBPTSRequestManager sharedInstance] requestAccessibility:eva success:^(NSArray<MBPlatformAccessibility *> *platformList) {
+        [[MBRISStationsRequestManager sharedInstance] requestAccessibility:eva success:^(NSArray<MBPlatformAccessibility *> *platformList) {
             //NSLog(@"got platform acc: %@",platformList);
             [self.station addPlatformAccessibility:platformList];
             dispatch_group_leave(group);
@@ -91,10 +89,11 @@
 }
 
 -(NSArray<NSString *> *)mapFilterPresets{
-    if([self.item isKindOfClass:[MBService class]]){
-        MBService* service = self.item;
-        if([service.type isEqualToString:@"stufenfreier_zugang"] || [service.type isEqualToString:@"barrierefreiheit"] ){
+    if(self.service){
+        if([self.service.type isEqualToString:kServiceType_Barrierefreiheit] ){
             return @[PRESET_ELEVATORS];
+        } else if([self.service.type isEqualToString:kServiceType_SEV]){
+            return @[PRESET_SEV];
         }
     }
     return nil;
@@ -169,7 +168,7 @@
         phoneURLString = [phoneURLString stringByReplacingOccurrencesOfString:@"-" withString:@""];
         
         NSURL *phoneURL = [NSURL URLWithString:phoneURLString];
-        [[AppDelegate appDelegate] openURL:phoneURL];
+        [MBUrlOpening openURL:phoneURL];
 
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
@@ -178,7 +177,7 @@
 
 - (void) didOpenUrl:(NSURL *)url
 {
-    [[AppDelegate appDelegate] openURL:url];
+    [MBUrlOpening openURL:url];
 
 }
 
@@ -187,7 +186,7 @@
     if ([mailAddress rangeOfString:@"mailto:"].location == NSNotFound) {
         mailAddress = [NSString stringWithFormat:@"mailto:%@",mailAddress];
     }
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:mailAddress]];
+    [MBUrlOpening openURL:[NSURL URLWithString:mailAddress]];
 }
 
 

@@ -5,6 +5,7 @@
 
 
 #import "SharedMobilityMappable.h"
+#import "MBUIHelper.h"
 
 @implementation MobilityMappable
 

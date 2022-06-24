@@ -12,6 +12,7 @@
 #import "MBPlatformAccessibilityInfoOverlayViewController.h"
 #import "MBFacilityStatusViewController.h"
 #import "MBLinkButton.h"
+#import "MBUIHelper.h"
 
 @interface MBPlatformAccessibilityView()<MBTimetableFilterViewControllerDelegate>
 @property(nonatomic,strong) MBStation* station;
@@ -27,14 +28,17 @@
 @property(nonatomic,strong) UIView* footerViews;
 @property(nonatomic) NSInteger configurableViewsY;
 
+@property(nonatomic,strong) NSString* initialSelectedPlatform;
+
 @end
 
 @implementation MBPlatformAccessibilityView
 
--(instancetype)initWithFrame:(CGRect)frame station:(MBStation*)station{
+-(instancetype)initWithFrame:(CGRect)frame station:(MBStation*)station platform:(NSString * _Nullable)platform{
     self = [super initWithFrame:frame];
     if(self){
         self.station = station;
+        self.initialSelectedPlatform = platform;
         [self createView];
     }
     return self;
@@ -122,10 +126,14 @@
     [self.footerViews setHeight:CGRectGetMaxY(btn.frame)];
     [self addSubview:footerViews];
 
-    if(self.trackList.count == 1){
-        [self selectTrack:self.trackList.firstObject];
+    if(self.initialSelectedPlatform && [self.trackList containsObject:self.initialSelectedPlatform]){
+        [self selectTrack:self.initialSelectedPlatform];
     } else {
-        self.size = CGSizeMake(self.frame.size.width, CGRectGetMaxY(footerViews.frame));
+        if(self.trackList.count == 1){
+            [self selectTrack:self.trackList.firstObject];
+        } else {
+            self.size = CGSizeMake(self.frame.size.width, CGRectGetMaxY(footerViews.frame));
+        }
     }
 }
 

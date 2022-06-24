@@ -5,6 +5,7 @@
 
 
 #import "MBStationTabView.h"
+#import "MBUIHelper.h"
 
 @interface MBStationTabView()
 
@@ -21,6 +22,7 @@
     
     [self addTarget:self action:@selector(handleTap) forControlEvents:UIControlEventTouchUpInside];
     self.accessibilityLabel = title;
+    self.accessibilityIdentifier = [@"Tab " stringByAppendingString:title];
     
     self.inactiveColor = [UIColor db_333333];
     self.activeColor = [UIColor db_mainColor];

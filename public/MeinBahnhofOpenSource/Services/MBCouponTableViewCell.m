@@ -7,7 +7,9 @@
 #import "MBCouponTableViewCell.h"
 #import "MBLabel.h"
 #import "MBCouponCategory.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBCouponTableViewCell()
 @property (nonatomic, strong) UIView *topView;
@@ -98,7 +100,7 @@
 
 -(void)didTapOnButton:(id)sender{
     [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"rabatt_coupons",@"link"]];
-    [[AppDelegate appDelegate] openURL:[NSURL URLWithString:self.newsItem.link]];
+    [MBUrlOpening openURL:[NSURL URLWithString:self.newsItem.link]];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

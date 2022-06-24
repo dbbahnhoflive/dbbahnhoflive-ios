@@ -5,11 +5,10 @@
 
 
 #import "MBNavigationController.h"
-#import "AppDelegate.h"
+#import "MBUIHelper.h"
 
 @interface MBNavigationController ()
 
-@property (nonatomic, strong) UIImageView *launcherImageView;
 @property (nonatomic, strong) UIView *redBar;
 
 @end
@@ -23,21 +22,8 @@
     self.swipeBackGestureEnabled = YES;
     self.view.backgroundColor = [UIColor whiteColor];
     
-    self.launcherImageView = [[UIImageView alloc] initWithFrame:self.view.frame];
-    self.launcherImageView.contentMode = UIViewContentModeScaleAspectFit;
-    
-    NSDictionary *dict = @{@"320x480" : @"LaunchImage-700",
-                           @"320x568" : @"LaunchImage-700-568h",
-                           @"375x667" : @"LaunchImage-800-667h",
-                           @"414x736" : @"LaunchImage-800-Portrait-736h"};
-    NSString *key = [NSString stringWithFormat:@"%dx%d",
-                     (int)[UIScreen mainScreen].bounds.size.width,
-                     (int)[UIScreen mainScreen].bounds.size.height];
-    UIImage *launchImage = [UIImage db_imageNamed:dict[key]];
-    
     self.navigationItem.accessibilityLanguage = @"de-DE";
         
-    self.launcherImageView.image = launchImage;
 }
 
 - (void) viewDidAppear:(BOOL)animated
@@ -108,15 +94,6 @@
 }
 
 
-- (void) showLaunchImage
-{
-    [self.view addSubview:self.launcherImageView];
-}
-
-- (void) hideLaunchImage
-{
-    [self.launcherImageView removeFromSuperview];
-}
 
 
 - (void)didReceiveMemoryWarning {

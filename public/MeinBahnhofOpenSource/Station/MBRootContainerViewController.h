@@ -16,6 +16,7 @@
 @protocol MBRootContainerViewControllerDelegate <NSObject>
 
 @optional
+-(void)willStartLoadingData;
 -(void)didLoadStationData:(BOOL)success;
 -(void)didLoadParkingData:(BOOL)success;
 -(void)didLoadParkingOccupancy:(BOOL)success;
@@ -23,6 +24,7 @@
 -(void)didLoadMapPOIs:(BOOL)success;
 -(void)didLoadEinkaufData:(BOOL)success;
 -(void)didLoadFacilityData:(BOOL)success;
+-(void)didLoadNewsData:(BOOL)success;
 -(void)didFinishAllLoading;
 
 @end
@@ -39,6 +41,7 @@
 +(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc allowNavigation:(BOOL)allowNavigation;
 +(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc;
 +(MBRootContainerViewController*)currentlyVisibleInstance;
++(UIViewController*)rootViewController;
 
 -(UINavigationController*)stationContainerNavigationController;
 -(UINavigationController*)timetableNavigationController;

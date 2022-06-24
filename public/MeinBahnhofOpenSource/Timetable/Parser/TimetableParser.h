@@ -12,7 +12,7 @@
 
 @interface TimetableParser : NSObject
 
-+ (NSArray*) parseTimeTableFromData:(NSData*)data;
-+ (NSArray*) parseChangesForTimetable:(NSData*)data;
++ (NSArray*) parseTimeTableFromData:(NSData*)data evaNumber:(NSString*)evaNumber;
++ (NSArray*) parseChangesForTimetable:(NSData*)data evaNumber:(NSString*)evaNumber;
 
 @end

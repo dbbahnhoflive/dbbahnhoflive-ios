@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
                           forcedByUser:(BOOL)forcedByUser
                                success:(void (^)(NSArray<LevelplanWrapper*> *levels))success
                           failureBlock:(void (^)(NSError* _Nullable error))failure;
+
++(NSString*)zoneIdForStationID:(NSNumber*)stationId;
+
 @end
 
 NS_ASSUME_NONNULL_END

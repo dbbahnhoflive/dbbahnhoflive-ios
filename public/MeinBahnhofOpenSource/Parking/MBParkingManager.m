@@ -7,7 +7,6 @@
 #import "MBParkingManager.h"
 #import "MBParkingInfo.h"
 #import "MBParkingOccupancyManager.h"
-#import "AppDelegate.h"
 #import "MBCacheManager.h"
 #import "Constants.h"
 #import "NSDictionary+MBDictionary.h"
@@ -19,7 +18,7 @@
     static MBParkingManager *sharedClient = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSURL *baseUrl = [NSURL URLWithString:[Constants kBusinessHubProdBaseUrl]];
+        NSURL *baseUrl = [NSURL URLWithString:[Constants kDBAPI]];
         sharedClient = [[self alloc] initWithBaseURL:baseUrl];
     });
     return sharedClient;
@@ -49,10 +48,11 @@
         }
     }
     
-    NSString* endPoint = [NSString stringWithFormat:@"%@/parking-information/v1/parking-facilities?stopPlaceId=%@", [Constants kBusinessHubProdBaseUrl], stationId];
+    NSString* endPoint = [NSString stringWithFormat:@"%@/parking-information/db-bahnpark/v2/parking-facilities?stopPlaceId=%@&withPassengerRelevance=true", [Constants kDBAPI], stationId];
     NSLog(@"endPoint %@",endPoint);
     [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
+    [self.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
+    [self.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
 
     return [self GET:endPoint parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //

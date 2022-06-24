@@ -5,6 +5,7 @@
 
 #import "MBPlatformAccessibilityInfoOverlayViewController.h"
 #import "MBPlatformAccessibility.h"
+#import "MBUIHelper.h"
 
 @interface MBPlatformAccessibilityInfoOverlayViewController ()
 @property(nonatomic,strong) UIScrollView* contentScrollView;

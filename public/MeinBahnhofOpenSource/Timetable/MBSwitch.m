@@ -5,6 +5,7 @@
 
 
 #import "MBSwitch.h"
+#import "MBUIHelper.h"
 
 @interface MBSwitch()
 
@@ -59,8 +60,8 @@
     self.onLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     self.offLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     
-    self.onLabel.accessibilityTraits = UIAccessibilityTraitHeader|UIAccessibilityTraitButton;
-    self.offLabel.accessibilityTraits = UIAccessibilityTraitHeader|UIAccessibilityTraitButton;
+    self.onLabel.accessibilityTraits = UIAccessibilityTraitButton;
+    self.offLabel.accessibilityTraits = UIAccessibilityTraitButton;
 
     self.onLabel.text = self.onTitle;
     self.onLabel.textAlignment = NSTextAlignmentCenter;
@@ -102,7 +103,7 @@
     }
     view.backgroundColor = [UIColor whiteColor];
     
-    label.accessibilityTraits = UIAccessibilityTraitHeader|UIAccessibilityTraitButton|UIAccessibilityTraitSelected;
+    label.accessibilityTraits = UIAccessibilityTraitButton|UIAccessibilityTraitSelected;
 
 }
 
@@ -123,7 +124,7 @@
     }
     view.backgroundColor = [UIColor clearColor];
     
-    label.accessibilityTraits = UIAccessibilityTraitHeader|UIAccessibilityTraitButton;
+    label.accessibilityTraits = UIAccessibilityTraitButton;
 
 }
 
@@ -208,23 +209,11 @@
 }
 
 - (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
-    BOOL ret = [super beginTrackingWithTouch:touch withEvent:event];
-    if (CGRectContainsPoint(self.onLabel.frame, [touch locationInView:self])) {
-        self.willTurnOn = @(YES);
-    } else {
-        self.willTurnOn = @(NO);
-    }
-    return ret;
+    return [super beginTrackingWithTouch:touch withEvent:event];
 }
 
 - (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
-    BOOL ret = [super continueTrackingWithTouch:touch withEvent:event];
-    if (CGRectContainsPoint(self.onLabel.frame, [touch locationInView:self])) {
-        self.willTurnOn = @(YES);
-    } else {
-        self.willTurnOn = @(NO);
-    }
-    return ret;
+    return [super continueTrackingWithTouch:touch withEvent:event];
 }
 
 - (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {

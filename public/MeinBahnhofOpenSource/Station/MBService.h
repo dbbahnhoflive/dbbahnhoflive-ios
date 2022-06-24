@@ -7,7 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <Mantle/Mantle.h>
-#import "MBPTSTravelcenter.h"
+#import "MBTravelcenter.h"
+#import "MBOSMOpeningWeek.h"
 
 #define kPhoneKey @"phone"
 #define kImageKey @"image"
@@ -25,6 +26,28 @@
 #define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
 #define kActionFeedbackChatbotMail @"feedbackchatbot"
 
+#define kServiceType_SEV @"schienenersatzverkehr"
+#define kServiceType_LocalTravelCenter @"local_travelcenter"
+#define kServiceType_LocalDBLounge @"local_db_lounge"
+#define kServiceType_DBInfo @"db_information"
+#define kServiceType_Bahnhofsmission @"bahnhofsmission"
+#define kServiceType_MobilerService @"mobiler_service"
+#define kServiceType_MobilityService @"mobilitaetsservice"
+#define kServiceType_Chatbot @"chatbot"
+#define kServiceType_LocalLostFound @"local_lostfound"
+#define kServiceType_3SZentrale @"3-s-zentrale"
+#define kServiceType_Problems @"problemmelden"
+#define kServiceType_Dirt_Prefix @"verschmutzung"
+#define kServiveType_Dirt_Whatsapp @"verschmutzung_mitwhatsapp"
+#define kServiceType_Dirt_NoWhatsapp @"verschmutzung_ohnewhatsapp"
+
+#define kServiceType_Rating @"bewertung"
+#define kServiceType_WLAN @"wlan"
+#define kServiceType_Barrierefreiheit @"barrierefreiheit"
+#define kServiceType_Parking @"parkplaetze"
+
+#define kServiceType_PickPack @"pickpack"
+
 @class MBStation;
 
 @import CoreLocation;
@@ -41,7 +64,9 @@
 @property (nonatomic, copy) NSString *descriptionText;
 @property (nonatomic, copy) NSString *additionalText;
 @property (nonatomic, copy, readonly) NSNumber *position;
-@property (nonatomic, copy) NSDictionary *table;
+
+@property (nonatomic, strong) MBOSMOpeningWeek *openingTimesOSM;
+
 
 //these properties are used in the DB-Travelcenter view to display address and opening times before the descriptiontext
 @property (nonatomic,copy) NSString* firstHeader;
@@ -52,19 +77,18 @@
 @property (nonatomic) CLLocationCoordinate2D addressLocation;
 @property (nonatomic,copy) NSString* secondHeader;
 @property (nonatomic,copy) NSString* secondText;
-@property (nonatomic,strong) MBPTSTravelcenter* travelCenter;
+@property (nonatomic,strong) MBTravelcenter* travelCenter;
 
 
 @property (nonatomic, copy) NSString* trackingKey;
 
 @property (nonatomic, strong) NSString *phoneNumber;
+@property (nonatomic, strong) NSDictionary* serviceConfiguration;
 
 - (NSString *)iconImageNameForType;
 - (UIImage*) iconForType;
 - (NSString*) parsePhoneNumber;
 
 - (NSArray*) descriptionTextComponents;
-
--(void)fillTableWithOpenTimes:(NSString*)openTimes;
 
 @end

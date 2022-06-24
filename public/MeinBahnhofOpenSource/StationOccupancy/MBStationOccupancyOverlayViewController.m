@@ -4,7 +4,8 @@
 //
 
 #import "MBStationOccupancyOverlayViewController.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
 
 @interface MBStationOccupancyOverlayViewController ()
 @property(nonatomic,strong) UIScrollView* contentScrollView;
@@ -88,8 +89,7 @@
 }
 
 -(void)didTapOnButton:(UIButton*)sender{
-    AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
-    [app openURL:[NSURL URLWithString:@"https://gemeinsamgehtdas.de"]];
+    [MBUrlOpening openURL:[NSURL URLWithString:@"https://gemeinsamgehtdas.de"]];
 }
 
 -(void)viewDidLayoutSubviews{

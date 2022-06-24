@@ -5,6 +5,7 @@
 
 
 #import "UIScrollView+MBScrollView.h"
+#import "MBUIHelper.h"
 
 @implementation UIScrollView (MBScrollView)
 

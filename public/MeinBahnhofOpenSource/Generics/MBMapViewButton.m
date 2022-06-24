@@ -5,6 +5,7 @@
 
 
 #import "MBMapViewButton.h"
+#import "MBUIHelper.h"
 
 @implementation MBMapViewButton
 

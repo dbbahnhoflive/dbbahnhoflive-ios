@@ -5,6 +5,8 @@
 
 
 #import "MBStationViewController.h"
+#import "MBUIHelper.h"
+
 #import "MBStationCollectionViewCell.h"
 #import "MBStationNavigationCollectionViewCell.h"
 #import "MBStationGreenTeaserCollectionViewCell.h"
@@ -39,6 +41,7 @@
 #import "MBContentSearchViewController.h"
 
 #import "MBStationOccupancyViewController.h"
+#import "MBTrackingManager.h"
 
 @interface MBStationViewController () <UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UIAlertViewDelegate>
 
@@ -196,6 +199,10 @@
     self.tafelContainerView.layer.shadowOffset = CGSizeMake(3.0, 3.0);
     self.tafelContainerView.layer.shadowRadius = 3.0;
     self.tafelContainerView.layer.shadowOpacity = 1.0;
+    self.tafelContainerView.isAccessibilityElement = YES;
+    self.tafelContainerView.accessibilityLabel = @"Abfahrt und Ankunft";
+    self.tafelContainerView.accessibilityTraits = UIAccessibilityTraitButton;
+    
     
     [self.collectionView addSubview:self.tafelContainerView];
 
@@ -879,9 +886,11 @@
         if(self.karteKachel.requestFailed){
             //return;//nope, some data my be available
         }
-        MBMapViewController* vc = [MBMapViewController new];
-        [vc configureWithStation:self.station];
-        [self presentViewController:vc animated:YES completion:nil];
+        [MBMapConsent.sharedInstance showConsentDialogInViewController:self completion:^{
+            MBMapViewController* vc = [MBMapViewController new];
+            [vc configureWithStation:self.station];
+            [self presentViewController:vc animated:YES completion:nil];
+        }];
         trackingActionKey = @"map";
     } else if (kachel == self.shopsKachel) {
         [self.tabBarViewController selectViewControllerAtIndex:4];
@@ -957,18 +966,19 @@
 
 # pragma mark MBRootContainerViewControllerDelegate
 
+-(void)willStartLoadingData{
+    NSLog(@"willStartLoadingData");
+    if (self.station.stationEvaIds.count > 0) {
+        NSLog(@"timetable started from willStartLoadingData...");
+        [[TimetableManager sharedManager] reloadTimetableWithEvaIds:self.station.stationEvaIds];
+    }
+    
+    [self hafasNearbyStationsRequest];
+}
+
 -(void)didLoadStationData:(BOOL)success{
     NSLog(@"didLoadStationData: %d",success);
-    // if this fails, there are 2 possibilities:
-    // 1. there is no data yet: tell user to try again later and go back to search screen
-    // 2. there is data from a previous fetch (can happen in a pull to reload): use the old data
-    if (success) {
-        NSLog(@"timetable started from didLoadStationdata...");
-        [[TimetableManager sharedManager] resetTimetable];
-        [[TimetableManager sharedManager] setEvaIds:self.station.stationEvaIds];
-        [[TimetableManager sharedManager] startTimetableScheduler];
-        [self hafasNearbyStationsRequest];
-    }
+    
     if(!success && self.stationDataAvailable.boolValue){
         //special case: user reloaded and the station data failed, just ignore this as we already have data!
         return;
@@ -978,7 +988,6 @@
     if([self infoTabHasServices]){
         [self.tabBarViewController enableTabAtIndex:3];
     }
-
 }
 
 -(void)hafasNearbyStationsRequest{
@@ -1050,6 +1059,10 @@
     self.parkingOccupancyAvailable = @(occupancyAvailable);
 }
 
+- (void)didLoadNewsData:(BOOL)success{
+    [self reloadStationData];
+}
+
 -(void)didLoadParkingOccupancy:(BOOL)success{
     // NSLog(@"didLoadParkingOccupancy: %d",success);
     NSInteger allocation = 0;
@@ -1094,18 +1107,6 @@
 -(void)didFinishAllLoading{
     NSLog(@"didFinishAllLoading");
     self.finishedAllLoading = YES;
-    
-    if(!self.stationDataAvailable.boolValue && self.station.stationEvaIds.count > 0){
-        //PTS failed, but we got eva from rimaps
-        NSLog(@"timetable started from didFinishAll");
-        [[TimetableManager sharedManager] resetTimetable];
-        [[TimetableManager sharedManager] setEvaIds:self.station.stationEvaIds];
-        [[TimetableManager sharedManager] startTimetableScheduler];
-    }
-    if(!self.stationDataAvailable.boolValue){
-        //station data request failed, we request here with the geoposition that we have from other sources
-        [self hafasNearbyStationsRequest];
-    }
     
     if([self infoTabHasServices]){
         [self.tabBarViewController enableTabAtIndex:3];

@@ -9,5 +9,6 @@
 @interface MBParkingTableViewController : UITableViewController
 
 @property(nonatomic,strong) NSArray* parkingList;
+@property (nonatomic, strong) NSString *trackingTitle;
 
 @end

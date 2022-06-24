@@ -6,6 +6,7 @@
 
 #import "MBPoiFilterContentView.h"
 #import "POIFilterTableCell.h"
+#import "MBUIHelper.h"
 
 #define POIFilterCellClassIdentifier @"POIFilterCellClass"
 

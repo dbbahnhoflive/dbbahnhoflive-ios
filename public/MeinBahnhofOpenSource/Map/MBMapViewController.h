@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "MBMapView.h"
 #import "MBStation.h"
+#import "MBMapConsent.h"
 
 #define PRESET_STATION_INFO @"stationinfos"
 #define PRESET_SHOPPING @"shopping"
@@ -15,6 +16,7 @@
 #define PRESET_LOCAL_TIMETABLE @"local timetable"
 #define PRESET_ELEVATORS @"elevators"
 #define PRESET_PARKING @"parking"
+#define PRESET_SEV @"local_timetable SEV"
 
 //used when opening the map for the shopping categories
 #define PRESET_SHOPCAT_GROCERIES @"shop_groceries"
@@ -64,5 +66,7 @@
 @property(nonatomic,weak) id<MBMapViewControllerDelegate> delegate;
 
 +(NSMutableArray<NSString*>*)filterForFilterPresets:(NSArray<NSString*>*)filterPresets;
+
++(BOOL)canDisplayMap;
 
 @end

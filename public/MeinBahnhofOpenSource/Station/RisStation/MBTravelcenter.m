@@ -4,16 +4,16 @@
 //
 
 
-#import "MBPTSTravelcenter.h"
+#import "MBTravelcenter.h"
 #import "NSDictionary+MBDictionary.h"
-#import "MBPTSAvailabilityTimes.h"
 
-@interface MBPTSTravelcenter()
+
+@interface MBTravelcenter()
 @property(nonatomic,strong) NSDictionary* data;
 @property(nonatomic,strong) CLLocation* location;
 @end
 
-@implementation MBPTSTravelcenter
+@implementation MBTravelcenter
 
 -(instancetype)initWithDict:(NSDictionary*)json{
     self = [super init];
@@ -26,7 +26,7 @@
 }
 
 -(CLLocationCoordinate2D)coordinate{
-    NSDictionary* location = [self.data db_dictForKey:@"location"];
+    NSDictionary* location = [self.data db_dictForKey:@"position"];
     NSNumber* lat = [location db_numberForKey:@"latitude"];
     NSNumber* lng = [location db_numberForKey:@"longitude"];
     CLLocationCoordinate2D loc = CLLocationCoordinate2DMake(lat.doubleValue, lng.doubleValue);
@@ -56,13 +56,8 @@
 -(NSString *)city{
     return [self.addressDict db_stringForKey:@"city"];
 }
--(NSString*)openingTimes{
-    NSArray* openingHours = [self.data db_arrayForKey:@"openingHours"];
-    if(openingHours){
-        MBPTSAvailabilityTimes* times = [[MBPTSAvailabilityTimes alloc] initWithArray:openingHours];
-        return times.availabilityString;
-    }
-    return @"-";
+-(NSString*)openingHoursOSMString{
+    return [self.data db_stringForKey:@"openingHours"];
 }
 
 

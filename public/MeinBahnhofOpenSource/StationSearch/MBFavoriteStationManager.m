@@ -82,7 +82,7 @@
     NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
     [def setObject:self.favoriteStations forKey:@"FAVORITE_STATIONS_V2"];
 }
--(void)addStation:(MBPTSStationFromSearch*)dict{
+-(void)addStation:(MBStationFromSearch*)dict{
     //NSLog(@"addStation: %@",dict.dictRepresentation);
     if(![self isFavorite:dict] && [self hasValidId:dict]){
         [self.favoriteStations insertObject:dict.dictRepresentation atIndex:0];
@@ -93,11 +93,11 @@
     }
 }
 
--(BOOL)hasValidId:(MBPTSStationFromSearch*)station{
+-(BOOL)hasValidId:(MBStationFromSearch*)station{
     return station.stationId != nil || station.eva_ids.count > 0;
 }
 
--(void)removeStation:(MBPTSStationFromSearch*)dict{
+-(void)removeStation:(MBStationFromSearch*)dict{
     //NSLog(@"removeStation: %@",dict.dictRepresentation);
     for(int i=0; i<self.favoriteStations.count; i++){
         NSDictionary* station = self.favoriteStations[i];
@@ -116,7 +116,7 @@
     }
     NSLog(@"station not removed!");
 }
--(BOOL)isFavorite:(MBPTSStationFromSearch*)dict{
+-(BOOL)isFavorite:(MBStationFromSearch*)dict{
     for(NSDictionary* station in self.favoriteStations){
         if(dict.stationId && [station[@"id"] isEqualToNumber:dict.stationId]){
             //NSLog(@"isFavorite, yes with stationId: %@",dict.dictRepresentation);
@@ -138,10 +138,10 @@
     || eva1.longLongValue == eva2.longLongValue;//some eva have a leading 0
 }
 
--(NSArray<MBPTSStationFromSearch*>*)favoriteStationsList{
+-(NSArray<MBStationFromSearch*>*)favoriteStationsList{
     NSMutableArray* list = [NSMutableArray arrayWithCapacity:self.favoriteStations.count];
     for(NSDictionary* dict in self.favoriteStations){
-        MBPTSStationFromSearch* station = [[MBPTSStationFromSearch alloc] initWithDict:dict];
+        MBStationFromSearch* station = [[MBStationFromSearch alloc] initWithDict:dict];
         [list addObject:station];
     }
     return list;

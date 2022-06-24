@@ -17,10 +17,9 @@
 
 @interface MBDetailViewController : MBUIViewController <MBDetailViewDelegate,MBMapViewControllerDelegate>
 
-@property (nonatomic, strong) id item;
 @property (nonatomic, strong) NSArray *levels;
 @property (nonatomic, assign) BOOL indoorNavigationEnabled;
 
-- (instancetype) initWithStation:(MBStation*)station;
+- (instancetype) initWithStation:(MBStation*)station service:(MBService*)service;
 
 @end

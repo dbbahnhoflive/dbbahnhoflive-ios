@@ -7,13 +7,13 @@
 #import "MBTutorialView.h"
 #import "MBLabel.h"
 
-#import "AppDelegate.h"
 #import "MBStationSearchViewController.h"
 #import "MBRootContainerViewController.h"
 #import "MBStationTabBarViewController.h"
 
 #import "MBTutorial.h"
 #import "MBTutorialManager.h"
+#import "MBUIHelper.h"
 
 @interface MBTutorialView()
 

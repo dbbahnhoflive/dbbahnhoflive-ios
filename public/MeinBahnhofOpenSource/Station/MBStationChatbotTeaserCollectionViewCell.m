@@ -5,6 +5,7 @@
 
 
 #import "MBStationChatbotTeaserCollectionViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBStationChatbotTeaserCollectionViewCell()
 @property(nonatomic,strong) UILabel* mainLabel;

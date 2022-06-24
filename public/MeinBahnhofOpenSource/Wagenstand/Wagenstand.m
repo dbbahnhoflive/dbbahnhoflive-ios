@@ -237,8 +237,8 @@
 -(void)parseISTJSON:(NSDictionary*)istFormation{
     NSDictionary* halt = istFormation[@"halt"];
     NSString* abfahrtszeit = halt[@"abfahrtszeit"];
-    if(abfahrtszeit.length > @"YYYY-MM-DDT".length){
-        abfahrtszeit = [abfahrtszeit substringFromIndex:@"YYYY-MM-DDT".length];//expecting HH:MM after date
+    if(abfahrtszeit.length > @"yyyy-MM-ddT".length){
+        abfahrtszeit = [abfahrtszeit substringFromIndex:@"yyyy-MM-ddT".length];//expecting HH:MM after date
     } else {
         abfahrtszeit = @"";
     }
@@ -510,7 +510,7 @@
     NSMutableString* res = [[NSMutableString alloc] init];
     
     NSDateFormatter* df = [[NSDateFormatter alloc] init];
-    [df setDateFormat:@"YYYYMMdd"];
+    [df setDateFormat:@"yyyyMMdd"];
     [df setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
     NSString* time = [formattedTime stringByReplacingOccurrencesOfString:@":" withString:@""];
     if(time.length > 4){

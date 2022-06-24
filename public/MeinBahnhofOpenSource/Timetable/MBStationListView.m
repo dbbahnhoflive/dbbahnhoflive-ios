@@ -5,6 +5,8 @@
 
 
 #import "MBStationListView.h"
+#import "MBUIHelper.h"
+
 @interface MBStationListView()
 
 @property(nonatomic,strong) UIScrollView* scrollView;

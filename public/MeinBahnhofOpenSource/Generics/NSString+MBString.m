@@ -6,6 +6,7 @@
 
 #import "NSString+MBString.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "MBUIHelper.h"
 
 @implementation NSString (MBString)
 

@@ -6,6 +6,7 @@
 #import "MBStationOccupancyViewController.h"
 #import "MBStationOccupancyDayView.h"
 #import "MBStationOccupancyDropdownMenuView.h"
+#import "MBUIHelper.h"
 
 @interface MBStationOccupancyViewController ()<UIScrollViewDelegate,MBStationOccupancyDayViewDelegate,MBStationOccupancyDropdownMenuViewDelegate>
 @property(nonatomic,strong) UIScrollView* scrollView;
@@ -31,10 +32,11 @@
     self.scrollView.delegate = self;
     self.scrollView.pagingEnabled = YES;
     self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    self.scrollView.isAccessibilityElement = NO;
     
     self.pageControl = [[UIPageControl alloc] init];
     self.pageControl.numberOfPages = 7;
-    self.pageControl.accessibilityLabel = @"Besucheraufkommen";
+    self.pageControl.isAccessibilityElement = NO;
     self.pageControl.transform = CGAffineTransformMakeScale(0.6, 0.6);//scale down
     self.pageControl.pageIndicatorTintColor = [UIColor lightGrayColor];
     self.pageControl.currentPageIndicatorTintColor = [UIColor db_mainColor];

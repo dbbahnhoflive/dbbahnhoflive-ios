@@ -12,6 +12,7 @@
 #import "MBMapViewController.h"
 
 #import "MBPXRShopCategory.h"
+#import "MBUIHelper.h"
 
 @interface RIMapPoi()
 
@@ -91,7 +92,9 @@ static NSDictionary* levelCodeToNumber = nil;
 -(MBMarker*)mapMarker{
     MBMarker *marker = [MBMarker markerWithPosition:[self center] andType:RIMAPPOI];
     marker.userData = @{@"venue": self, @"level":[RIMapPoi levelcodeToNumber:self.levelcode]/*, @"isSelectable": [NSNumber numberWithBool:isSelectable]*/};
-    
+    if(UIAccessibilityIsVoiceOverRunning()){
+        marker.title = self.name;
+    }
     NSString* filterTitle = nil;
     NSString* filterSubTitle = nil;
     RIMapConfigItem* config = [self configForThisPoi];

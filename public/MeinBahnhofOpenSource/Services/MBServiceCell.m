@@ -11,6 +11,7 @@
 #import "RIMapPoi.h"
 #import "MBEinkaufsbahnhofStore.h"
 #import "MBEinkaufsbahnhofCategory.h"
+#import "MBUIHelper.h"
 
 #define kTopPadding 20
 #define kLeftPadding 36

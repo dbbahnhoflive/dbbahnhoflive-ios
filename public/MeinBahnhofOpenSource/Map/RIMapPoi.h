@@ -5,12 +5,14 @@
 
 
 #import <Mantle/Mantle.h>
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import "MBPXRShopCategory.h"
 #import "RIMapPoiOpenTime.h"
 
 @class MBMarker;
+@class RIMapConfigItem;
 
 typedef NS_ENUM(NSInteger, ShopOpenState) {
     POI_OPEN = 1,
@@ -75,6 +77,7 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 
 +(NSArray*)createFilterItems;
 +(NSArray*)filterConfig;
++(RIMapConfigItem*)configForMenuCat:(NSString*)cat subCat:(NSString*)subcat;
 +(NSString*)levelCodeToDisplayString:(NSString*)levelCode;
 
 +(NSString*)mapPXRToShopCategory:(RIMapPoi*)poi;

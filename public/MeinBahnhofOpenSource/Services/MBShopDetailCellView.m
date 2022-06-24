@@ -8,6 +8,7 @@
 
 #import "MBLabel.h"
 #import "MBTextView.h"
+#import "MBUIHelper.h"
 
 
 @interface MBShopDetailCellView()

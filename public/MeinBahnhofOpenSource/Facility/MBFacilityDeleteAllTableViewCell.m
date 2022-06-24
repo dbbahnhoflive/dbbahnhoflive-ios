@@ -5,6 +5,7 @@
 
 
 #import "MBFacilityDeleteAllTableViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBFacilityDeleteAllTableViewCell()
 @property (nonatomic, strong) UIView *backView;
@@ -43,6 +44,7 @@
     label.textColor = [UIColor db_333333];
     label.textAlignment = NSTextAlignmentRight;
     label.text = @"Liste leeren";
+    label.isAccessibilityElement = NO;
     [backView addSubview:label];
     self.deleteLabel = label;
         

@@ -25,7 +25,7 @@
 
 @end
 
-NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutschebahn.com/fasta/v2/";
+NSString * const kFacilityStatusBaseUrl = @"https://apis.deutschebahn.com/db-api-marketplace/apis/fasta/v2/";
 
 
 @implementation FacilityStatusManager
@@ -38,6 +38,10 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
         NSURL *baseUrl = [NSURL URLWithString:kFacilityStatusBaseUrl];
         sharedClient = [[self alloc] initWithBaseURL:baseUrl];
         
+        [sharedClient.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        [sharedClient.requestSerializer setValue:[Constants dbFastaKey] forHTTPHeaderField:@"db-api-key"];
+        [sharedClient.requestSerializer setValue:[Constants dbFastaClient] forHTTPHeaderField:@"db-client-id"];
+
         [sharedClient restoreSettings];
         
     });
@@ -50,8 +54,6 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
 {
     NSString *endPoint = [NSString stringWithFormat:@"stations/%@", stationId];
     // NSLog(@"endPoint %@",endPoint);
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
 
     return [self GET:endPoint parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
@@ -69,7 +71,7 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
         
         NSMutableArray* finalFacilities = [NSMutableArray arrayWithCapacity:20];
         for(FacilityStatus* status in facilityStatusItems){
-            if(status.geoCoordinateX == nil || status.geoCoordinateY == nil || [status.shortDescription compare:@"Nicht Reisendenrelevant" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+            if(status.geoCoordinateX == nil || status.geoCoordinateY == nil || (status.shortDescription && [status.shortDescription compare:@"Nicht Reisendenrelevant" options:NSCaseInsensitiveSearch] == NSOrderedSame)){
                 
             } else {
                 [finalFacilities addObject:status];
@@ -90,77 +92,8 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
 }
 
 - (NSURLSessionTask *)requestFacilityStatusForFacilities:(NSSet<NSString*>*)equipmentNumbers
-                                                 success:(void (^)(NSArray<FacilityStatus*> *facilityStatusItems))successBlock
+                                                 success:(void (^)(NSArray<FacilityStatus*> *facilityStatusItems))success
                                             failureBlock:(void (^)(NSError *bhfError))failure
-{
-    if(equipmentNumbers.count == 0){
-        successBlock(@[]);
-        return nil;
-    }
-    // NSLog(@"entering requestFacilityStatusForFacilities");
-    
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
-    
-    NSMutableArray* finalFacilities = [NSMutableArray arrayWithCapacity:20];
-    __block NSError* anError = nil;
-    
-    dispatch_group_t group = dispatch_group_create();
-    
-    dispatch_group_enter(group);
-    
-    for(NSString* equipmentNumber in equipmentNumbers){
-        
-        if(anError){
-            continue;//a single request error means that we don't need to fetch data for the other facilities
-        }
-
-        dispatch_group_enter(group);
-
-        NSString *endPoint = [NSString stringWithFormat:@"facilities/%@", equipmentNumber];
-        // NSLog(@"get endPoint %@",endPoint);
-        [self GET:endPoint parameters:nil headers:nil progress:nil success:^(NSURLSessionTask *operation, id responseObject) {
-            NSError *error;
-            FacilityStatus *facilityStatusItem = [MTLJSONAdapter modelOfClass:FacilityStatus.class fromJSONDictionary:responseObject error:&error];
-            
-            if(facilityStatusItem.geoCoordinateX && facilityStatusItem.geoCoordinateY){
-                //we ignore items without a geo
-                [finalFacilities addObject:facilityStatusItem];
-            }
-            
-            if (error) {
-                anError = error;
-            }
-            
-            dispatch_group_leave(group);
-            
-        } failure:^(NSURLSessionTask *operation, NSError *error) {
-            //NSData* data = error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey];
-            //NSLog(@"data: %@",[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-
-            anError = error;
-            dispatch_group_leave(group);
-
-        }];
-    }
-
-    dispatch_group_leave(group);
-    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        // NSLog(@"final handler in requestFacilityStatusForFacilities");
-        if(finalFacilities.count > 0 && !anError){
-            successBlock(finalFacilities);
-        } else {
-            failure([anError copy]);
-        }
-    });
-
-    // NSLog(@"returning from requestFacilityStatusForFacilities");
-    return nil;
-}
-
-- (NSURLSessionTask *)requestFASTAFacilityStatusForFacilities:(NSSet*)equipmentNumbers
-                                    success:(void (^)(NSArray *facilityStatusItems))success
-                               failureBlock:(void (^)(NSError *bhfError))failure
 {
     //this is the FASTA implementation which can fetch multiple equipments status in a single request
     if(equipmentNumbers.count == 0){
@@ -177,9 +110,6 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
         [endPoint appendString:@","];
     }
     // NSLog(@"endPoint %@",endPoint);
-    //[self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants kBusinesshubKey] forHTTPHeaderField:@"key"];
     
     return [self GET:endPoint parameters:parameters headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
@@ -313,7 +243,11 @@ NSString * const kFacilityStatusBaseUrl = @"https://gateway.businesshub.deutsche
 {
     return [self.enabledEquipmentsForPush containsObject:equipmentNumber];
 }
- 
+-(BOOL)isFavoriteFacility:(NSString*)equipmentNumber
+{
+   return [self.storedFavoriteEquipments containsObject:equipmentNumber];
+}
+
 -(void)removeFromFavorites:(NSString*)equipmentNumber
 {
     if([self.enabledEquipmentsForPush containsObject:equipmentNumber]){

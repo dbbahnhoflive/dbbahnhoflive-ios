@@ -6,6 +6,8 @@
 
 #import <Mantle/Mantle.h>
 #import "MBStationSearchViewController.h"
+#import "MBUIHelper.h"
+
 #import "MBInputField.h"
 #import "MBRootContainerViewController.h"
 #import "MBNavigationController.h"
@@ -38,7 +40,7 @@
 
 #import "MBFavoriteStationManager.h"
 #import "MBMapViewController.h"
-#import "MBPTSRequestManager.h"
+#import "MBRISStationsRequestManager.h"
 
 #import "MBStationNavigationViewController.h"
 #import "MBTutorialManager.h"
@@ -50,6 +52,10 @@
 #import "MBTimetableViewController.h"
 #import "MBTriangleView.h"
 #import "MBSearchErrorView.h"
+#import "MBUrlOpening.h"
+#import "MBStationListTableView.h"
+#import "MBProgressHUD.h"
+#import "MBTrackingManager.h"
 #import "AppDelegate.h"
 
 @import Sentry;
@@ -83,8 +89,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 @interface MBStationSearchViewController ()<MBMapViewControllerDelegate, UITextFieldDelegate,CLLocationManagerDelegate, UITableViewDelegate, UITableViewDataSource,MBStationPickerTableViewCellDelegate, MBSearchErrorViewDelegate>
 
+@property (nonatomic, strong) MBStation* _Nullable selectedStation;
+@property (nonatomic, strong) MBRootContainerViewController* _Nullable stationMapController;
+
 @property (nonatomic) MBStationSearchType currentType;
-@property (nonatomic,strong) MBTriangleView* triangleTableView;
 @property (nonatomic,strong) MBTriangleView* triangleErrorView;
 @property (nonatomic,strong) MBTriangleView* triangleInputTextfieldView;
 
@@ -100,17 +108,19 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 @property(nonatomic,strong) UIButton* closeButton;//only visible in text input mode
 
 @property (nonatomic, strong) MBInputField *stationSearchInputField;
-@property (nonatomic, strong) UITableView* searchResultTableView;
+@property (nonatomic, strong) MBStationListTableView* searchResultTableView;
+@property (nonatomic, strong) MBStationListTableView* favoritesTableView;
+@property (nonatomic, strong) MBStationListTableView* geoSearchTableView;
 @property (nonatomic, strong) MBSearchErrorView* searchErrorView;
 @property (nonatomic, strong) NSIndexPath* longPressStation;
 
 @property (nonatomic, strong) UIButton* searchResultDeleteButton;
 @property (nonatomic, strong) UILabel* searchResultHeaderTitle;
-@property (nonatomic, strong) NSArray<MBPTSStationFromSearch*>* searchResultTextArray;
-@property (nonatomic, strong) NSArray<MBPTSStationFromSearch*>* searchResultGeoArray;
+@property (nonatomic, strong) NSArray<MBStationFromSearch*>* searchResultTextArray;
+@property (nonatomic) BOOL searchResultListFromSearchHistory;
+@property (nonatomic, strong) NSArray<MBStationFromSearch*>* searchResultGeoArray;
 
 @property (nonatomic, strong) UIActivityIndicatorView* loadActivity;
-@property (nonatomic, strong) UIRefreshControl* refreshControl;
 @property (nonatomic, strong) UIImageView *logoImage;
 @property (nonatomic, strong) UILabel *logoText;//this is the text "Bahnhof live"
 
@@ -154,20 +164,12 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     self.title = @"";
     
-    //this is a bit hacky, we need a tap gesture on the background and the tableview background
+    //this is a bit hacky, we need a tap gesture on the background and in all tableview backgrounds
     UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]
                                    initWithTarget:self
                                    action:@selector(backgroundTapped:)];
     NSLog(@"adding tap: %@",tap);
     [self.backgroundTapView addGestureRecognizer:tap];
-    tap = [[UITapGestureRecognizer alloc]
-           initWithTarget:self
-           action:@selector(backgroundTapped:)];
-    NSLog(@"adding tap: %@",tap);
-    [self.searchResultTableView.backgroundView addGestureRecognizer:tap];
-    
-
-    
 }
 -(void)backgroundTapped:(UITapGestureRecognizer*)sender{
     if (sender.state == UIGestureRecognizerStateEnded)
@@ -175,11 +177,16 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         NSLog(@"backgroundTapped:");
         if(self.longPressStation){
             self.longPressStation = nil;
-            [self.searchResultTableView reloadData];
+            [self reloadAllTableViews];
         } else {
             [self dismissKeyboard:sender];
         }
     }
+}
+-(void)reloadAllTableViews{
+    [self.searchResultTableView reloadData];
+    [self.favoritesTableView reloadData];
+    [self.geoSearchTableView reloadData];
 }
 
 
@@ -204,8 +211,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardDidShow:)
                                                  name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardDidHide:)
-                                                 name:UIKeyboardDidHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:)
                                                  name:UIKeyboardWillHideNotification object:nil];
 
@@ -287,7 +292,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     self.locationManagerAuthorized = [[MBGPSLocationManager sharedManager] isLocationManagerAuthorized];
     
-    [self.searchResultTableView reloadData];
+    [self reloadAllTableViews];
     [self displayOnboarding];
 
 }
@@ -304,7 +309,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIF_GPS_LOCATION_UPDATE object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardDidHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
 
 }
@@ -347,14 +351,19 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
     [self.closeButton setImage:[UIImage db_imageNamed:@"MapFilterBack"] forState:UIControlStateNormal];
     self.closeButton.accessibilityLabel = @"Suche schließen";
+    self.closeButton.accessibilityIdentifier = @"CloseButton";
     [self.closeButton addTarget:self action:@selector(closeButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.closeButton];
     self.closeButton.hidden = YES;
     
-    self.mapFloatingBtn = [[MBMapViewButton alloc] init];
-    [self.mapFloatingBtn addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
-    [self.mapFloatingBtn setSize:CGSizeMake([self scaleForScreen:self.mapFloatingBtn.frame.size.width], [self scaleForScreen:self.mapFloatingBtn.frame.size.height])];
-    
+    if(!MBMapViewController.canDisplayMap){
+        NSLog(@"no map button available when starting with voiceover");
+    } else {
+        self.mapFloatingBtn = [[MBMapViewButton alloc] init];
+        [self.mapFloatingBtn addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
+        [self.mapFloatingBtn setSize:CGSizeMake([self scaleForScreen:self.mapFloatingBtn.frame.size.width], [self scaleForScreen:self.mapFloatingBtn.frame.size.height])];
+    }
+
     self.logoImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"Hub_Icon"]];
     if(SCALEFACTORFORSCREEN != 1.0){
         self.logoImage.size = CGSizeMake([self scaleForScreen:self.logoImage.sizeWidth], [self scaleForScreen:self.logoImage.sizeHeight]);
@@ -446,23 +455,13 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.searchResultDeleteButton.hidden = YES;
     
     CGRect pickerFrame = CGRectMake(inputFrame.origin.x, 0, inputFrame.size.width, 3*52);
-    self.searchResultTableView = [[UITableView alloc] initWithFrame:pickerFrame style:UITableViewStylePlain];
-    self.searchResultTableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    [self.searchResultTableView setContentInset:UIEdgeInsetsMake(8, 0, 80, 0)];
-    [self.searchResultTableView registerClass:MBStationPickerTableViewCell.class forCellReuseIdentifier:@"cell"];
-    self.searchResultTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.searchResultTableView.backgroundColor = [UIColor clearColor];
-    self.searchResultTableView.backgroundView = [[UIView alloc] init];
-    self.searchResultTableView.backgroundView.backgroundColor = [UIColor clearColor];
-    self.searchResultTableView.delegate = self;
-    self.searchResultTableView.dataSource = self;
-    [self.view addSubview:self.searchResultTableView];
-    self.searchResultTableView.hidden = YES;
-    
-    self.triangleTableView = [[MBTriangleView alloc] initWithFrame:CGRectMake(0, 0, 16, 8)];
-    [self.searchResultTableView addSubview:self.triangleTableView];
+    self.searchResultTableView = [self setupTableView];
+    self.searchResultTableView.accessibilityIdentifier = @"SearchResults";
+    self.searchResultTableView.triangleView.hidden = YES;
+    self.favoritesTableView = [self setupTableView];
+    self.favoritesTableView.accessibilityIdentifier = @"Favorites";
+    self.geoSearchTableView = [self setupTableView];
 
-    
     self.searchErrorView = [[MBSearchErrorView alloc] initWithFrame:pickerFrame];
     self.searchErrorView.delegate = self;
     [self.view addSubview:self.searchErrorView];
@@ -498,6 +497,28 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self configureCurrentType];
 }
 
+-(MBStationListTableView*)setupTableView{
+    MBStationListTableView* tblv = [[MBStationListTableView alloc] initWithFrame:CGRectMake(15, 0, self.view.frame.size.width-2*15, 52) style:UITableViewStylePlain];
+    tblv.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    [tblv setContentInset:UIEdgeInsetsMake(8, 0, 80, 0)];
+    [tblv registerClass:MBStationPickerTableViewCell.class forCellReuseIdentifier:@"cell"];
+    tblv.separatorStyle = UITableViewCellSeparatorStyleNone;
+    tblv.backgroundColor = [UIColor clearColor];
+    tblv.backgroundView = [[UIView alloc] init];
+    tblv.backgroundView.backgroundColor = [UIColor clearColor];
+    tblv.delegate = self;
+    tblv.dataSource = self;
+    [self.view addSubview:tblv];
+    tblv.hidden = YES;
+    
+    UITapGestureRecognizer* tap = [[UITapGestureRecognizer alloc]
+           initWithTarget:self
+           action:@selector(backgroundTapped:)];
+    [tblv.backgroundView addGestureRecognizer:tap];
+
+    return tblv;
+}
+
 -(void)updateInputAccessoryForString:(NSString*)string{
     if(string.length > 0){
         //we have some input
@@ -528,7 +549,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         //textsearch
         button.accessibilityLabel = @"Suche";
     }
-    
+    button.accessibilityIdentifier = button.accessibilityLabel;
+
     UIImageView* icon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:iconName]];
     [button addSubview:icon];
     [icon centerViewInSuperView];
@@ -559,16 +581,18 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     MBStationSearchType type = featureButton.actionType.integerValue;
     self.currentType = type;
     [self configureCurrentType];
-    [self.searchResultTableView reloadData];
     switch (type) {
         case MBStationSearchTypeTextSearch:
             //[MBTrackingManager trackActions:@[@"h0", @"tap", @"suche"]];
+            [self.searchResultTableView reloadData];
             break;
         case MBStationSearchTypeFavorite:
             [MBTrackingManager trackActions:@[@"h0", @"tap", @"favoriten"]];
+            [self.favoritesTableView reloadData];
             break;
         case MBStationSearchTypeLocation:
             [MBTrackingManager trackActions:@[@"h0", @"tap", @"naehe"]];
+            [self.geoSearchTableView reloadData];
             break;
     }
 }
@@ -583,38 +607,32 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.longPressStation = nil;
     self.searchErrorView.hidden = YES;
     self.triangleErrorView.hidden = YES;
+    self.stationSearchInputField.hidden = YES;
+    self.triangleInputTextfieldView.hidden = YES;
+    //hide all table views
+    self.searchResultTableView.hidden = YES;
+    self.favoritesTableView.hidden = YES;
+    self.geoSearchTableView.hidden = YES;
+
     switch(self.currentType){
         case MBStationSearchTypeTextSearch:
             //buttons state
             [self.triangleErrorView setX:CGRectGetMidX(self.featureSearchButton.frame)-self.triangleErrorView.sizeWidth/2-15];
             [self.searchErrorView setHeaderText:@"Keine Ergebnisse gefunden" bodyText:nil];
-            [self.featureSearchButton viewWithTag:CONTENT_VIEW_TAG].hidden = NO;
-            [self.featureFavoriteButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            [self.featureLocationButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            
-            self.featureSearchButton.accessibilityTraits = UIAccessibilityTraitButton|UIAccessibilityTraitSelected;
-            self.featureFavoriteButton.accessibilityTraits = UIAccessibilityTraitButton;
-            self.featureLocationButton.accessibilityTraits = UIAccessibilityTraitButton;
+            [self changeButtonStateToActive:self.featureSearchButton];
             
             self.stationSearchInputField.hidden = NO;
             self.triangleInputTextfieldView.hidden = NO;
-            self.searchResultTableView.hidden = YES;
-            self.triangleTableView.hidden = YES;
             break;
         case MBStationSearchTypeFavorite:{
             self.triangleErrorView.hidden = NO;
             [self.triangleErrorView setX:CGRectGetMidX(self.featureFavoriteButton.frame)-self.triangleErrorView.sizeWidth/2-15];
-            self.triangleTableView.hidden = NO;
             [self.searchErrorView setHeaderText:@"Ihre Favoritenliste ist leer." bodyText:@"Bestimmen Sie Ihre favorisierten Stationen einfach mithilfe des Stern-Icons in der Suche oder Umgebungsanzeige."];
-            [self.featureSearchButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            [self.featureFavoriteButton viewWithTag:CONTENT_VIEW_TAG].hidden = NO;
-            [self.featureLocationButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            
-            self.featureSearchButton.accessibilityTraits = UIAccessibilityTraitButton;
-            self.featureFavoriteButton.accessibilityTraits = UIAccessibilityTraitButton | UIAccessibilityTraitSelected;
-            self.featureLocationButton.accessibilityTraits = UIAccessibilityTraitButton;
+            [self changeButtonStateToActive:self.featureFavoriteButton];
 
-            [self showResultTable];
+            self.favoritesTableView.hidden = NO;
+            [self.favoritesTableView reloadData];
+
             NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
             if(fav.count == 0){
                 self.searchErrorView.hidden = NO;
@@ -624,20 +642,26 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         case MBStationSearchTypeLocation:
             self.triangleErrorView.hidden = NO;
             [self.triangleErrorView setX:CGRectGetMidX(self.featureLocationButton.frame)-self.triangleErrorView.sizeWidth/2-15];
-            self.triangleTableView.hidden = NO;
-            [self.featureSearchButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            [self.featureFavoriteButton viewWithTag:CONTENT_VIEW_TAG].hidden = YES;
-            [self.featureLocationButton viewWithTag:CONTENT_VIEW_TAG].hidden = NO;
-            
-            self.featureSearchButton.accessibilityTraits = UIAccessibilityTraitButton;
-            self.featureFavoriteButton.accessibilityTraits = UIAccessibilityTraitButton;
-            self.featureLocationButton.accessibilityTraits = UIAccessibilityTraitButton | UIAccessibilityTraitSelected;
+            [self changeButtonStateToActive:self.featureLocationButton];
 
-            [self showResultTable];
+            self.geoSearchTableView.hidden = NO;
+            [self.geoSearchTableView reloadData];
+
             [self refreshLocationSearch];
             break;
     }
     [self.view setNeedsLayout];
+}
+
+-(void)changeButtonStateToActive:(UIButton*)btn{
+    [self.featureSearchButton viewWithTag:CONTENT_VIEW_TAG].hidden = self.featureSearchButton != btn;
+    [self.featureFavoriteButton viewWithTag:CONTENT_VIEW_TAG].hidden = self.featureFavoriteButton != btn;
+    [self.featureLocationButton viewWithTag:CONTENT_VIEW_TAG].hidden = self.featureLocationButton != btn;
+    
+    self.featureSearchButton.accessibilityTraits = UIAccessibilityTraitButton;
+    self.featureFavoriteButton.accessibilityTraits = UIAccessibilityTraitButton;
+    self.featureLocationButton.accessibilityTraits = UIAccessibilityTraitButton;
+    btn.accessibilityTraits |= UIAccessibilityTraitSelected;
 }
 
 -(void)refreshLocationSearch{
@@ -653,7 +677,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(self.currentType == MBStationSearchTypeLocation){
         //NSLog(@"updateErrorViewForLocation...");
         self.searchErrorView.hidden = NO;
-        self.searchResultTableView.hidden = YES;
+        self.geoSearchTableView.hidden = YES;
         if(!self.locationManagerAuthorized){
             //NSLog(@"...not authorized");
             [self.searchErrorView setHeaderText:nil bodyText:@"Haltestellen in Ihrer Umgebung werden Ihnen nur angezeigt, wenn Sie den Ortungsdienst aktivieren." actionText:@"Jetzt erlauben" actionType:MBErrorActionTypeRequestLocation];
@@ -678,8 +702,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
                         } else {
                             //NSLog(@"...got data");
                             self.searchErrorView.hidden = YES;
-                            [self.searchResultTableView reloadData];
-                            self.searchResultTableView.hidden = NO;
+                            [self.geoSearchTableView reloadData];
+                            self.geoSearchTableView.hidden = NO;
                         }
                     }
                 }
@@ -701,12 +725,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 }
 
 
--(void)showResultTable{
-    self.stationSearchInputField.hidden = YES;
-    self.triangleInputTextfieldView.hidden = YES;
-    self.searchResultTableView.hidden = NO;
-    [self.searchResultTableView reloadData];
-}
 
 -(void)searchResultDelete:(UIButton*)btn{
     self.stationSearchInputField.delegate = nil;//need to nil the delegate, otherwise the display of the alert will trigger endEditing events in textfield
@@ -735,7 +753,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(status == kCLAuthorizationStatusNotDetermined){
         [[MBGPSLocationManager sharedManager] requestAuthorization];
     } else {
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
     }
 }
 
@@ -749,28 +767,30 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (void)mapFloatingBtnPressed
 {
-    if([self mapNearbyStations].count == 0){
-        //no stations, force update
-        self.mapRequestedSearchUpdate = YES;
-        self.triggerSearchAfterLocationUpdate = YES;
-        [[MBGPSLocationManager sharedManager] getOneShotLocationUpdate];
-        //station list in map will be updated when both requests (DB+Hafas finished), see updateMapWithStations
-    }
-    
-    MBMapViewController* vc = [MBMapViewController new];
-    if(self.mapRequestedSearchUpdate){
-        self.mapViewController = vc;
-    }
-    vc.delegate = self;
-    [vc configureWithDelegate];
-    
-    [MBTrackingManager trackActions:@[@"tab_navi", @"tap", @"map_button"]];
+    [MBMapConsent.sharedInstance showConsentDialogInViewController:self completion:^{
+        if([self mapNearbyStations].count == 0){
+            //no stations, force update
+            self.mapRequestedSearchUpdate = YES;
+            self.triggerSearchAfterLocationUpdate = YES;
+            [[MBGPSLocationManager sharedManager] getOneShotLocationUpdate];
+            //station list in map will be updated when both requests (DB+Hafas finished), see updateMapWithStations
+        }
+        
+        MBMapViewController* vc = [MBMapViewController new];
+        vc.delegate = self;
+        [vc configureWithDelegate];
+        
+        if(self.mapRequestedSearchUpdate){
+            self.mapViewController = vc;
+        }
+        [MBTrackingManager trackActions:@[@"tab_navi", @"tap", @"map_button"]];
 
-    MBStationNavigationViewController* nav = [[MBStationNavigationViewController alloc] initWithRootViewController:vc];
-    nav.hideEverything = YES;
-    [nav setShowRedBar:NO];
-    nav.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:nav animated:YES completion:nil];
+        MBStationNavigationViewController* nav = [[MBStationNavigationViewController alloc] initWithRootViewController:vc];
+        nav.hideEverything = YES;
+        [nav setShowRedBar:NO];
+        nav.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self presentViewController:nav animated:YES completion:nil];
+    }];
 }
 
 -(BOOL)mapShouldCenterOnUser{
@@ -787,7 +807,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 - (NSArray *)mapNearbyStations {
     if(self.searchResultGeoArray.count > 0){
         NSMutableArray* list = [NSMutableArray arrayWithCapacity:self.searchResultGeoArray.count];
-        for(MBPTSStationFromSearch* station in self.searchResultGeoArray){
+        for(MBStationFromSearch* station in self.searchResultGeoArray){
             [list addObject:[MBMarkerMerger markerForSearchStation:station]];
         }
         return list;
@@ -800,15 +820,17 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     NSArray<NSDictionary*> *lastRequestedStations = [self lastRequestedStations];
     if (lastRequestedStations.count > 0) {
         self.searchResultHeaderTitle.text = @"Suchverlauf";
-        NSMutableArray<MBPTSStationFromSearch*>* list = [NSMutableArray arrayWithCapacity:lastRequestedStations.count];
+        NSMutableArray<MBStationFromSearch*>* list = [NSMutableArray arrayWithCapacity:lastRequestedStations.count];
         for(NSDictionary* dict in lastRequestedStations){
-            MBPTSStationFromSearch* s = [[MBPTSStationFromSearch alloc] initWithDict:dict];
+            MBStationFromSearch* s = [[MBStationFromSearch alloc] initWithDict:dict];
             [list addObject:s];
         }
         self.searchResultTextArray = list;
+        self.searchResultListFromSearchHistory = true;
         self.searchResultDeleteButton.hidden = NO;
     } else {
         self.searchResultHeaderTitle.text = @"Suchergebnisse";
+        self.searchResultListFromSearchHistory = false;
         self.searchResultTextArray = @[];
         self.searchResultDeleteButton.hidden = YES;
     }
@@ -836,6 +858,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (void)didTapOnDatasecLink:(id)sender
 {
+    [MBStationSearchViewController displayDataProtectionOn:self];
+}
+
++(void)displayDataProtectionOn:(nonnull UIViewController*)vc{
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
     imprintViewController.title = @"Datenschutz";
     imprintViewController.url = @"datenschutz";
@@ -846,7 +872,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     [MBTrackingManager trackState:@"data_protection"];
 
-    [self presentViewController:imprintNavigationController animated:YES completion:nil];
+    [vc presentViewController:imprintNavigationController animated:YES completion:nil];
 }
 
 - (void)viewDidLayoutSubviews
@@ -873,14 +899,17 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.backgroundImage.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
 
     if(self.currentType == MBStationSearchTypeLocation || self.currentType == MBStationSearchTypeFavorite){
-        [self.searchResultTableView setBelow:self.featureButtonArea withPadding:20-self.triangleTableView.sizeHeight];
+        MBStationListTableView* tv = (self.currentType == MBStationSearchTypeLocation) ? self.geoSearchTableView : self.favoritesTableView;
+        UIView* triangleView = tv.triangleView;
+        [tv setBelow:self.featureButtonArea withPadding:20-triangleView.sizeHeight];
         [self.searchErrorView setBelow:self.featureButtonArea withPadding:20];
-        [self.searchResultTableView setHeight:self.footerButtons.originY-self.searchResultTableView.originY];
-        [self.triangleTableView setY:-self.triangleTableView.sizeHeight];
+        
+        [tv setHeight:self.footerButtons.originY-tv.originY];
+        [triangleView setY:-triangleView.sizeHeight];
         if(self.currentType == MBStationSearchTypeFavorite){
-            [self.triangleTableView setGravityLeft:(int)(self.searchResultTableView.sizeWidth/2-self.triangleTableView.sizeWidth/2)];
+            [triangleView setGravityLeft:(int)(tv.sizeWidth/2-triangleView.sizeWidth/2)];
         } else {
-            [self.triangleTableView setGravityLeft:(int)(CGRectGetMidX(self.featureLocationButton.frame)-self.triangleTableView.sizeWidth/2-self.searchResultTableView.frame.origin.x)];
+            [triangleView setGravityLeft:(int)(CGRectGetMidX(self.featureLocationButton.frame)-triangleView.sizeWidth/2-self.geoSearchTableView.frame.origin.x)];
         }
     } else if(self.currentType == MBStationSearchTypeTextSearch) {
         if(self.searchResultTableView.hidden){
@@ -904,7 +933,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:errorHeadline message:errorMessage preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Einstellungen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         //open settings app in > iOS 8
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Nein, danke" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
@@ -921,7 +950,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     return @[];
 }
 
-- (void) updateLastRequestedStations:(MBPTSStationFromSearch*)station
+- (void) updateLastRequestedStations:(MBStationFromSearch*)station
 {
     NSMutableArray *archivedStations = [[self lastRequestedStations] mutableCopy];
     
@@ -990,9 +1019,9 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.mapViewController = nil;
 }
 
-- (void) updateSearchResults:(NSArray<MBPTSStationFromSearch*>*)stationList searchTerm:(NSString*)searchTerm typeLocation:(BOOL)isLocation
+- (void) updateSearchResults:(NSArray<MBStationFromSearch*>*)stationList searchTerm:(NSString*)searchTerm typeLocation:(BOOL)isLocation
 {
-    NSArray<MBPTSStationFromSearch*>* results = nil;
+    NSArray<MBStationFromSearch*>* results = nil;
     if(!stationList){
         //failure in search: display error
         results = nil;
@@ -1005,7 +1034,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         //calculate distance to user
         CLLocation *userLocation = self.currentUserPosition;
         if(userLocation){
-            for(MBPTSStationFromSearch* s in results){
+            for(MBStationFromSearch* s in results){
                 CLLocationDistance dist = 0;
                 CLLocation *stationLocation = [[CLLocation alloc] initWithLatitude:s.coordinate.latitude longitude:s.coordinate.longitude];
                 dist = [userLocation distanceFromLocation:stationLocation];
@@ -1013,14 +1042,14 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             }
         }
         if(userLocation && isLocation){
-            results = [results sortedArrayUsingComparator:^NSComparisonResult(MBPTSStationFromSearch* obj1, MBPTSStationFromSearch* obj2) {
+            results = [results sortedArrayUsingComparator:^NSComparisonResult(MBStationFromSearch* obj1, MBStationFromSearch* obj2) {
                 NSNumber* dist1 = obj1.distanceInKm;
                 NSNumber* dist2 = obj2.distanceInKm;
                 return [dist1 compare:dist2];
             }];
         }
         
-        for(MBPTSStationFromSearch* s in results){
+        for(MBStationFromSearch* s in results){
             NSArray* evaIds = s.eva_ids;
             [[HafasCacheManager sharedManager] addKnownEvaIds:evaIds];
         }
@@ -1032,7 +1061,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             //special handling: show the next DB-station at the top
             NSMutableArray* resultsWithWithDBFirst = [NSMutableArray arrayWithCapacity:results.count];
             BOOL addedFirstStation = NO;
-            for(MBPTSStationFromSearch* s in results){
+            for(MBStationFromSearch* s in results){
                 if(s.isOPNVStation){
                     [resultsWithWithDBFirst addObject:s];
                 } else {
@@ -1054,13 +1083,14 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         self.searchResultGeoArray = results;
     } else {
         //must be text search
+        self.searchResultListFromSearchHistory = false;
         self.searchResultTextArray = results;
         self.searchResultDeleteButton.hidden = YES;
     }
 }
 
 
--(void)setSearchResultTextArray:(NSArray<MBPTSStationFromSearch*> *)searchResultTextArray{
+-(void)setSearchResultTextArray:(NSArray<MBStationFromSearch*> *)searchResultTextArray{
     self.longPressStation = nil;
     BOOL invalidSearchResult = NO;
     if(searchResultTextArray){
@@ -1086,27 +1116,27 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         [self.searchResultTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
     }
 }
--(void)setSearchResultGeoArray:(NSArray<MBPTSStationFromSearch *> *)searchResultGeoArray{
+-(void)setSearchResultGeoArray:(NSArray<MBStationFromSearch *> *)searchResultGeoArray{
     self.longPressStation = nil;
     if(searchResultGeoArray){
         _searchResultGeoArray = [[NSArray alloc] initWithArray:searchResultGeoArray copyItems:YES];
     } else {
         _searchResultGeoArray = nil;
     }
-    [self.searchResultTableView reloadData];
+    [self.geoSearchTableView reloadData];
 }
 
 - (void) openStation:(NSDictionary*)stationDict andShowWagenstand:(NSDictionary*)wagenstandUserInfo
 {
     self.wagenstandUserInfo = wagenstandUserInfo;
-    MBPTSStationFromSearch* station = [[MBPTSStationFromSearch alloc] initWithDict:stationDict];
+    MBStationFromSearch* station = [[MBStationFromSearch alloc] initWithDict:stationDict];
     [self didSelectStation:station];
 }
 
 - (void) openStationAndShowFacility:(NSDictionary*)stationDict
 {
     self.startWithFacilityView = YES;
-    MBPTSStationFromSearch* station = [[MBPTSStationFromSearch alloc] initWithDict:stationDict];
+    MBStationFromSearch* station = [[MBStationFromSearch alloc] initWithDict:stationDict];
     [self didSelectStation:station];
 }
 
@@ -1115,18 +1145,18 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 #pragma MBStationPickerViewDelegates
 
 -(void)openStation:(NSDictionary *)stationDict{
-    MBPTSStationFromSearch* station = [[MBPTSStationFromSearch alloc] initWithDict:stationDict];
+    MBStationFromSearch* station = [[MBStationFromSearch alloc] initWithDict:stationDict];
     [self didSelectStation:station startWithDepartures:YES];
 }
 
 
 
 
-- (void) didSelectStation:(MBPTSStationFromSearch *)station{
+- (void) didSelectStation:(MBStationFromSearch *)station{
     [self didSelectStation:station startWithDepartures:NO];
 }
 
-- (void) didSelectStation:(MBPTSStationFromSearch *)stationFromSearch startWithDepartures:(BOOL)startWithDepartures
+- (void) didSelectStation:(MBStationFromSearch *)stationFromSearch startWithDepartures:(BOOL)startWithDepartures
 {
     if(_didSelectStationRunning){
         NSLog(@"ignored %@, waiting for %@",stationFromSearch,_selectedStation);
@@ -1138,8 +1168,23 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self updateLastRequestedStations:stationFromSearch];
     [self.stationSearchInputField resignFirstResponder];
     
-    NSNumber* stationId = stationFromSearch.stationId;
+    if([MBStationFromSearch needToUpdateEvaIdsForStation:stationFromSearch]){
+        self.view.userInteractionEnabled = false;
+        [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+        [stationFromSearch updateEvaIds:^(BOOL success) {
+            self.view.userInteractionEnabled = true;
+            [MBProgressHUD hideHUDForView:self.view animated:NO];
+            [self loadStation:stationFromSearch startWithDepartures:startWithDepartures];
+        }];
+    } else {
+        // not a stored station or we have no stada: continue with stored data
+        [self loadStation:stationFromSearch startWithDepartures:startWithDepartures];
+    }
+}
+
+-(void)loadStation:(MBStationFromSearch*)stationFromSearch startWithDepartures:(BOOL)startWithDepartures{
     BOOL stadaMissing = NO;
+    NSNumber* stationId = stationFromSearch.stationId;
     if(!stationId){
         NSLog(@"no STADA id, fallback to eva");
         stadaMissing = YES;
@@ -1155,7 +1200,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             @"stationId" : (station.mbId == nil ? @0 : station.mbId),
             @"station" : (station.title == nil ? @"" : station.title)
         } forKey:@"station"];
-    }];    
+    }];
 
     if(stationFromSearch.isOPNVStation){
         switch(self.currentType){
@@ -1172,7 +1217,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
         MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithFernverkehr:NO];
         timeVC.oepnvOnly = YES;
-        timeVC.includeLongDistanceTrains = YES;
+        timeVC.includeLongDistanceTrains = false;
         timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
         
         NSString* idString = stationFromSearch.eva_ids.firstObject;
@@ -1185,6 +1230,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     if(stadaMissing){
         NSLog(@"FAILURE, cant load station without stada-id");
+        _didSelectStationRunning = NO;
         return;
     }
     
@@ -1206,9 +1252,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.stationMapController.startWithDepartures = startWithDepartures;
     if(startWithDepartures){
         //ensure that timetable is setup early
-        [[TimetableManager sharedManager] resetTimetable];
-        [[TimetableManager sharedManager] setEvaIds:station.stationEvaIds];
-        [[TimetableManager sharedManager] startTimetableScheduler];
+        [[TimetableManager sharedManager] reloadTimetableWithEvaIds:station.stationEvaIds];
     }
     
     self.stationMapController.station = station;
@@ -1272,7 +1316,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         }
         CLLocationCoordinate2D geo = self.currentUserPosition.coordinate;
         self.requestDBOngoing += 1;
-        [[MBPTSRequestManager sharedInstance] searchStationByGeo:geo success:^(NSArray<MBPTSStationFromSearch*>* stationList) {
+        [[MBRISStationsRequestManager sharedInstance] searchStationByGeo:geo success:^(NSArray<MBStationFromSearch*>* stationList) {
             if(self.currentType != lastSearchType){
                 NSLog(@"WARNING; SEARCH TYPE CHANGED, IGNORE REQUEST RESULTS");
             } else {
@@ -1289,7 +1333,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         }];
     } else {
         self.requestDBOngoing += 1;
-        [[MBPTSRequestManager sharedInstance] searchStationByName:searchTerm success:^(NSArray<MBPTSStationFromSearch*>* stationList) {
+        [[MBRISStationsRequestManager sharedInstance] searchStationByName:searchTerm success:^(NSArray<MBStationFromSearch*>* stationList) {
             if(self.currentType != lastSearchType){
                 NSLog(@"WARNING; SEARCH TYPE CHANGED, IGNORE REQUEST RESULTS");
             } else if(![searchTermCopy isEqualToString:self.stationSearchInputField.text]){
@@ -1374,9 +1418,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, self.stationSearchInputField);
 }
 
-- (void)keyBoardDidHide:(NSNotification*)notification
-{
-}
+
 - (void)keyBoardWillHide:(NSNotification*)notification
 {
     [self updateSearchResultTableWithKeyboardChange:notification];
@@ -1614,53 +1656,54 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     return 1;
 }
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    switch(self.currentType){
-        case MBStationSearchTypeTextSearch:
-            return self.searchResultTextArray.count;
-        case MBStationSearchTypeFavorite:{
-            NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
-            return fav.count;
-        }
-        case MBStationSearchTypeLocation:{
-            return self.searchResultGeoArray.count;
-        }
+    if(tableView == self.searchResultTableView){
+        return self.searchResultTextArray.count;
     }
+    if(tableView == self.favoritesTableView){
+        NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
+        return fav.count;
+    }
+    if(tableView == self.geoSearchTableView){
+        return self.searchResultGeoArray.count;
+    }
+    return 0;
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    NSInteger height = 52;
     if(self.longPressStation && [self.longPressStation isEqual:indexPath]){
-        if(self.currentType == MBStationSearchTypeLocation){
-            return 50+194+50+2;//extra space for distance
-        } else {
-            return 50+194+2;
+        height += 194;
+        if(tableView == self.geoSearchTableView){
+            height += 50;//extra space for distance
         }
     }
-    return 50+2;//[self scaleForScreen:52];
+    return height;
 }
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     BOOL isPressedCell = self.longPressStation && [self.longPressStation isEqual:indexPath];
     MBStationPickerTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    cell.tableView = (MBStationListTableView*) tableView;
     cell.delegate = self;
-    cell.station = [self stationDataForCurrentType:indexPath];
+    cell.station = [self stationDataForTableView:tableView path:indexPath];
     cell.showDistance = isPressedCell && self.currentType == MBStationSearchTypeLocation;
     cell.showDetails = isPressedCell;
     return cell;
 }
--(MBPTSStationFromSearch*)stationDataForCurrentType:(NSIndexPath*)indexPath{
-    switch(self.currentType){
-        case MBStationSearchTypeTextSearch:
-            return self.searchResultTextArray[indexPath.row];
-        case MBStationSearchTypeFavorite:{
-            NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
-            return fav[indexPath.row];
-        }
-        case MBStationSearchTypeLocation:
-            return self.searchResultGeoArray[indexPath.row];
+-(MBStationFromSearch*)stationDataForTableView:(UITableView*)tableView path:(NSIndexPath*)indexPath{
+    if(tableView == self.searchResultTableView){
+        return self.searchResultTextArray[indexPath.row];
+    }
+    if(tableView == self.favoritesTableView){
+        NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
+        return fav[indexPath.row];
+    }
+    if(tableView == self.geoSearchTableView){
+        return self.searchResultGeoArray[indexPath.row];
     }
     return nil;
 }
 -(void)stationPickerCell:(MBStationPickerTableViewCell *)cell changedFavStatus:(BOOL)favStatus{
     if(self.currentType == MBStationSearchTypeFavorite){
-        [self.searchResultTableView reloadData];//reload on every change (remove favorite station)
+        [self reloadAllTableViews];//reload on every change (remove favorite station)
         NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
         if(fav.count == 0){
             self.searchErrorView.hidden = NO;
@@ -1675,38 +1718,40 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
 }
 -(void)stationPickerCellDidLongPress:(MBStationPickerTableViewCell *)cell{
-    NSIndexPath* indexPath = [self.searchResultTableView indexPathForCell:cell];
+    MBStationListTableView* tv = cell.tableView;
+    NSIndexPath* indexPath = [tv indexPathForCell:cell];
     if([self.longPressStation isEqual:indexPath]){
         self.longPressStation = nil;
     } else {
         self.longPressStation = indexPath;
     }
-    [self.searchResultTableView reloadData];
+    [tv reloadData];
     if(self.longPressStation){
         [CATransaction begin];
-        [self.searchResultTableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:NO];
+        [tv scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:NO];
         [CATransaction setCompletionBlock:^{
             if(indexPath.row > 0){
                 //correct the position by adding the triangle
-                CGPoint p = self.searchResultTableView.contentOffset;
-                p.y += self.triangleTableView.sizeHeight;
-                self.searchResultTableView.contentOffset = p;
+                CGPoint p = tv.contentOffset;
+                p.y += tv.triangleView.sizeHeight;
+                tv.contentOffset = p;
             }
         }];
         [CATransaction commit];
     }
 }
 -(void)stationPickerCellDidTapDeparture:(MBStationPickerTableViewCell *)cell{
-    NSIndexPath* indexPath = [self.searchResultTableView indexPathForCell:cell];
-    MBPTSStationFromSearch* station = [self stationDataForCurrentType:indexPath];
+    NSIndexPath* indexPath = [cell.tableView indexPathForCell:cell];
+    MBStationFromSearch* station = [self stationDataForTableView:cell.tableView path:indexPath];
     [self didSelectStation:station startWithDepartures:YES];
 }
 
+
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    MBPTSStationFromSearch* station = [self stationDataForCurrentType:indexPath];
+    MBStationFromSearch* station = [self stationDataForTableView:tableView path:indexPath];
     if(station){
-        [self didSelectStation:station];
+        [self didSelectStation:station startWithDepartures:NO];
         //close text search area
         if(self.featureButtonArea.hidden){
             [self closeTextInputMode];

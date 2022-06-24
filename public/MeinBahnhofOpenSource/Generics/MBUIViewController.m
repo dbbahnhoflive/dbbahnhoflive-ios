@@ -5,6 +5,7 @@
 
 
 #import "MBUIViewController.h"
+#import "MBUIHelper.h"
 
 #import "MBGPSLocationManager.h"
 

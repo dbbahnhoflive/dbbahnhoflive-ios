@@ -5,6 +5,7 @@
 
 
 #import "MBExternalLinkButton.h"
+#import "MBUIHelper.h"
 
 @implementation MBExternalLinkButton
 

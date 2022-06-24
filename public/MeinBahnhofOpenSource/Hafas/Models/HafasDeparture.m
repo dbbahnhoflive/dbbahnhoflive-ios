@@ -69,6 +69,33 @@ static NSDateFormatter* dateTimeFormatter = nil;
     self.stopLocations = stops;
 }
 
++(NSString*)stringForCat:(HAFASProductCategory)cat{
+    switch (cat) {
+        case HAFASProductCategoryNONE:
+            return @"Sonstige";
+        case HAFASProductCategoryICE:
+            return @"ICE";
+        case HAFASProductCategoryIC:
+            return @"IC";
+        case HAFASProductCategoryIR:
+            return @"IR";
+        case HAFASProductCategoryREGIO:
+            return @"RB";
+        case HAFASProductCategoryS:
+            return @"S-Bahn";
+        case HAFASProductCategoryBUS:
+            return @"Bus";
+        case HAFASProductCategorySHIP:
+            return @"Fähre";
+        case HAFASProductCategoryU:
+            return @"U-Bahn";
+        case HAFASProductCategoryTRAM:
+            return @"Tram";
+        case HAFASProductCategoryCAL:
+            return @"Anrufpflichtige Verkehre";
+    }
+}
+
 -(HAFASProductCategory)productCategory{
     HAFASProductCategory cat = HAFASProductCategoryNONE;
     if(!self.product || self.product[@"catCode"] == nil){

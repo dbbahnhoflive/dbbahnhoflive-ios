@@ -5,6 +5,7 @@
 
 
 #import "DisclaimerCell.h"
+#import "MBUIHelper.h"
 
 @interface DisclaimerCell()
 

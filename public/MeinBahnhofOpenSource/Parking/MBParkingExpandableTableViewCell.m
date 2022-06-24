@@ -7,6 +7,7 @@
 #import "MBParkingExpandableTableViewCell.h"
 #import "MBParkingInfoView.h"
 #import "MBLabel.h"
+#import "MBUIHelper.h"
 
 @interface MBParkingExpandableTableViewCell()
 @property (nonatomic, strong) UIView *topView;

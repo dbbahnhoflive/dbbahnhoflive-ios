@@ -8,6 +8,7 @@
 #import "HafasDeparture.h"
 #import "HafasTimetable.h"
 #import "MBTimeTableOEPNVTableViewCell.h"
+#import "MBUIHelper.h"
 
 @implementation MBHafasTimetableDataSource
 
@@ -28,7 +29,7 @@
                 } else {
                     //day changed
                     NSDateFormatter* df = [[NSDateFormatter alloc] init];
-                    [df setDateFormat:@"YYYY-MM-dd"];
+                    [df setDateFormat:@"yyyy-MM-dd"];
                     NSDate* date = [df dateFromString:stop.date];
                     [df setDateFormat:@"dd. MMMM"];
                     NSString* dateString = [df stringFromDate:date];

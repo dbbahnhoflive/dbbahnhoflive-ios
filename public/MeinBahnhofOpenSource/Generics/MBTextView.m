@@ -5,6 +5,7 @@
 
 
 #import "MBTextView.h"
+#import "MBUIHelper.h"
 
 @implementation MBTextView
 

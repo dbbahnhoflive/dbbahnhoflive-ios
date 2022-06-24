@@ -7,6 +7,7 @@
 #import "MBTimeTableFilterViewCell.h"
 #import "MBSwitch.h"
 #import "MBFilterButton.h"
+#import "MBUIHelper.h"
 
 @interface MBTimeTableFilterViewCell()
 

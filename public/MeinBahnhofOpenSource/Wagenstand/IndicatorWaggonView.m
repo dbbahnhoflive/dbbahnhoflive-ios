@@ -6,6 +6,7 @@
 
 #import "IndicatorWaggonView.h"
 #import "Waggon.h"
+#import "MBUIHelper.h"
 
 @interface IndicatorWaggonView()
 

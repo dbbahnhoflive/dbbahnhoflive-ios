@@ -12,12 +12,15 @@
 #import "MBRootContainerViewController.h"
 #import "MBStationViewController.h"
 #import "FacilityStatus.h"
-#import "MBPTSStationResponse.h"
+#import "MBStationDetails.h"
 
 #import "MBStaticStationInfo.h"
 #import "RIMapPoi.h"
 #import "RIMapConfigItem.h"
 #import "MBParkingTableViewController.h"
+#import "MBFacilityStatusViewController.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBStationInfrastructureViewController ()<MBMapViewControllerDelegate>
 
@@ -82,16 +85,16 @@
     
     //NOTE values if this array must be used as a key in ausstattungEntries!
     
-    MBPTSStationResponse* details = _station.stationDetails;
+    MBStationDetails* details = _station.stationDetails;
     
     if(true){
-        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:@"barrierefreiheit" withStation:_station] forKey:KEY_STUFENFREI];
+        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:kServiceType_Barrierefreiheit withStation:_station] forKey:KEY_STUFENFREI];
     }
     if(details.hasPublicFacilities){
         [ausstattungEntries setObject:[NSNumber numberWithBool:YES] forKey:KEY_WC];
     }
     if(details.hasWiFi){
-        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:@"wlan" withStation:_station] forKey:KEY_WLAN];
+        [ausstattungEntries setObject:[MBStaticStationInfo serviceForType:kServiceType_WLAN withStation:_station] forKey:KEY_WLAN];
     }
     if(details.hasLockerSystem){
         [ausstattungEntries setObject:[NSNumber numberWithBool:YES] forKey:KEY_SCHLIESSFACH];
@@ -149,9 +152,8 @@
 }
 
 +(BOOL)displaySomeEntriesOnlyWhenAvailable:(MBStation*)station{
-    NSNumber* category = station.category;
-    NSLog(@"station cat %@",category);
-    BOOL displaySomeEntriesOnlyWhenAvailable = category.integerValue >= MIN_CATEGORY_FOR_FEATURES_THAT_MUST_BE_AVAILABLE;
+    NSLog(@"station cat %ld",(long)station.stationDetails.category);
+    BOOL displaySomeEntriesOnlyWhenAvailable = station.stationDetails.category >= MIN_CATEGORY_FOR_FEATURES_THAT_MUST_BE_AVAILABLE;
     return displaySomeEntriesOnlyWhenAvailable;
 }
 
@@ -257,8 +259,14 @@
                 }
             } else if([key isEqualToString:KEY_AUFZUG]){
                 if(_station.facilityStatusPOIs.count > 0){
-                    if(UIAccessibilityIsVoiceOverRunning()){
-                        //no button for voiceover users
+                    if(!MBMapViewController.canDisplayMap){
+                        //display directly the list of facilities
+                        __weak MBStationInfrastructureViewController* weakSelf = self;
+                        [self addLinkButtonToEntryView:entryView withBlock:^{
+                            MBFacilityStatusViewController* vc = [MBFacilityStatusViewController new];
+                            vc.station = weakSelf.station;
+                            [weakSelf.navigationController pushViewController:vc animated:YES];
+                        }];
                     } else {
                         //we know that elevators are always available on the map:
                         poi = _station.facilityStatusPOIs.firstObject;
@@ -267,8 +275,14 @@
                 }
             } else if([key isEqualToString:KEY_PARK]){
                 if(self.station.parkingInfoItems.count > 0){
-                    if(UIAccessibilityIsVoiceOverRunning()){
-                        //no button for voiceover users
+                    if(!MBMapViewController.canDisplayMap){
+                        //display directly the list of parking places
+                        __weak MBStationInfrastructureViewController* weakSelf = self;
+                        [self addLinkButtonToEntryView:entryView withBlock:^{
+                            MBParkingTableViewController* vc = [MBParkingTableViewController new];
+                            [vc setParkingList:weakSelf.station.parkingInfoItems];
+                            [weakSelf.navigationController pushViewController:vc animated:YES];
+                        }];
                     } else {
                         //we add these to the map, so we know they are available
                         NSArray* mapFilter = @[ PRESET_PARKING ];
@@ -296,7 +310,7 @@
                 if((poi = [self poiForFilter:mapFilter])){
                     [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:poi];
                 } else {
-                    MBService* service = [MBStaticStationInfo serviceForType:@"db_information"  withStation:_station];
+                    MBService* service = [MBStaticStationInfo serviceForType:kServiceType_DBInfo  withStation:_station];
                     [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             } else if([key isEqualToString:KEY_REISEZENTRUM]){
@@ -304,7 +318,7 @@
                 if((poi = [self poiForFilter:mapFilter])){
                     [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:poi];
                 } else {
-                    MBService* service = [MBStaticStationInfo serviceForType:@"local_travelcenter" withStation:_station];
+                    MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalTravelCenter withStation:_station];
                     [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             } else if([key isEqualToString:KEY_LOUNGE]){
@@ -312,7 +326,7 @@
                 if((poi = [self poiForFilter:mapFilter])){
                     [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:poi];
                 } else {
-                    MBService* service = [MBStaticStationInfo serviceForType:@"local_db_lounge" withStation:_station];
+                    MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalDBLounge withStation:_station];
                     [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             } else if([key isEqualToString:KEY_SCHLIESSFACH]){
@@ -325,7 +339,7 @@
                 if((poi = [self poiForFilter:mapFilter])){
                     [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:poi];
                 } else {
-                    MBService* service = [MBStaticStationInfo serviceForType:@"local_lostfound" withStation:_station];
+                    MBService* service = [MBStaticStationInfo serviceForType:kServiceType_LocalLostFound withStation:_station];
                     [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             }
@@ -340,7 +354,7 @@
 }
 
 -(RIMapPoi*)poiForFilter:(NSArray*)mapFilterPresets{
-    if(UIAccessibilityIsVoiceOverRunning()){
+    if(!MBMapViewController.canDisplayMap){
         return nil;//map is not accessible via voiceover
     }
     
@@ -364,20 +378,19 @@
     [self addLinkButtonToEntryView:entryView withBlock:^{
         weakSelf.activeMapFilter = mapFilter;
         weakSelf.mapPoi = poi;
-        MBMapViewController* vc = [MBMapViewController new];
-        vc.delegate = weakSelf;
-        [vc configureWithStation:weakSelf.station];
-        [weakSelf presentViewController:vc animated:YES completion:nil];
+        [MBMapConsent.sharedInstance showConsentDialogInViewController:weakSelf completion:^{
+            MBMapViewController* vc = [MBMapViewController new];
+            vc.delegate = weakSelf;
+            [vc configureWithStation:weakSelf.station];
+            [weakSelf presentViewController:vc animated:YES completion:nil];
+        }];
     }];
 }
 
 -(void)addLinkButtonToEntryView:(UIView*)entryView withMBService:(MBService*)service{
     __weak MBStationInfrastructureViewController* weakSelf = self;
     [self addLinkButtonToEntryView:entryView withBlock:^{
-        MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:weakSelf.station];
-        [vc setItem:service];
-        
-        [MBTrackingManager trackStatesWithStationInfo:@[@"d1", service.trackingKey ]];
+        MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:weakSelf.station service:service];
         
         [weakSelf.navigationController pushViewController:vc animated:YES];
     }];

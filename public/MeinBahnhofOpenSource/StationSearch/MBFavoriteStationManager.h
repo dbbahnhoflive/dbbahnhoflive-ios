@@ -5,16 +5,16 @@
 
 
 #import <Foundation/Foundation.h>
-#import "MBPTSStationFromSearch.h"
+#import "MBStationFromSearch.h"
 
 @interface MBFavoriteStationManager : NSObject
 
 + (id)client;
 
--(void)addStation:(MBPTSStationFromSearch*)dict;
--(void)removeStation:(MBPTSStationFromSearch*)dict;
--(BOOL)isFavorite:(MBPTSStationFromSearch*)dict;
+-(void)addStation:(MBStationFromSearch*)dict;
+-(void)removeStation:(MBStationFromSearch*)dict;
+-(BOOL)isFavorite:(MBStationFromSearch*)dict;
 
--(NSArray<MBPTSStationFromSearch*>*)favoriteStationsList;
+-(NSArray<MBStationFromSearch*>*)favoriteStationsList;
 
 @end

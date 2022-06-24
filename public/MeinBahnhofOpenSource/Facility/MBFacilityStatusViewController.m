@@ -17,6 +17,8 @@
 #import "MBUIViewController.h"
 
 #import "MBTutorialManager.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBFacilityStatusViewController () <UITableViewDelegate, UITableViewDataSource, MBFacilityTableViewCellDelegate, MBFacilityDeleteAllTableViewCellDelegate, MBMapViewControllerDelegate>
 @property (nonatomic, strong) NSArray *facilities;
@@ -28,12 +30,20 @@
 
 @implementation MBFacilityStatusViewController
 
+-(instancetype)init{
+    self = [super init];
+    if(self){
+        self.trackingTitle = @"aufzuege";
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.title = @"Aufzüge";
     
-    [MBTrackingManager trackStatesWithStationInfo:@[@"d1", @"aufzuege"]];
+    [MBTrackingManager trackStatesWithStationInfo:@[@"d1", self.trackingTitle]];
     
     [MBUIViewController addBackButtonToViewController:self andActionBlockOrNil:nil];
     
@@ -110,6 +120,17 @@
 
 #pragma mark UITableViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if(UIAccessibilityIsVoiceOverRunning()){
+        //selecting a row changes with a facility changes the status directly
+        if(![self displayEmptyCell] && (self.showUebersicht || (!self.showUebersicht && indexPath.row > 0))){
+            FacilityStatus* f = [self.facilities objectAtIndex:[self actualIndexForIndexPath:indexPath]];
+            [self changeStatusForFacility:f];
+            [self.tableView reloadData];
+            
+        }
+        return;
+    }
+    
     MBFacilityTableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if (self.selectedRow && self.selectedRow.row == indexPath.row) {
         self.selectedRow = [NSIndexPath indexPathForRow:-1 inSection:-1];
@@ -170,11 +191,15 @@
     return height;
 }
 
+-(BOOL)displayEmptyCell{
+    return (self.showUebersicht && self.facilities.count == 0)
+    || (!self.showUebersicht && self.storedFacilities.count == 0);
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = nil;
     if (indexPath.row == 0) {
-        if ((self.showUebersicht && self.facilities.count == 0)
-            || (!self.showUebersicht && self.storedFacilities.count == 0)) {
+        if ([self displayEmptyCell]) {
             UITableViewCell* noContentCell = [tableView dequeueReusableCellWithIdentifier:@"EmptyCell" forIndexPath:indexPath];
             noContentCell.imageView.image = [UIImage db_imageNamed:@"app_warndreieck"];
             noContentCell.textLabel.numberOfLines = 0;
@@ -193,10 +218,14 @@
             cell = [self cellForIndex:0 andRow:0];
         }
     } else {
-        NSUInteger actualIndex = self.showUebersicht && self.facilities.count > 0 ? indexPath.row : indexPath.row - 1;
-        cell = [self cellForIndex:actualIndex andRow:indexPath.row];
+        cell = [self cellForIndex:[self actualIndexForIndexPath:indexPath] andRow:indexPath.row];
     }
     return cell;
+}
+
+-(NSUInteger)actualIndexForIndexPath:(NSIndexPath*)indexPath{
+    NSUInteger actualIndex = self.showUebersicht && self.facilities.count > 0 ? indexPath.row : indexPath.row - 1;
+    return actualIndex;
 }
 
 - (MBFacilityTableViewCell *)cellForIndex:(NSUInteger)index andRow:(NSUInteger)row {
@@ -275,16 +304,30 @@
     }
 }
 
-#pragma mark MBFacilityTableViewCellDelegate
-- (void)facilityCell:(MBFacilityTableViewCell *)cell removesFacility:(FacilityStatus *)status {
-    [[FacilityStatusManager client] removeFromFavorites:status.equipmentNumber.description];
+-(void)changeStatusForFacility:(FacilityStatus*)facility{
+    if([[FacilityStatusManager client] isFavoriteFacility:facility.equipmentNumber.description]){
+        [self removeFromWatchList:facility];
+    } else {
+        [self addToWatchList:facility];
+    }
+}
+
+-(void)removeFromWatchList:(FacilityStatus*)facility{
+    [[FacilityStatusManager client] removeFromFavorites:facility.equipmentNumber.description];
+    [self updateStoredFacilities];
+}
+-(void)addToWatchList:(FacilityStatus*)facility{
+    [[FacilityStatusManager client] enablePushForFacility:facility.equipmentNumber.description stationNumber:self.station.mbId.description stationName:self.station.title];
     [self updateStoredFacilities];
 }
 
+#pragma mark MBFacilityTableViewCellDelegate
+- (void)facilityCell:(MBFacilityTableViewCell *)cell removesFacility:(FacilityStatus *)status {
+    [self removeFromWatchList:status];
+}
+
 - (void)facilityCell:(MBFacilityTableViewCell *)cell addsFacility:(FacilityStatus *)status {
-    
-    [[FacilityStatusManager client] enablePushForFacility:status.equipmentNumber.description stationNumber:self.station.mbId.description stationName:self.station.title];
-    [self updateStoredFacilities];
+    [self addToWatchList:status];
 }
 
 #pragma mark MBMapViewControllerDelegate

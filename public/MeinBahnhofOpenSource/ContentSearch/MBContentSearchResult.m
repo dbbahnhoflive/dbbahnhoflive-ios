@@ -5,6 +5,8 @@
 
 
 #import "MBContentSearchResult.h"
+#import "MBMapViewController.h"
+#import "UIImage+MBImage.h"
 
 @interface MBContentSearchResult()
 
@@ -91,6 +93,7 @@
                                    @"Bahnhofsinformation Barrierefreiheit": @"IconBarrierFree",
                                    @"Bahnhofsinformation Aufzüge": @"app_aufzug",
                                    @"Bahnhofsinformation Parkplätze": @"rimap_parkplatz_grau",
+                                   @"Bahnhofsinformation Schienenersatzverkehr": @"sev_bus",
                                    };
 
         if([iconMap objectForKey:self.keywordString]){
@@ -346,6 +349,9 @@
 }
 -(BOOL)isWifiSearch{
     return [self.keywordString isEqualToString:@"Bahnhofsinformation WLAN"];
+}
+-(BOOL)isSEVSearch{
+    return [self.keywordString isEqualToString:@"Bahnhofsinformation Schienenersatzverkehr"];
 }
 -(BOOL)isElevatorSearch{
     return [self.keywordString isEqualToString:@"Bahnhofsinformation Aufzüge"];

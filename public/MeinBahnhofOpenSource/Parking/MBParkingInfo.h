@@ -5,6 +5,7 @@
 
 
 #import <CoreLocation/CoreLocation.h>
+#import <UIKit/UIKit.h>
 
 @class MBMarker;
 

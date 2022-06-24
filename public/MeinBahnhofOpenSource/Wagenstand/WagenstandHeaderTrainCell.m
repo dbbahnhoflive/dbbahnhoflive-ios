@@ -5,6 +5,7 @@
 
 
 #import "WagenstandHeaderTrainCell.h"
+#import "MBUIHelper.h"
 
 @interface WagenstandHeaderTrainCell()
 

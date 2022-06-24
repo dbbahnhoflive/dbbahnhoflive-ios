@@ -5,6 +5,7 @@
 
 
 #import "MBStationTeaserWithImageCollectionViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBStationTeaserWithImageCollectionViewCell()
 @property(nonatomic,strong) UILabel* mainLabel;

@@ -91,7 +91,7 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 -(void)updateMobilityMarker:(NSArray*)mobilityMarker;
 - (void) updateMarkers;
 -(MBMarker*)preselectMarkerAfterFilterChange;
--(void)updateFacilityMarker;
+
 -(void)selectAndCenterMarker:(MBMarker*)marker;
 -(void)removeMarkerSelection;
 -(BOOL)hasMarkerSelected;

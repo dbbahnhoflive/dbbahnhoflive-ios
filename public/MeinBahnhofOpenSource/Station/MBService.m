@@ -7,6 +7,7 @@
 #import "MBService.h"
 #import "MBStation.h"
 #import "MBPlatformAccessibility.h"
+#import "UIImage+MBImage.h"
 
 // Pattern to detect phone numbers in a text which also may be surrounded by anchor-tags or white spaces
 #define kPhoneRegexPattern @"(>|\\s)[\\d]{3,}\\/?([^\\D]|\\s)+[\\d]"
@@ -29,45 +30,31 @@
 
 - (NSString *)iconImageNameForType {
     NSDictionary *mappingTypes = @{
-                                   @"mobilitaetsservice": @"app_mobilitaetservice",
-                                   @"stufenfreier_zugang": @"IconBarrierFree",
-                                   @"barrierefreiheit": @"IconBarrierFree",
-                                   @"3-s-zentrale": @"app_3s",
-                                   @"bahnhofsmission": @"rimap_bahnhofsmission_grau",
-                                   @"fundservice": @"app_fundservice",
-                                   @"db_information": @"app_information",
-                                   @"wlan": @"rimap_wlan_grau",
-                                   @"local_travelcenter": @"rimap_reisezentrum_grau",
-                                   @"local_db_lounge": @"app_db_lounge",
-                                   @"local_lostfound": @"app_fundservice",
-                                   @"chatbot": @"chatbot_icon",
-                                   @"pickpack": @"pickpack",
-                                   @"mobiler_service": @"app_mobiler_service",
-                                   @"parkplaetze": @"rimap_parkplatz_grau",
-                                   @"verschmutzung_mitwhatsapp": @"verschmutzungmelden",
-                                   @"verschmutzung_ohnewhatsapp": @"verschmutzungmelden",
-                                   @"bewertung": @"app_bewerten",
-                                   @"problemmelden": @"probleme_app_melden",
-                                   };
-    
+        kServiceType_MobilityService: @"app_mobilitaetservice",
+        kServiceType_Barrierefreiheit: @"IconBarrierFree",
+        kServiceType_3SZentrale: @"app_3s",
+        kServiceType_Bahnhofsmission: @"rimap_bahnhofsmission_grau",
+        kServiceType_DBInfo: @"app_information",
+        kServiceType_WLAN: @"rimap_wlan_grau",
+        kServiceType_SEV: @"sev_bus",
+        kServiceType_LocalTravelCenter: @"rimap_reisezentrum_grau",
+        kServiceType_LocalDBLounge: @"app_db_lounge",
+        kServiceType_LocalLostFound: @"app_fundservice",
+        kServiceType_Chatbot: @"chatbot_icon",
+        kServiceType_PickPack: @"pickpack",
+        kServiceType_MobilerService: @"app_mobiler_service",
+        kServiceType_Parking: @"rimap_parkplatz_grau",
+        kServiveType_Dirt_Whatsapp: @"verschmutzungmelden",
+        kServiceType_Dirt_NoWhatsapp: @"verschmutzungmelden",
+        kServiceType_Rating: @"app_bewerten",
+        kServiceType_Problems: @"probleme_app_melden",
+    };
+
     NSString *name = [mappingTypes objectForKey:self.type];
     name = nil == name ? @"" : name;
     return name;
 }
 
-- (NSArray*) parseDreiSComponents:(NSString*)string
-{
-    NSError *error;
-    // Special case for 3S content detail:
-    // Parse the text enclosed by <p></p> everything after that will be interpreted as phone number
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:kHTMLPTagParser options:NSRegularExpressionCaseInsensitive error:&error];
-    
-    NSTextCheckingResult *match = [regex firstMatchInString:string options:0 range:NSMakeRange(0, [string length])];
-    NSString *descriptionText = [string substringWithRange:[match rangeAtIndex:0]];
-    NSString *phoneNumber = [string stringByReplacingOccurrencesOfString:descriptionText withString:@""];
-    
-    return @[descriptionText, @{kPhoneKey: phoneNumber}];
-}
 
 - (NSArray*) descriptionTextComponents
 {
@@ -81,9 +68,13 @@
     }
     
     // check if we need special content handling
-    if ([self.type isEqualToString:@"3-s-zentrale"]) {
-        return [self parseDreiSComponents:string];
-    } else if ([self.type isEqualToString:@"chatbot"]) {
+    if ([self.type isEqualToString:kServiceType_3SZentrale]
+        ||
+        [self.type isEqualToString:kServiceType_LocalLostFound]
+        ) {
+        NSArray* res = [self parseConfigurableService:string];
+        return res;
+    } else if ([self.type isEqualToString:kServiceType_Chatbot]) {
         NSMutableArray* res = [[self parseConfigurableService:string] mutableCopy];
         [res insertObject:@{kImageKey:@"chatbot_d1"} atIndex:0];
         /*
@@ -100,12 +91,12 @@
             }
         }*/
         return res;
-    } else if ([self.type isEqualToString:@"pickpack"]) {
+    } else if ([self.type isEqualToString:kServiceType_PickPack]) {
         return [self parsePickpackComponents:string];
-    } else if ([self.type isEqualToString:@"mobilitaetsservice"] || [self.type hasPrefix:@"verschmutzung"] || [self.type isEqualToString:@"bewertung"] || [self.type isEqualToString:@"problemmelden"]
-               || [self.type isEqualToString:@"stufenfreier_zugang"] || [self.type isEqualToString:@"barrierefreiheit"]){
+    } else if ([self.type isEqualToString:kServiceType_MobilityService] || [self.type hasPrefix:kServiceType_Dirt_Prefix] || [self.type isEqualToString:kServiceType_Rating] || [self.type isEqualToString:kServiceType_Problems]
+               || [self.type isEqualToString:kServiceType_Barrierefreiheit]){
         NSArray* res = [self parseConfigurableService:string];
-        if([self.type isEqualToString:@"barrierefreiheit"]){
+        if([self.type isEqualToString:kServiceType_Barrierefreiheit]){
             NSString* firstString = res.firstObject;
             //replace [STATUS] in first string with the calculated status
             NSString* status = @"";
@@ -173,7 +164,7 @@
             
             //parse single href-param in button
             NSString* hrefString = @"";
-            NSRange hrefStart = [inputString rangeOfString:@"href=\""];
+            NSRange hrefStart = [inputString rangeOfString:@"href=\"" options:0 range:NSMakeRange(btnStart.location, btnEnd.location-btnStart.location)];
             if(hrefStart.location != NSNotFound){
                 NSRange hrefEnd = [inputString rangeOfString:@"\"" options:0 range:NSMakeRange(hrefStart.location+hrefStart.length, inputString.length-(hrefStart.location+hrefStart.length))];
                 if(hrefEnd.location != NSNotFound){
@@ -235,18 +226,6 @@
     return phoneNumber;
 }
 
--(void)fillTableWithOpenTimes:(NSString *)openTimes{
-    
-    openTimes = [openTimes stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>"];
-    
-    self.table = @{ @"headlines":@[@"Öffnungszeiten"],
-                       @"rows":@[ @{@"rowItems": @[ @{
-                                                        @"key": @"Öffnungszeiten",
-                                                        @"headline": @"Öffnungszeiten",
-                                                        @"content": openTimes
-                                                        }] }  ],
-                       };
-}
 
 + (NSDictionary *)JSONKeyPathsByPropertyKey {
     return @{
@@ -254,8 +233,7 @@
              @"descriptionText": @"descriptionText",
              @"additionalText": @"additionalText",
              @"type": @"type",
-             @"position": @"position",
-             @"table": @"table" 
+             @"position": @"position"
              };
 }
 

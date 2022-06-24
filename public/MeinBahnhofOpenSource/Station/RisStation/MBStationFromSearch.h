@@ -8,9 +8,9 @@
 
 @class MBOPNVStation;
 
-//Please note: this object is used for the search results from PTS and hafas and it can an DB-station or an opnv-station
+//Please note: this object is used for the search results from RIS:Station and hafas and it can an DB-station or an opnv-station
 
-@interface MBPTSStationFromSearch : NSObject
+@interface MBStationFromSearch : NSObject
 
 @property(nonatomic,strong) NSNumber* stationId;
 @property(nonatomic,strong) NSString* title;
@@ -19,6 +19,8 @@
 @property(nonatomic,strong) NSNumber* distanceInKm;
 
 @property(nonatomic) BOOL isOPNVStation;
+@property(nonatomic) BOOL isFreshStationFromSearch;
+
 
 -(instancetype)initWithDict:(NSDictionary*)dict;
 -(instancetype)initWithHafasStation:(MBOPNVStation*)hafasStation;
@@ -26,6 +28,7 @@
 -(NSArray<NSNumber*>*)location;
 -(NSDictionary*)dictRepresentation;
 
-
++(BOOL)needToUpdateEvaIdsForStation:(MBStationFromSearch *)stationFromSearch;
+-(void)updateEvaIds:(void (^)(BOOL success))completion;
 
 @end

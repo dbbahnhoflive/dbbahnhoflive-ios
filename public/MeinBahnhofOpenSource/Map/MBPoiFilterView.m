@@ -7,6 +7,7 @@
 #import "MBPoiFilterView.h"
 #import "MBPoiFilterContentView.h"
 #import "MBLargeButton.h"
+#import "MBUIHelper.h"
 
 #define kPadding 20.f
 

@@ -6,6 +6,8 @@
 
 #import "MBMenuItem.h"
 #import "MBService.h"
+#import "UIImage+MBImage.h"
+
 
 @implementation MBMenuItem
 
@@ -26,14 +28,15 @@
         @"rufnummern": @"app_service_rufnummern",
         @"infoservices": @"bahnhofsausstattung_db_info",
         @"zugang": @"app_zugang_wege",
-        @"barrierefreiheit": @"app_zugang_wege",
-        @"parkplaetze": @"bahnhofsausstattung_parkplatz",
+        kServiceType_Barrierefreiheit: @"app_zugang_wege",
+        kServiceType_Parking: @"bahnhofsausstattung_parkplatz",
         @"aufzuegeundfahrtreppen": @"app_aufzug",
-        @"wlan" : @"rimap_wlan_grau",
-        @"verschmutzung_mitwhatsapp": @"verschmutzungmelden",
-        @"verschmutzung_ohnewhatsapp": @"verschmutzungmelden",
-        @"bewertung": @"app_bewerten",
-        @"problemmelden": @"probleme_app_melden",
+        kServiceType_WLAN : @"rimap_wlan_grau",
+        kServiceType_SEV: @"sev_bus",
+        kServiveType_Dirt_Whatsapp: @"verschmutzungmelden",
+        kServiceType_Dirt_NoWhatsapp: @"verschmutzungmelden",
+        kServiceType_Rating: @"app_bewerten",
+        kServiceType_Problems: @"probleme_app_melden",
     };
     
     NSString *iconFileName = [iconMapping objectForKey:self.type];

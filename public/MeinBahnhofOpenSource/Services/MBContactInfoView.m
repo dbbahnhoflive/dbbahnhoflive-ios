@@ -5,6 +5,7 @@
 
 
 #import "MBContactInfoView.h"
+#import "MBUIHelper.h"
 
 @interface MBContactInfoView()
 @property (nonatomic, strong) VenueExtraField *extraField;

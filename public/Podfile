@@ -5,10 +5,10 @@ def base_db_dependencies
     pod 'TBXML', '~> 1.5'
     pod 'AFNetworking', '~> 4.0'
     pod 'GTMNSStringHTMLAdditions', '~> 0.2.1'
-    pod 'Mantle', '~> 2.1.6'
-    pod 'GoogleMaps', '4.2.0'
+    pod 'Mantle', '~> 2.2.0'
+    pod 'GoogleMaps', '6.0.1'
     pod 'MBProgressHUD', '~> 1.1.0'
-    pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '6.0.7'
+    pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '7.9.0'
 end
 
 target 'MeinBahnhofOpenSource' do

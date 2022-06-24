@@ -29,12 +29,16 @@
 
 + (UIColor *)db_787d87 { return [UIColor colorWithRed:120./255. green:125./255. blue:135./255. alpha:1];}
 
+//Grün
 + (UIColor *)db_76c030 { return [UIColor colorWithRed:118./255. green:192./255. blue:48./255. alpha:1];}
+//Rot (Abfahrtszeiten)
++ (UIColor *)db_red_EC0016 { return [UIColor colorWithRed:236./255. green:0./255. blue:22./255. alpha:1];}
 
-// Grün
-+ (UIColor *)db_38a63d { return [UIColor colorWithRed:56./255 green:166./255 blue:61./255 alpha:1];}
 // Rot
-+ (UIColor *)db_mainColor { return [Constants dbMainColor]; }
++ (UIColor *)db_mainColor { return
+    //[Constants dbMainColor];
+    [self db_red_EC0016];
+}
 
 + (UIColor *)db_eaeef1 { return [UIColor colorWithRed:234./255 green:238./255 blue:241./255 alpha:1];}
 + (UIColor *)db_f0f3f5 { return [UIColor colorWithRed:240./255 green:243./255 blue:245./255 alpha:1];}

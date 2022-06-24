@@ -5,6 +5,7 @@
 
 
 #import "MBMarker.h"
+#import "MBUIHelper.h"
 
 @implementation MBMarker
 

@@ -38,6 +38,7 @@
     return [self validSortedItemsWithTypes:@[
         [NSNumber numberWithUnsignedInteger:MBNewsTypeOffer],
         [NSNumber numberWithUnsignedInteger:MBNewsTypeDisruption],
+        [NSNumber numberWithUnsignedInteger:MBNewsTypeMajorDisruption],
         [NSNumber numberWithUnsignedInteger:MBNewsTypePoll],
         [NSNumber numberWithUnsignedInteger:MBNewsTypeProductsServices],
     ]];

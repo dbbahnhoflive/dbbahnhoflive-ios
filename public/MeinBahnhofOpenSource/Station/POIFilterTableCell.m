@@ -5,6 +5,7 @@
 
 
 #import "POIFilterTableCell.h"
+#import "MBUIHelper.h"
 
 @interface POIFilterTableCell()
 

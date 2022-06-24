@@ -5,6 +5,7 @@
 
 
 #import "MBContentSearchTableViewCell.h"
+#import "MBUIHelper.h"
 
 @implementation MBContentSearchTableViewCell
 

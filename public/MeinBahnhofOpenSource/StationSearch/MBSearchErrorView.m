@@ -5,7 +5,7 @@
 
 
 #import "MBSearchErrorView.h"
-
+#import "MBUIHelper.h"
 @interface MBSearchErrorView()
 
 @property(nonatomic,strong) UIImageView* warnIcon;

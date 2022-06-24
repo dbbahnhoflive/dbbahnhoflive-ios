@@ -5,6 +5,7 @@
 
 
 #import "MBParkingInfoView.h"
+#import "MBUIHelper.h"
 
 @interface MBParkingInfoView() 
 

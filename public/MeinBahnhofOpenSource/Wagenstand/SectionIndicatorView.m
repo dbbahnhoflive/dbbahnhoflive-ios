@@ -7,6 +7,7 @@
 #import "SectionIndicatorView.h"
 #import "IndicatorWaggonView.h"
 #import "UIScrollView+MBScrollView.h"
+#import "MBUIHelper.h"
 
 @interface SectionIndicatorView()
 

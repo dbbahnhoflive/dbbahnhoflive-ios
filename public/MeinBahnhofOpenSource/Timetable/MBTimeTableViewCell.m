@@ -7,6 +7,8 @@
 #import "MBTimeTableViewCell.h"
 #import "Stop.h"
 #import "MBTimetableViewController.h"
+#import "MBUIHelper.h"
+
 @interface MBTimeTableViewCell()
 
 @property (nonatomic, strong) UIView *backView;
@@ -70,9 +72,9 @@
     [self.platformLabel setFont:[UIFont db_RegularFourteen]];
     [self.trainLabel setFont:[UIFont db_RegularFourteen]];
     [self.stationLabel setFont:[UIFont db_RegularSixteen]];
-    [self.messageTextLabel setFont:[UIFont db_HelveticaTwelve]];
+    [self.messageTextLabel setFont:[UIFont db_RegularTwelve]];
     
-    [self.expectedTimeLabel setTextColor:[UIColor db_38a63d]];
+    [self.expectedTimeLabel setTextColor:[UIColor db_76c030]];
     [self.platformLabel setTextColor:[UIColor db_787d87]];
     [self.trainLabel setTextColor:[UIColor db_787d87]];
     [self.stationLabel setTextColor:[UIColor db_333333]];
@@ -148,7 +150,9 @@
     wagenstandFrame.origin.x = self.trainLabel.frame.origin.x + self.trainLabel.frame.size.width + 8.0;
     wagenstandFrame.origin.y = self.trainLabel.frame.origin.y - 4.0;
     
-    [self.wagenstandIcon setHidden:!self.event.trainRecordAvailable];
+    BOOL trainRecordAvailable = [Stop stopShouldHaveTrainRecord:self.event.stop];
+    
+    [self.wagenstandIcon setHidden:!trainRecordAvailable];
     wagenstandFrame.size.width = self.wagenstandIcon.isHidden ? 0.0 : self.wagenstandIcon.frame.size.width;
     CGFloat messageXOffset = self.wagenstandIcon.isHidden ? 0.0 : 8.0;
     self.wagenstandIcon.frame = wagenstandFrame;
@@ -217,12 +221,12 @@
     UIView *viewAboveButton = fittingSizeForMessageLabel.height > 10 ? self.messageDetailContainer : self.viaListView;
     
     [self.wagenStandButtonBackView setBelow:viewAboveButton withPadding:15.0];
-    self.wagenStandButtonBackView.hidden = !self.event.trainRecordAvailable;
+    self.wagenStandButtonBackView.hidden = !trainRecordAvailable;
     
     // only via stations
     CGFloat bottomHeight = self.viaListView.frame.size.height;
     // Wagenreihung
-    bottomHeight = self.event.trainRecordAvailable ? bottomHeight + self.wagenStandButtonBackView.frame.size.height + 15.0 : bottomHeight;
+    bottomHeight = trainRecordAvailable ? bottomHeight + self.wagenStandButtonBackView.frame.size.height + 15.0 : bottomHeight;
     // message label
     bottomHeight = self.messageDetailContainer.frame.size.height > 0 ? bottomHeight + self.messageDetailContainer.frame.size.height + 5.0 : bottomHeight;
     
@@ -255,7 +259,7 @@
         msg = @"";
     }
     NSString* trainOrder = @"";
-    if(event.trainRecordAvailable || [MBTimetableViewController stopShouldHaveTrainRecord:event.stop]){
+    if([Stop stopShouldHaveTrainRecord:event.stop]){
         trainOrder = @"Informationen zur Wagenreihung verfügbar.";
     }
     NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@ Uhr, %@, %@; %@%@.%@",
@@ -292,7 +296,8 @@
 {
     _expanded = expanded;
     if(expanded){
-        NSLog(@"open details for stop %@",self.event.stop.stopId);
+        NSDate* date = [NSDate dateWithTimeIntervalSince1970:self.event.timestamp];
+        NSLog(@"open details for stop %@, from eva %@, Kategorie %@, Fahrtnummer %@, Linie %@, Zeit %@",self.event.stop.stopId,self.event.stop.evaNumber,self.event.stop.transportCategory.transportCategoryType,self.event.stop.transportCategory.transportCategoryOriginalNumber, self.event.lineIdentifier,date);
     }
 }
 

@@ -10,10 +10,17 @@
 
 +(void)setup;
 
++(NSString*)kDBAPI;
++(NSString*)dbAPIKey;
++(NSString*)dbAPIClient;
+
++(NSString*)dbFastaKey;
++(NSString*)dbFastaClient;
+
 +(NSString*)kBusinesshubKey;
 +(NSString*)kNewsApiKey;
 +(NSString*)kBusinessHubProdBaseUrl;
-+(NSString*)kPTSPath;
+
 +(NSString*)kRISStationsPath;
 +(NSString*)rimapHost;
 +(NSString*)rimapKey;

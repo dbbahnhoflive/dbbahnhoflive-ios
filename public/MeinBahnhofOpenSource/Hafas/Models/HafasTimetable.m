@@ -69,9 +69,9 @@
 - (NSArray*) availableTransportTypes
 {
     NSMutableArray *transportTypesArray = [NSMutableArray array];
-    for (NSDictionary *stop in self.departureStops) {
-        NSString *cat = [stop valueForKey:@"trainCategory"];
-        cat = [cat uppercaseString];
+    for (HafasDeparture *stop in self.departureStops) {
+        HAFASProductCategory catType = stop.productCategory;
+        NSString* cat = [HafasDeparture stringForCat:catType];
         if (cat != nil) {
             if (![transportTypesArray containsObject:cat]) {
                 [transportTypesArray addObject:cat];

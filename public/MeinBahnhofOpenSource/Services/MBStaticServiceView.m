@@ -6,12 +6,15 @@
 #import "MBStaticServiceView.h"
 #import "MBLabel.h"
 
-#import "AppDelegate.h"
-#import "MBPTSTravelcenter.h"
+#import "MBUrlOpening.h"
+#import "MBTravelcenter.h"
 #import "MBButtonWithData.h"
 #import "MBExternalLinkButton.h"
 #import <sys/utsname.h>
 #import "MBPlatformAccessibilityView.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
+#import "MBRoutingHelper.h"
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
 @property (nonatomic, weak) UIViewController* viewController;
@@ -160,7 +163,9 @@
                 if(specialAction){
                     if([specialAction isEqualToString:kSpecialActionPlatformAccessibiltyUI]){
                         //this view will resize its parent when the content changes
-                        MBPlatformAccessibilityView* av = [[MBPlatformAccessibilityView alloc] initWithFrame:CGRectMake(0, offset.y, contentSize.width, 0) station:self.station];
+                        NSString* platform = self.service.serviceConfiguration[MB_SERVICE_ACCESSIBILITY_CONFIG_KEY_PLATFORM];
+                        
+                        MBPlatformAccessibilityView* av = [[MBPlatformAccessibilityView alloc] initWithFrame:CGRectMake(0, offset.y, contentSize.width, 0) station:self.station platform:platform];
                         av.viewController = self.viewController;
                         [baseView addSubview:av];
                         contentSize.height += av.frame.size.height;
@@ -210,101 +215,113 @@
         }];
     }
     
-    // insert table
-    if (self.service.table) {
-        
-        NSArray *rows = [self.service.table objectForKey:@"rows"];
-        NSArray *headlines = [self.service.table objectForKey:@"headlines"]; // this gives us the reference to order the rows
+    if(self.service.openingTimesOSM.hasOpenTimes){
+        offset.y += 15;
+        contentSize.height += 15;
 
-        __block CGPoint tableRowOffset = CGPointMake(0, offset.y);
-        __block CGFloat totalTableHeight = 20;
-        __block CGFloat blockHeight = 0;
+        __block CGFloat x = 15;
+        CGFloat width = contentSize.width-2*x;
         
-        [rows enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            NSArray *rowItems = [obj objectForKey:@"rowItems"];
-            
-            // sort using descriptor and reference array
-            NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"key" ascending:YES comparator:^NSComparisonResult(id obj1, id obj2) {
-                NSUInteger index1 = [headlines indexOfObject:obj1];
-                NSUInteger index2 = [headlines indexOfObject:obj2];
-                return index1 - index2;
-            }];
-            
-            rowItems = [rowItems sortedArrayUsingDescriptors:@[descriptor]];
-            
-            if (idx > 0) {
-                tableRowOffset.y += blockHeight+20; // 20 is the bottom spacing
-                blockHeight = 0;
+        MBTextView* headline = [MBTextView new];
+        headline.font = [UIFont db_BoldFourteen];
+        headline.textColor = UIColor.db_333333;
+        headline.text = @"Öffnungszeiten";
+        [headline sizeToFit];
+        [baseView addSubview:headline];
+        [headline setGravityLeft:x];
+        [headline setGravityTop:offset.y];
+        CGFloat entryHeight = (headline.frame.size.height);
+        entryHeight += 10;
+        offset.y += entryHeight;
+        contentSize.height += entryHeight;
+
+        MBTextView* timeintervalLabel = [MBTextView new];
+        timeintervalLabel.font = [UIFont db_ItalicWithSize:14];
+        timeintervalLabel.textColor = UIColor.db_333333;
+        timeintervalLabel.text = self.service.openingTimesOSM.weekstringForDisplay;
+        [timeintervalLabel sizeToFit];
+        [baseView addSubview:timeintervalLabel];
+        [timeintervalLabel setGravityLeft:x];
+        [timeintervalLabel setGravityTop:offset.y];
+        entryHeight = (timeintervalLabel.frame.size.height);
+        entryHeight += 10;
+        offset.y += entryHeight;
+        contentSize.height += entryHeight;
+
+        NSArray* weekdays = self.service.openingTimesOSM.calculateWeekdays;
+        NSInteger index = 0;
+        for(NSString* day in weekdays){
+            UIView* todayBackground = nil;
+            if(index == 0){
+                todayBackground = [UIView new];
+                todayBackground.backgroundColor = [UIColor db_f0f3f5];
+                [baseView addSubview:todayBackground];
+                [todayBackground setGravityTop:offset.y];
+                [todayBackground setWidth:contentSize.width];
             }
             
-            __block CGPoint tableRowItemOffset = CGPointMake(0, tableRowOffset.y);
+            offset.y += 5;
+            contentSize.height += 5;
             
-            if (idx > 0) {
-                UIView *dividerView = [[UIView alloc] initWithFrame:CGRectMake(0, tableRowItemOffset.y, self.frame.size.width, 0.5)];
-                dividerView.backgroundColor = [UIColor db_878c96];
-                [baseView addSubview:dividerView];
+            UILabel* weekdayLabel = [UILabel new];
+            weekdayLabel.isAccessibilityElement = NO;
+            weekdayLabel.font = [UIFont db_BoldFourteen];
+            weekdayLabel.textColor = UIColor.db_333333;
+            weekdayLabel.text = day;
+            [weekdayLabel sizeToFit];
+            [baseView addSubview:weekdayLabel];
+            [weekdayLabel setGravityLeft:x];
+            [weekdayLabel setGravityTop:offset.y];
+            
+            //Note: VO does not read a UILabel correctly in the tablecell that's why we need to use UITextViews. To read the weekday together with the opening times we add them in a hidden (clear text) view:
+            MBTextView* hiddenLabel = [MBTextView new];
+            [baseView addSubview:hiddenLabel];
+            [hiddenLabel setGravityLeft:x];
+            [hiddenLabel setGravityTop:offset.y];
+            hiddenLabel.backgroundColor = UIColor.clearColor;
+            hiddenLabel.textColor = UIColor.clearColor;
+
+            NSMutableString* voiceOverString = [NSMutableString new];
+            [voiceOverString appendString:day];
+            [voiceOverString appendString:@": "];
+
+            NSArray* openTimes = [self.service.openingTimesOSM openTimesForDay:index];
+            NSInteger timeHeight = 0;
+            for(NSString* time in openTimes){
+                UILabel* timeLabels = [UILabel new];
+                timeLabels.isAccessibilityElement = NO;
+                timeLabels.font = [UIFont db_RegularFourteen];
+                timeLabels.numberOfLines = 0;
+                timeLabels.textColor = UIColor.db_333333;
+                timeLabels.text = time;
+                [voiceOverString appendString:time];
+                [voiceOverString appendString:@", "];
+                /*
+                NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:timeLabels.text];
+                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+                paragraphStyle.lineSpacing = 4;
+                [attributedString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, timeLabels.text.length)];
+                timeLabels.attributedText = attributedString;
+                */
+                CGSize size = [timeLabels sizeThatFits:CGSizeMake(width/2, 3000)];
+                [timeLabels setSize:CGSizeMake(ceil(size.width), ceilf(size.height))];
+                [baseView addSubview:timeLabels];
+                [timeLabels setGravityLeft:width/2];
+                [timeLabels setGravityTop:offset.y+timeHeight];
+
+                timeHeight += timeLabels.sizeHeight + 5;
             }
             
-            //iphone will display headline+content in rows, ipad will display headline+content in a table with max 3 columns
-            __block NSInteger column = 0;
-            __block CGFloat x = 15;
-            __block CGFloat maxHeightInRow = 0;
-            [rowItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                
-                NSString *headline = [obj objectForKey:@"headline"];
-                NSString *content = [obj objectForKey:@"content"];
-                
-                //NSLog(@"head: %@\ncontent: %@",headline,content);
-                
-                if(ISIPAD){
-                    if(column >= 3){
-                        column = 0;
-                        x = 15;
-                        tableRowItemOffset.y += maxHeightInRow;
-                        blockHeight += maxHeightInRow;
-                        maxHeightInRow = 0;
-                    }
-                }
-                
-                CGFloat width = (ISIPAD ? (int)(((self.frame.size.width-2*40)/3.0)-50) : contentSize.width-2*x);
-                
-                NSString* txt = [NSString stringWithFormat:@"<b>%@</b><br>%@",headline,content];
-                
-                MBTextView *contentLabel = [[MBTextView alloc] initWithFrame:CGRectMake(x, tableRowItemOffset.y+15, width, 0)];
-                contentLabel.font = [UIFont db_HelveticaFourteen];
-                contentLabel.htmlString = txt;
-                //contentLabel.textColor = [UIColor db_878c96];
-                contentLabel.userInteractionEnabled = YES;
-                contentLabel.delegado = self;
-                
-                [self sizeViewForWidth:contentLabel];
-                
-                [baseView addSubview:contentLabel];
-                
-                CGFloat entryHeight = (25+contentLabel.frame.size.height)+5;
-
-                if(ISIPAD){
-                    maxHeightInRow = MAX(entryHeight, maxHeightInRow);
-                    column++;
-                    x += width + 50;
-                } else {
-                    tableRowItemOffset.y += entryHeight;
-                    blockHeight += entryHeight;
-                }
-
-            }];
+            entryHeight = MAX(weekdayLabel.sizeHeight, timeHeight);
+            [todayBackground setHeight:entryHeight+10];
+            entryHeight += 5;
+            offset.y += entryHeight;
+            contentSize.height += entryHeight;
+            index++;
             
-            if(ISIPAD){
-                tableRowItemOffset.y += maxHeightInRow;
-                blockHeight += maxHeightInRow;
-            }
-            
-            totalTableHeight += blockHeight+22.5; // add 2.5 px extra space;
-        }];
-        
-        if(rows.count > 0){
-            offset.y += (totalTableHeight)+20;
-            contentSize.height += (totalTableHeight)+20;
+            hiddenLabel.text = voiceOverString;
+            [hiddenLabel setSize:CGSizeMake(width, entryHeight)];
+
         }
     }
     
@@ -322,6 +339,7 @@
     }
     contentSize.height += 16;
     if([baseView isKindOfClass:UIScrollView.class]){
+        contentSize.height += 30;
         ((UIScrollView*)baseView).contentSize = contentSize;
         [self addSubview:baseView];
     } else {
@@ -342,8 +360,7 @@
     return navigationButton;
 }
 -(void)naviButtonTapped:(id)sender{
-    AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
-    [app routeToName:self.service.travelCenter.title location:self.service.travelCenter.coordinate fromViewController:nil];
+    [MBRoutingHelper routeToName:self.service.travelCenter.title location:self.service.travelCenter.coordinate fromViewController:nil];
 }
 
 
@@ -384,13 +401,13 @@
     NSString* action = sender.data;
     if([action isEqualToString:kActionChatbot]){
         [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"chatbot"]];
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://bahnhof-bot.deutschebahn.com/"]];
+        [MBUrlOpening openURL:[NSURL URLWithString:@"https://bahnhof-bot.deutschebahn.com/"]];
     } else if([action isEqualToString:kActionPickpackWebsite]){
         [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"pickpack",@"website"]];
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://www.pickpack.de"]];
+        [MBUrlOpening openURL:[NSURL URLWithString:@"https://www.pickpack.de"]];
     } else if([action isEqualToString:kActionPickpackApp]){
         [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"pickpack",@"app"]];
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:@"https://itunes.apple.com/de/app/pickpack-unterwegs-bestellen/id1437396914?ls=1&mt=8"]];
+        [MBUrlOpening openURL:[NSURL URLWithString:@"https://itunes.apple.com/de/app/pickpack-unterwegs-bestellen/id1437396914?ls=1&mt=8"]];
     } else if([action isEqualToString:kActionFeedbackMail]){
         [self openFeedbackMail];
     } else if([action isEqualToString:kActionFeedbackChatbotMail]){
@@ -402,7 +419,7 @@
     } else {
         NSURL* url = [NSURL URLWithString:action];
         if(url){
-            [[AppDelegate appDelegate] openURL:url];
+            [MBUrlOpening openURL:url];
         }
     }
 }
@@ -420,7 +437,7 @@
     
     NSURL* url = [NSURL URLWithString:link];
     if(url){
-        [[AppDelegate appDelegate] openURL:url];
+        [MBUrlOpening openURL:url];
     }
 }
 
@@ -429,7 +446,7 @@
     
     NSURL* url = [NSURL URLWithString:mailString];
     
-    [[AppDelegate appDelegate] openURL:url];
+    [MBUrlOpening openURL:url];
 }
 
 - (void)openFeedbackMail
@@ -453,7 +470,7 @@
     
     NSURL* url = [NSURL URLWithString:mailString];
     
-    [[AppDelegate appDelegate] openURL:url];
+    [MBUrlOpening openURL:url];
 }
 
 @end

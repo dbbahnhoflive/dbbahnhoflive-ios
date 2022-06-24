@@ -4,10 +4,11 @@
 //
 
 
-#import "MBPTSStationFromSearch.h"
+#import "MBStationFromSearch.h"
 #import "MBOPNVStation.h"
+#import "MBRISStationsRequestManager.h"
 
-@implementation MBPTSStationFromSearch
+@implementation MBStationFromSearch
 
 -(instancetype)initWithDict:(NSDictionary *)dict{
     self = [super init];
@@ -64,7 +65,7 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    MBPTSStationFromSearch *copy = [[[self class] allocWithZone:zone] init];
+    MBStationFromSearch *copy = [[[self class] allocWithZone:zone] init];
     copy.stationId = self.stationId;
     copy.coordinate = self.coordinate;
     copy.distanceInKm = self.distanceInKm;
@@ -72,6 +73,7 @@
     copy.stationId = self.stationId;
     copy.title = self.title;
     copy.isOPNVStation = self.isOPNVStation;
+    copy.isFreshStationFromSearch = self.isFreshStationFromSearch;
     return copy;
 }
 
@@ -100,6 +102,22 @@
 }
 -(NSArray*)location{
     return @[[NSNumber numberWithDouble:_coordinate.latitude],[NSNumber numberWithDouble:_coordinate.longitude]];
+}
+
++(BOOL)needToUpdateEvaIdsForStation:(MBStationFromSearch *)stationFromSearch {
+    return
+       stationFromSearch.stationId != nil
+    && !stationFromSearch.isFreshStationFromSearch;
+}
+-(void)updateEvaIds:(void (^)(BOOL success))completion{
+    NSLog(@"update evaIds for station: %@",self.dictRepresentation);
+    [MBRISStationsRequestManager.sharedInstance requestEvaIdsForStation:self success:^(NSArray<NSString *> *evaIds) {
+        NSLog(@"replace %@ with %@",self.eva_ids, evaIds);
+        self.eva_ids = evaIds;
+        completion(true);
+    } failureBlock:^(NSError * error) {
+        completion(false);
+    }];
 }
 
 @end

@@ -16,17 +16,34 @@
 }
 
 +(NSString*)kBusinesshubKey{
-    return @"TOL1jxXeqIW72s7vKPCcUuPNqFJTvPQx";
+    return @"";
 }
 +(NSString*)kNewsApiKey{
     return @"";
 }
++(NSString*)dbAPIKey{
+    return @"ae429e8b34b1366eb37ca466260f92f8";
+}
+
++(NSString*)kDBAPI{
+    return @"https://apis.deutschebahn.com/db/apis";
+}
 +(NSString*)kBusinessHubProdBaseUrl{
-    return @"https://gateway.businesshub.deutschebahn.com";
+    return @"";
 }
-+(NSString*)kPTSPath{
-    return @"public-transport-stations/v1";
+
++(NSString*)dbAPIClient{
+    return @"be998c9dd20ae7b9440839580644fc47";
 }
+
++(NSString*)dbFastaKey{
+    return @"15d020725ecb768ea41a5925a26bf50e";
+}
++(NSString*)dbFastaClient{
+    return @"1c5f5114b79924f8d34d50cb601d4dd6";
+}
+
+
 +(NSString*)kRISStationsPath{
     return @"ris-stations/v1";
 }

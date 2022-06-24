@@ -5,6 +5,7 @@
 
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -14,6 +15,7 @@ typedef NS_ENUM(NSUInteger, MBNewsType) {
     MBNewsTypeDisruption = 2,
     MBNewsTypePoll = 3,
     MBNewsTypeProductsServices = 4,
+    MBNewsTypeMajorDisruption = 5,
 };
 
 #define DEBUG_LOAD_UNPUBLISHED_NEWS NO

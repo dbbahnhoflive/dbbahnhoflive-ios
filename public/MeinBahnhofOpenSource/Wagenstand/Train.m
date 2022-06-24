@@ -5,6 +5,7 @@
 
 
 #import "Train.h"
+#import <UIKit/UIKit.h>
 
 @implementation Train
 

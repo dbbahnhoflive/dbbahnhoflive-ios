@@ -5,10 +5,10 @@
 
 #import "MBStationOccupancyDayView.h"
 #import "MBStationOccupancyViewController.h"
-#import "UIView+Frame.h"
 #import "MBStationOccupancyDiagramView.h"
 #import "MBStationOccupancyOverlayViewController.h"
 #import "MBRootContainerViewController.h"
+#import "MBUIHelper.h"
 
 @interface MBStationOccupancyDayView()
 @property(nonatomic,strong) UILabel* headerLabel;
@@ -63,11 +63,13 @@
             self.occupancyHeaderLabel = [UILabel new];
             self.occupancyHeaderLabel.font = [UIFont db_RegularTen];
             self.occupancyHeaderLabel.text = @"Aktuell:";
+            self.occupancyHeaderLabel.isAccessibilityElement = NO;
             self.occupancyHeaderLabel.textColor = UIColor.blackColor;
             [self.occupancyHeaderLabel sizeToFit];
             [self addSubview:self.occupancyHeaderLabel];
 
             self.occupancyLabel = [UILabel new];
+            self.occupancyLabel.isAccessibilityElement = NO;
             self.occupancyLabel.font = [UIFont db_BoldTen];
             self.occupancyLabel.numberOfLines = 0;
             self.occupancyLabel.textColor = UIColor.blackColor;
@@ -83,6 +85,7 @@
         self.dayDropdownBtn.layer.borderWidth = 2;
         self.dayDropdownBtn.layer.cornerRadius = 15;
         self.dayDropdownBtn.backgroundColor = [UIColor clearColor];
+        self.dayDropdownBtn.isAccessibilityElement = NO;
         [self.dayDropdownBtn addTarget:self action:@selector(daySelected:) forControlEvents:UIControlEventTouchUpInside];
         
         [self.dayDropdownBtn setTitleColor:isToday ? [UIColor dbColorWithRGB:0x76C030] : UIColor.blackColor forState:UIControlStateNormal];
@@ -133,6 +136,9 @@
             break;
     }
     self.occupancyLabel.text = text;
+
+    self.diagram.isAccessibilityElement = YES;
+    self.diagram.accessibilityLabel = [NSString stringWithFormat:@"Aktuell: %ld bis %ld Uhr, %@",occupancy.currentHour,occupancy.currentHour+1,text];
 }
 
 -(void)layoutSubviews{

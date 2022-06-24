@@ -7,6 +7,7 @@
 #import "MBParkingInfo.h"
 #import "MBMarker.h"
 #import "NSDictionary+MBDictionary.h"
+#import "MBUIHelper.h"
 
 @interface MBParkingInfo()
 @property(nonatomic,strong) NSDictionary* serverData;
@@ -200,6 +201,9 @@ static NSNumberFormatter * numberFormatter = nil;
         return nil;
     }
     MBMarker *marker = [MBMarker markerWithPosition:location andType:PARKING];
+    if(UIAccessibilityIsVoiceOverRunning()){
+        marker.title = [@"Parkplatz: " stringByAppendingString:self.name];
+    }
     marker.userData = @{@"venue": self, @"isSelectable": [NSNumber numberWithBool:isSelectable]};
     marker.category = @"Individualverkehr";
     marker.secondaryCategory = [self isParkHaus] ? @"Parkhaus" : @"Parkplatz";

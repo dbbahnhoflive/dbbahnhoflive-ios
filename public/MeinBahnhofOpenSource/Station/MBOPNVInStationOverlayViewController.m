@@ -14,6 +14,8 @@
 #import "MBOPNVStation.h"
 #import "MBMarkerMerger.h"
 #import "MBMarker.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBOPNVInStationOverlayViewController ()
 @property(nonatomic,strong) UIScrollView* contentScrollView;

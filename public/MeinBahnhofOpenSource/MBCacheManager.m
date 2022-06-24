@@ -22,7 +22,7 @@
     return sharedManager;
 }
 
-#define MBCACHE_VERSION 5
+#define MBCACHE_VERSION 318
 -(instancetype)init{
     self = [super init];
     if(self){
@@ -43,7 +43,7 @@
 }
 
 //cache for 24h = 60*60*24
-#define CACHE_TIME_PTS_REQUEST (60*60*1)
+#define CACHE_TIME_RIS_REQUEST (60*60*1)
 #define CACHE_TIME_RIMAP (60*60*1)
 #define CACHE_TIME_PARKING (60*60*1)
 #define CACHE_TIME_EINKAUFSBAHNHOF (60*60*24)
@@ -52,12 +52,14 @@
 
 -(NSTimeInterval)cacheTimeForType:(MBCacheResponseType)type{
     switch (type) {
-        case MBCacheResponsePTS:
-            return CACHE_TIME_PTS_REQUEST;
+        case MBCacheResponseRISStationData:
+        case MBCacheResponseRISStationServices:
+            return CACHE_TIME_RIS_REQUEST;
         case MBCacheResponseRIMapStatus:
         case MBCacheResponseRIMapStatus07API:
         case MBCacheResponseRIMapPOIs:
         case MBCacheResponseRIMapPOIs07Api:
+        case MBCacheResponseRIMapSEV07API:
             return CACHE_TIME_RIMAP;
         case MBCacheResponseParking:
             return CACHE_TIME_PARKING;
@@ -90,8 +92,11 @@
 -(NSString*)cacheFileForStation:(NSNumber*)station type:(MBCacheResponseType)type{
     NSString* filename = @"undefined.json";
     switch (type) {
-        case MBCacheResponsePTS:
-            filename = @"ptscache.json";
+        case MBCacheResponseRISStationData:
+            filename = @"ris_station.json";
+            break;
+        case MBCacheResponseRISStationServices:
+            filename = @"ris_station_services.json";
             break;
         case MBCacheResponseRIMapStatus:
             filename = @"rimapstatus.json";
@@ -101,6 +106,9 @@
             break;
         case MBCacheResponseRIMapPOIs07Api:
             filename = @"rimappois07.json";
+            break;
+        case MBCacheResponseRIMapSEV07API:
+            filename = @"rimap_sev.json";
             break;
         case MBCacheResponseRIMapPOIs:
             filename = @"rimappois.json";

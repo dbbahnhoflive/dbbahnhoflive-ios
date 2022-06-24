@@ -5,6 +5,7 @@
 
 
 #import "FacilityStatus.h"
+#import "MBUIHelper.h"
 
 @implementation FacilityStatus
 
@@ -68,6 +69,14 @@
         return @"Aufzug";
     }
     return @"";
+}
+
+-(NSString *)shortDescription{
+    if(_shortDescription){
+        return _shortDescription;
+    } else {
+        return @"Aufzugsanlage";
+    }
 }
 
 + (NSValueTransformer *)typeJSONTransformer {

@@ -30,8 +30,8 @@
       {
         "title": "Schienenersatzverkehr",
         "menucat": "Öffentlicher Nahverkehr",
-        "menusubcat": "SEV",
-        "presets": ["local_timetable SEV"]
+        "menusubcat": "Schienenersatzverkehr",
+        "presets": ["local_timetable SEV", "stationinfos"]
       }
     ]
   },

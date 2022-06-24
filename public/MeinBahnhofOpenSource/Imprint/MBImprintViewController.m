@@ -6,7 +6,9 @@
 
 #import "MBImprintViewController.h"
 #import "MBNavigationController.h"
-#import "AppDelegate.h"
+#import "MBUrlOpening.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @import WebKit;
 
@@ -87,7 +89,8 @@
 {
     NSString *htmlFile = [[NSBundle mainBundle] pathForResource:url ofType:@"html"];
     NSString* htmlString = [NSString stringWithContentsOfFile:htmlFile encoding:NSUTF8StringEncoding error:nil];
-    
+    NSString *appVersionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:@"{APP_VERSION}" withString:appVersionString];
     return htmlString;
 }
 
@@ -122,10 +125,10 @@
         return;
     } else {
         if ([navigationAction.request.URL.scheme isEqualToString:@"settings"]) {
-            [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+            [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
             decisionHandler(WKNavigationActionPolicyCancel);
         } else {
-            [[AppDelegate appDelegate] openURL:navigationAction.request.URL];
+            [MBUrlOpening openURL:navigationAction.request.URL];
             decisionHandler(WKNavigationActionPolicyCancel);
         }
     }
@@ -135,9 +138,9 @@
 - (void) didInteractWithURL:(NSURL*)url;
 {
     if ([url.scheme isEqualToString:@"settings"]) {
-        [[AppDelegate appDelegate] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
     } else {
-        [[AppDelegate appDelegate] openURL:url];
+        [MBUrlOpening openURL:url];
     }
 }
 

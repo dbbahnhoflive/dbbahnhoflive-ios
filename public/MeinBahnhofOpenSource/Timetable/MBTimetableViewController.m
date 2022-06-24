@@ -20,9 +20,12 @@
 #import "Timetable.h"
 #import "WagenstandRequestManager.h"
 #import "HafasTimetable.h"
-
+#import "MBMapViewController.h"
 
 #import "MBTrainPositionViewController.h"
+#import "MBTrainJourneyViewController.h"
+#import "MBTrainJourneyRequestManager.h"
+#import "MBTrainOrderDisplayHelper.h"
 #import "MBProgressHUD.h"
 
 #import "MBTimetableFilterViewController.h"
@@ -32,6 +35,8 @@
 #import "MBTutorialManager.h"
 #import "MBMapViewButton.h"
 #import "MBContentSearchResult.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 
 #define kHeaderHeight 30.f
@@ -45,8 +50,6 @@
 
 #define kHeaderDestinationTo @"Nach"
 #define kHeaderDestinationFrom @"Von"
-
-#define kDateFormatPattern @"EEEE, dd.MM.YYYY, HH:mm"
 
 @interface MBTimetableViewController () <MBTimeTableFilterViewCellDelegate,MBTimetableFilterViewControllerDelegate,MBMapViewDelegate>
 
@@ -63,6 +66,7 @@
 @property (nonatomic, strong) MBSwitch *toggleFernverkehrSwitch;
 
 @property (nonatomic, strong) MBLabel *tableViewMessageLabel;
+@property (nonatomic, strong) NSString* availableDataUntilTime;
 @property (nonatomic, strong) MBLargeButton *requestMoreButton;
 @property (nonatomic, strong) UIActivityIndicatorView *requestMoreProgress;
 @property (nonatomic, strong) UIView* tableFooterView;
@@ -140,7 +144,7 @@
     //    UITableViewController *tableViewController = [[UITableViewController alloc] init];
     
     self.timetableView = [[UITableView alloc] initWithFrame:CGRectZero];
-
+    self.timetableView.accessibilityIdentifier = @"timetableView";
     [self.timetableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"TimeTableDateHeaderCell"];
 
     [self.timetableView registerClass:[MBTimeTableViewCell class] forCellReuseIdentifier:@"TimeTableCell"];
@@ -176,7 +180,7 @@
     [self.view addSubview:self.timetableView];
     
     
-    if(self.mapMarkers.count > 0){
+    if(self.mapMarkers.count > 0 && MBMapViewController.canDisplayMap){
         self.mapFloatingBtn = [[MBMapViewButton alloc] init];
         [self.mapFloatingBtn addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
         [self.mapFloatingBtn setSize:CGSizeMake((int)(self.mapFloatingBtn.frame.size.width*SCALEFACTORFORSCREEN), (int)(self.mapFloatingBtn.frame.size.height*SCALEFACTORFORSCREEN))];
@@ -185,14 +189,16 @@
 }
 
 -(void)mapFloatingBtnPressed{
-    MBMapViewController* vc = [MBMapViewController new];
-    vc.delegate = self;
-    [vc configureWithDelegate];
-    MBStationNavigationViewController* nav = [[MBStationNavigationViewController alloc] initWithRootViewController:vc];
-    nav.hideEverything = YES;
-    nav.modalPresentationStyle = UIModalPresentationFullScreen;
-    [nav setShowRedBar:NO];
-    [self presentViewController:nav animated:YES completion:nil];
+    [MBMapConsent.sharedInstance showConsentDialogInViewController:self completion:^{
+        MBMapViewController* vc = [MBMapViewController new];
+        vc.delegate = self;
+        [vc configureWithDelegate];
+        MBStationNavigationViewController* nav = [[MBStationNavigationViewController alloc] initWithRootViewController:vc];
+        nav.hideEverything = YES;
+        nav.modalPresentationStyle = UIModalPresentationFullScreen;
+        [nav setShowRedBar:NO];
+        [self presentViewController:nav animated:YES completion:nil];
+    }];
 }
 //map delegate
 -(BOOL)mapShouldCenterOnUser{
@@ -379,7 +385,7 @@
 
 - (void)filterCellWantsToFilter
 {
-    [self togglePlatformPicker:YES];
+    [self showFilterView];
 }
 
 - (void) handleTimetableUpdate
@@ -438,7 +444,11 @@
             if (isTimetableStillLoading) {
                 [self setLoading:YES];
             } else {
-                [self updateEmptyView:TimetableResponseStatus_EMPTY];
+                if(manager.hasLoadingError){
+                    [self updateEmptyView:TimetableResponseStatus_ERROR];
+                } else {
+                    [self updateEmptyView:TimetableResponseStatus_EMPTY];
+                }
                 [self setLoading:NO];
             }
         } else {
@@ -617,7 +627,7 @@
                                                                                self.timetableView.bounds.size.width,
                                                                                self.timetableView.bounds.size.height)];
         self.tableViewMessageLabel.textAlignment = NSTextAlignmentCenter;
-        self.tableViewMessageLabel.font = [UIFont db_HelveticaFourteen];
+        self.tableViewMessageLabel.font = [UIFont db_RegularFourteen];
         self.tableViewMessageLabel.textColor = [UIColor db_646973];
         self.tableViewMessageLabel.numberOfLines = 0;
     }
@@ -665,7 +675,10 @@
     }
     if(date){
         NSString* formatedTime = [NSDateFormatter localizedStringFromDate:date dateStyle:NSDateFormatterNoStyle timeStyle:NSDateFormatterShortStyle];
-        [message appendFormat:@"bis %@ Uhr",formatedTime];
+        self.availableDataUntilTime = [NSString stringWithFormat:@"bis %@ Uhr",formatedTime];
+        [message appendString:self.availableDataUntilTime];
+    } else {
+        self.availableDataUntilTime = nil;
     }
     if(self.currentlySelectedPlatform && ![self.currentlySelectedPlatform isEqualToString:@"Alle"]){
         [message appendString:@" an Gleis "];
@@ -675,7 +688,7 @@
     NSString *errorMessage = message;
 
     if(reason == TimetableResponseStatus_ERROR){
-        errorMessage = @"Leider stehen uns aktuell keine Daten zur Verfügung. Bitte versuchen Sie es zu einem späteren Zeitpunkt erneut.";
+        errorMessage = @"Daten nicht verfügbar.";
     }
     self.tableViewMessageLabel.text = errorMessage;
 
@@ -810,11 +823,12 @@
 
 }
 
-- (void) togglePlatformPicker:(BOOL)visible
+- (void) showFilterView
 {
     [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"filter_button"]];
     
     MBTimetableFilterViewController* filterView = [MBTimetableFilterViewController new];
+    filterView.availableDataUntilTime = self.availableDataUntilTime;
     filterView.hafasTimetable = self.hafasTimetable;
     filterView.useHafas = !self.showFernverkehr || self.oepnvOnly;
     filterView.delegate = self;
@@ -851,9 +865,14 @@
         //is this stop in our list?
         NSInteger index = [self.timetableData indexOfObject:trainStop];
         if(index != NSNotFound){
-            [self showWagenstandForStop:trainStop];
+            [self showTrainOrderForStop:trainStop];
         }
     }
+}
+
+-(void)showTrainOrderForStop:(Stop*)stop{
+    MBTrainOrderDisplayHelper* helper = [MBTrainOrderDisplayHelper new];
+    [helper showWagenstandForStop:stop station:self.station departure:self.departure inViewController:self];
 }
 
 -(BOOL)filterIsActive{
@@ -880,9 +899,9 @@
     } else {
         // filter
         NSArray *filteredDeps = [departuresToFilter filteredArrayUsingPredicate:
-                                 [NSPredicate predicateWithBlock:^BOOL(NSDictionary *evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
-            NSString* trainCat = [[evaluatedObject valueForKey:@"trainCategory"] uppercaseString];
-            if ([trainCat isEqualToString:transport.uppercaseString]) {
+                                 [NSPredicate predicateWithBlock:^BOOL(HafasDeparture *evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+            NSString* trainCat = [HafasDeparture stringForCat:evaluatedObject.productCategory]; //[[evaluatedObject valueForKey:@"trainCategory"] uppercaseString];
+            if ([trainCat isEqualToString:transport]) {
                 return YES;
             }
             return NO;
@@ -1017,11 +1036,6 @@
             tableCell.autoresizingMask = UIViewAutoresizingFlexibleHeight;
             tableCell.clipsToBounds = YES;
             
-            if ([MBTimetableViewController stopShouldHaveTrainRecord:timetableStop])
-            {
-                // assume that trainRecord is always available for ICE, IC, EC
-                event.trainRecordAvailable = YES;
-            }
             tableCell.currentStation = self.station.title;
             tableCell.event = event;
             tableCell.timeLabel.text = event.formattedTime;
@@ -1030,23 +1044,26 @@
             NSString* trainCat = [timetableStop formattedTransportType:event.lineIdentifier];
             tableCell.trainLabel.text = trainCat;
             tableCell.platformLabel.text = [NSString stringWithFormat:@"Gl. %@",event.actualPlatform];
+            if(event.changedPlatform){
+                tableCell.platformLabel.textColor = [UIColor db_mainColor];
+            } else {
+                tableCell.platformLabel.textColor = [UIColor db_787d87];
+            }
             //tableCell.platformTrainLabel.accessibilityLabel = [tableCell.platformTrainLabel.text stringByReplacingOccurrencesOfString:@"Gl." withString:@"Gleis"];
             
             [tableCell setExpanded:[self.selectedStopId isEqualToString: timetableStop.stopId] forIndexPath:indexPath];
             
-            NSArray *stations = event.departure ? [@[self.station.title] arrayByAddingObjectsFromArray:event.actualStationsArray] : [event.actualStationsArray arrayByAddingObject:self.station.title];
+            NSArray *stations = [event stationListWithCurrentStation:self.station.title];
             tableCell.viaListView.stations = stations;
             
             tableCell.expectedTimeLabel.text = event.formattedExpectedTime;
             if([event roundedDelay] >= 5){
                 tableCell.expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
-                tableCell.expectedTimeLabel.textColor = [UIColor db_38a63d];
+                tableCell.expectedTimeLabel.textColor = [UIColor db_76c030];
             }
             //hide time when train is canceled
             tableCell.expectedTimeLabel.hidden = event.eventIsCanceled;
-
-            [event updateComposedIrisWithStop:timetableStop];
 
             NSAttributedString *finalMessage = [self attributedIrisMessage:event.composedIrisMessage forTrain:trainCat];
             if (event.composedIrisMessage.length > 0) {
@@ -1081,7 +1098,7 @@
             
             tableCell.wagenstandDelimeter.hidden = [timetableStop.transportCategory.transportCategoryType isEqualToString:@"S"];
             
-            tableCell.wagenstandButton.enabled = event.trainRecordAvailable;
+            tableCell.wagenstandButton.enabled = [Stop stopShouldHaveTrainRecord:event.stop];
             
             if (tableCell.wagenstandButton.enabled) {
                 tableCell.wagenstandButton.data = indexPath;
@@ -1092,23 +1109,13 @@
     }
 }
 
-+(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop{
-    if ([timetableStop.transportCategory.transportCategoryType isEqualToString:@"ICE"]
-        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"IC"]
-        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"EC"])
-    {
-        return YES;
-    }
-    return NO;
-}
+
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (self.showFernverkehr) {
         if ((indexPath.section == 0 && indexPath.row > 0) || indexPath.section > 0) {
-            
             [[MBTutorialManager singleton] markTutorialAsObsolete:MBTutorialViewType_H2_Departure];
-            
             if (self.selectedRow && self.selectedRow.row == indexPath.row && self.selectedRow.section == indexPath.section) {
                 [self resetSelection];
                 [self.timetableView reloadData];
@@ -1124,16 +1131,8 @@
                         [self resetSelection];
                         return;
                     }
-                    self.selectedRow = indexPath;
                     Stop *stop = item;
-                    self.selectedStopId = stop.stopId;
-                    
-                    MBTimeTableViewCell *tableCell = [self.timetableView cellForRowAtIndexPath:indexPath];
-                    // add size of bottom view and distance between topview and bottom view
-                    self.additionalHeightForExpandedCell = ceil(tableCell.viaListView.superview.frame.size.height + 5.0);
-                    
-                    [self.timetableView reloadData];
-                    [self scrollCellIntoViewportAtIndexPath:indexPath dataSource:self];
+                    [self showJourneyForStop:stop indexPath:indexPath];
                 }
             }
         }
@@ -1161,7 +1160,7 @@
                 [self.timetableView reloadData];
                 [[HafasRequestManager sharedManager] requestJourneyDetails:departure completion:^(HafasDeparture * dep, NSError * err) {
                     [self.timetableView reloadData];
-                    [self scrollCellIntoViewportAtIndexPath:indexPath dataSource:self.hafasDataSource];
+                    //[self scrollCellIntoViewportAtIndexPath:indexPath dataSource:self.hafasDataSource];
                 }];
             }
         }
@@ -1170,6 +1169,7 @@
 
 - (void) scrollCellIntoViewportAtIndexPath:(NSIndexPath* )indexPath dataSource:(id<UITableViewDataSource>)source
 {
+    //note: this method is not thread safe and sometimes crashes with "Attempted to scroll the table view to an out-of-bounds row"
     if(indexPath.row >= [source tableView:self.timetableView numberOfRowsInSection:0]){
         //this can happen when the table view is updated while a wagenstand is loaded
         return;
@@ -1195,35 +1195,28 @@
     if (actualIndex >= 0 && actualIndex < self.timetableDataByDays.count) {
         [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"wagenreihung"]];
         Stop* stop = self.timetableDataByDays[actualIndex];
-        [self showWagenstandForStop:stop];
+        [self showTrainOrderForStop:stop];
     }
 }
--(void)showWagenstandForStop:(Stop *)stop{
-    [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-    
+
+-(void)showJourneyForStop:(Stop *)stop indexPath:(NSIndexPath*)indexPath{
     Event *event = [stop eventForDeparture:self.departure];
-    
-    NSMutableDictionary* queryValues = [NSMutableDictionary dictionaryWithCapacity:3];
-    if(stop.transportCategory.transportCategoryType){
-        [queryValues setObject:stop.transportCategory.transportCategoryType forKey:@"type"];
-    }
-    if(stop.transportCategory.transportCategoryNumber){
-        [queryValues setObject:stop.transportCategory.transportCategoryNumber forKey:@"number"];
-    }
-    if(event.originalPlatform){
-        [queryValues setObject:event.originalPlatform forKey:@"platform"];
-    }
-    
-    NSString* dateString = [Wagenstand makeDateStringForTime:event.formattedTime];
-    
-    if ([Wagenstand isValidTrainTypeForIST:stop.transportCategory.transportCategoryType]) {
-        // Request IST for ICE
-        [self requestISTWagenstand:dateString forStop:stop withQueryValues:queryValues];
-    } else {
-        [self displayAlertWagenstandNotFound];
+    [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    [[MBTrainJourneyRequestManager sharedManager] loadJourneyForEvent:event completionBlock:^(MBTrainJourney * _Nullable journey) {
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-    }
+        MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
+        detailViewController.departure = self.departure;
+        detailViewController.station = self.station;
+        detailViewController.event = event;
+        detailViewController.journey = journey; //journey may be nil, then journey will display IRIS data
+        if(self.departure){
+            detailViewController.showJourneyFromCurrentStation = true;
+        }
+        detailViewController.showJourneyMessageAndTrainLinks = true;
+        [self.navigationController pushViewController:detailViewController animated:YES];
+    }];
 }
+
 -(void)handleSearchResult:(MBContentSearchResult*)search{
     self.searchresult = search;
     //the object is processed in viewDidAppear because we can be in all kind of states here and it's the only safe area where we can work with the contents of the (then displayed) tableview
@@ -1257,7 +1250,7 @@
         for(id item in self.timetableDataByDays){
             if(wagenreihungSearch){
                 if([item isKindOfClass:Stop.class]){
-                    if([MBTimetableViewController stopShouldHaveTrainRecord:item]){
+                    if([Stop stopShouldHaveTrainRecord:item]){
                         found = YES;
                         break;
                     }
@@ -1297,17 +1290,7 @@
     }
 }
 -(void)filterOPNVForSearch:(MBContentSearchResult*)search{
-    if(search.opnvCat == HAFASProductCategoryS){
-        self.currentlySelectedTransportType = @"S";
-    } else if(search.opnvCat == HAFASProductCategoryBUS){
-        self.currentlySelectedTransportType = @"Bus";
-    } else if(search.opnvCat == HAFASProductCategoryU){
-        self.currentlySelectedTransportType = @"U";
-    } else if(search.opnvCat == HAFASProductCategoryTRAM){
-        self.currentlySelectedTransportType = @"STR";
-    } else if(search.opnvCat == HAFASProductCategorySHIP){
-        self.currentlySelectedTransportType = @"fae";
-    }
+    self.currentlySelectedTransportType = [HafasDeparture stringForCat:search.opnvCat];
     [self filterByPlatformAndTransportType];
 }
 -(void)runSearchResultStep2:(MBContentSearchResult*)search{
@@ -1338,47 +1321,6 @@
 }
 
 
-- (void) requestISTWagenstand:(NSString*)dateString forStop:(Stop*) stop withQueryValues:(NSDictionary*)queryValues
-{
-    [[WagenstandRequestManager sharedManager]
-     loadISTWagenstandWithTrain:stop.transportCategory.transportCategoryNumber
-     type:stop.transportCategory.transportCategoryType
-     departure:dateString
-     evaIds:self.station.stationEvaIds
-     completionBlock:^(Wagenstand *istWagenstand) {
-         
-         if (istWagenstand) {
-             //add delay information from IRIS to the IST-Wagenstand data for delayed notification
-             Event *event = [stop eventForDeparture:self.departure];
-             istWagenstand.expectedTime = [event formattedExpectedTime];
-             [self displayWagenstandViewController:istWagenstand withQueryValues:queryValues];
-         } else {
-             [self displayAlertWagenstandNotFound];
-         }
-         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-         
-     }];
-    
-}
-
-- (void) displayAlertWagenstandNotFound
-{
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Für den ausgewählten Zug liegt derzeit noch keine aktuelle Wagenreihung vor. Bitte versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Okay" style:UIAlertActionStyleCancel handler:nil]];
-    [self presentViewController:alert animated:YES completion:nil];
-
-}
-
-
-- (void) displayWagenstandViewController:(Wagenstand *)wagenstand withQueryValues:(NSDictionary *) queryValues
-{
-    MBTrainPositionViewController *wagenstandDetailViewController = [[MBTrainPositionViewController alloc] init];
-    wagenstandDetailViewController.station = self.station;
-    wagenstandDetailViewController.isOpenedFromTimetable = YES;
-    wagenstandDetailViewController.queryValues = queryValues;
-    wagenstandDetailViewController.wagenstand = wagenstand;
-    [self.navigationController pushViewController:wagenstandDetailViewController animated:YES];
-}
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -1458,7 +1400,7 @@
         computedHeight += messageLabelSize.height+16;
     }
     
-    if (event.trainRecordAvailable) {
+    if ([Stop stopShouldHaveTrainRecord:event.stop]) {
         // add extra height for Wagenstand button if the cell could display a link
         computedHeight += 100;
     }

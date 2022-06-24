@@ -23,9 +23,9 @@
     return nil;
 }
 
-
-
-
++(NSString*)zoneIdForStationID:(NSNumber*)stationId{
+    return [NSString stringWithFormat:@"%@",stationId];
+}
 
 - (NSURLSessionTask *)requestMapStatus:(NSNumber*)stationId
                                    osm:(BOOL)osm

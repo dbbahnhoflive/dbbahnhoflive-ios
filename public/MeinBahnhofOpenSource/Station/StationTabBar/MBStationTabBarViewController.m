@@ -8,6 +8,8 @@
 #import "MBStationTabBarView.h"
 #import "MBMapViewButton.h"
 #import "MBMapViewController.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBStationTabBarViewController () <MBStationTabBarViewDelegate>
 
@@ -109,11 +111,15 @@
     [vc didMoveToParentViewController:self];
     [self.containerView addSubview:vc.view];
     
-    self.mapViewButton = [[MBMapViewButton alloc] init];
-    [self.mapViewButton setSize:CGSizeMake((int)(self.mapViewButton.frame.size.width*SCALEFACTORFORSCREEN), (int)(self.mapViewButton.frame.size.height*SCALEFACTORFORSCREEN))];
-    [self.mapViewButton addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.mapViewButton];
-    [self updateMapButtonStatus];
+    if(!MBMapViewController.canDisplayMap){
+        NSLog(@"no map button available when starting with voiceover");
+    } else {
+        self.mapViewButton = [[MBMapViewButton alloc] init];
+        [self.mapViewButton setSize:CGSizeMake((int)(self.mapViewButton.frame.size.width*SCALEFACTORFORSCREEN), (int)(self.mapViewButton.frame.size.height*SCALEFACTORFORSCREEN))];
+        [self.mapViewButton addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:self.mapViewButton];
+        [self updateMapButtonStatus];
+    }
     
     self.line = [[UIView alloc] initWithFrame:CGRectZero];
     self.line.backgroundColor = [UIColor db_light_lineColor];
@@ -146,13 +152,15 @@
 - (void)mapFloatingBtnPressed {
     [MBTrackingManager trackActionsWithStationInfo:@[@"tab_navi", @"tap", @"map_button"]];
     
-    MBMapViewController* vc = [MBMapViewController new];
-    UIViewController* visibleController = [self visibleViewController];
-    if([visibleController conformsToProtocol:@protocol(MBMapViewControllerDelegate)]){
-        vc.delegate = (id<MBMapViewControllerDelegate>) visibleController;
-    }
-    [vc configureWithStation:self.station];
-    [self presentViewController:vc animated:YES completion:nil];
+    [MBMapConsent.sharedInstance showConsentDialogInViewController:self completion:^{
+        MBMapViewController* vc = [MBMapViewController new];
+        UIViewController* visibleController = [self visibleViewController];
+        if([visibleController conformsToProtocol:@protocol(MBMapViewControllerDelegate)]){
+            vc.delegate = (id<MBMapViewControllerDelegate>) visibleController;
+        }
+        [vc configureWithStation:self.station];
+        [self presentViewController:vc animated:YES completion:nil];
+    }];
 }
 
 - (void)viewDidLayoutSubviews {

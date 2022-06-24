@@ -85,9 +85,9 @@
   },
   {
     "menucat": "Öffentlicher Nahverkehr",
-    "menusubcat": "SEV",
+    "menusubcat": "Schienenersatzverkehr",
     "zoom": 16,
-    "icon": "sev"
+    "icon": "rimap_sev"
   },
 
 

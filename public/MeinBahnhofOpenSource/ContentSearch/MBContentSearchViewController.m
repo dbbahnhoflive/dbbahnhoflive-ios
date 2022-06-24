@@ -21,6 +21,8 @@
 #import "MBStationInfrastructureViewController.h"
 #import "MBStationNavigationViewController.h"
 #import "MBTutorialManager.h"
+#import "MBUIHelper.h"
+#import "MBTrackingManager.h"
 
 @interface MBContentSearchViewController ()<UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate>
 
@@ -237,6 +239,9 @@
         }
         [self.searchTags removeObjectForKey:@"Bahnhofsinformation WLAN"];
     }
+    if(!self.station.hasSEVStations){
+        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Schienenersatzverkehr"];
+    }
     if(!self.station.stationDetails.hasDBInfo
        && !self.station.stationDetails.hasLocalServiceStaff
        && !self.station.stationDetails.hasRailwayMission
@@ -272,6 +277,9 @@
     } else {
         //remove only some?
         
+    }
+    if(!MBMapViewController.canDisplayMap){
+        [self.searchTags removeObjectForKey:@"Karte"];
     }
 
     //finally, remove all with placeholders [...]
@@ -580,7 +588,7 @@
             Timetable* timetable = [[TimetableManager sharedManager] timetable];
             BOOL found = NO;
             for (Stop *stop in [timetable departureStops]) {
-                if ([MBTimetableViewController stopShouldHaveTrainRecord:stop]){
+                if ([Stop stopShouldHaveTrainRecord:stop]){
                     found = YES;
                     break;
                 }
@@ -729,7 +737,7 @@
         if(searchStations){
             //append the stations in the string
             NSMutableString* searchString = [NSMutableString stringWithString:lineStringForSearch];
-            NSArray *stations = event.departure ? [@[self.station.title] arrayByAddingObjectsFromArray:event.actualStationsArray] : [event.actualStationsArray arrayByAddingObject:self.station.title];
+            NSArray *stations = [event stationListWithCurrentStation:self.station.title];
             for(NSString* s in stations){
                 [searchString appendString:@" "];
                 [searchString appendString:s];

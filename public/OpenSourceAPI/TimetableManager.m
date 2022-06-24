@@ -39,6 +39,10 @@
 
 }
 
+-(BOOL)hasLoadingError{
+    return NO;
+}
+
 - (void) startTimetableScheduler
 {
     //start a scheduler that updates the timetable... this is just a simple simulation
@@ -65,6 +69,13 @@
     //NSLog(@"clear timetable");
     self.evaIds = @[];
     [self.timetable clearTimetable];
+}
+
+
+-(void)reloadTimetableWithEvaIds:(NSArray*)eva_ids{
+    [self resetTimetable];
+    [self setEvaIds:eva_ids];
+    [self startTimetableScheduler];
 }
 
 

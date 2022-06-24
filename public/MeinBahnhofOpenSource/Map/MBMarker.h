@@ -20,6 +20,7 @@ enum MarkerType : NSUInteger
     RIMAPPOI = 8,
     STATION_SELECTABLE = 9,
     OEPNV_SELECTABLE = 10,
+    SEV = 11,
 };
 
 @interface MBMarker : GMSMarker <NSCopying>

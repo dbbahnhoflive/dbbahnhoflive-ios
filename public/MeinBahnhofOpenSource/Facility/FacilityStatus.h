@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#import <UIKit/UIKit.h>
 
 #import <Mantle/Mantle.h>
 #import <CoreLocation/CoreLocation.h>
@@ -34,5 +35,7 @@ enum Type : NSUInteger {
 - (NSString*)title;
 
 -(BOOL)isSameFacility:(FacilityStatus*)another;
+
+-(NSString*)shortDescription;
 
 @end

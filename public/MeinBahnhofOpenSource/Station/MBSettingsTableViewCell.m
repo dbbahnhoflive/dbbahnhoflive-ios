@@ -5,6 +5,7 @@
 
 
 #import "MBSettingsTableViewCell.h"
+#import "MBUIHelper.h"
 
 @interface MBSettingsTableViewCell()
 

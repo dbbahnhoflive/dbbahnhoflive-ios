@@ -5,6 +5,7 @@
 
 
 #import "MBEinkaufsbahnhofCategory.h"
+#import "MBUIHelper.h"
 
 @implementation MBEinkaufsbahnhofCategory
 

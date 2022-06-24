@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#import <Foundation/Foundation.h>
+
 
 @interface VenueExtraField : NSObject
 

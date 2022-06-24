@@ -17,13 +17,15 @@
 
 @interface MBStationSearchViewController : MBUIViewController 
 
-@property (nonatomic, strong) MBStation* _Nullable selectedStation;
-@property (nonatomic, strong) MBRootContainerViewController* _Nullable stationMapController;
-
 - (void) openStationAndShowFacility:(nonnull NSDictionary *)station;
 - (void) openStation:(nonnull NSDictionary*)station andShowWagenstand:(nonnull NSDictionary*)wagenstandUserInfo;
 - (void) openStation:(nonnull NSDictionary*)station;
 -(void)freeStation;
+
+-(MBStation* _Nullable)selectedStation;
+-(MBRootContainerViewController* _Nullable)stationMapController;
+
++(void)displayDataProtectionOn:(nonnull UIViewController*)vc;
 
 @property(nonatomic) BOOL onBoardingVisible;
 @property(nonatomic) BOOL privacySetupVisible;

@@ -40,6 +40,7 @@
 
 -(void)updateValuesWithWagenstand:(Wagenstand*)wagenstand train:(Train*)train{
     self.trainTypeNumberLabel.text = [NSString stringWithFormat:@"%@ %@",train.type,train.number];
+    self.trainTypeNumberLabel.accessibilityLabel = [self.trainTypeNumberLabel.text stringByReplacingOccurrencesOfString:@"ICE" withString:@"I C E"];
     NSString* destination = train.destinationStation;
     NSString* track = @"";
     if(train.sections.count > 0){

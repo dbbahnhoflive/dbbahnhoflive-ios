@@ -12,20 +12,26 @@
 @class MBOverlayViewController;
 @class MBTimetableViewController;
 @class MBContentSearchResult;
+@class MBServiceListCollectionViewController;
 
 @protocol MBRootContainerViewControllerDelegate <NSObject>
 
 @optional
 -(void)willStartLoadingData;
 -(void)didLoadStationData:(BOOL)success;
--(void)didLoadParkingData:(BOOL)success;
--(void)didLoadParkingOccupancy:(BOOL)success;
 -(void)didLoadIndoorMapLevels:(BOOL)success;
 -(void)didLoadMapPOIs:(BOOL)success;
 -(void)didLoadEinkaufData:(BOOL)success;
 -(void)didLoadFacilityData:(BOOL)success;
--(void)didLoadNewsData:(BOOL)success;
 -(void)didFinishAllLoading;
+
+//might be called async later after didFinishAllLoading
+-(void)didLoadSEVData;
+-(void)didLoadLockerData;
+-(void)didLoadParkingData;
+-(void)didLoadNewsData;
+-(void)didLoadEinkaufsbahnhofStatus;
+
 
 @end
 
@@ -46,6 +52,7 @@
 -(UINavigationController*)stationContainerNavigationController;
 -(UINavigationController*)timetableNavigationController;
 -(MBTimetableViewController*)timetableVC;
+-(MBServiceListCollectionViewController*)infoVC;
 -(void)selectTimetableTab;
 -(void)selectTimetableTabAndDeparturesForTrack:(NSString*)track trainOrder:(Stop*)trainStop;
 -(void)cleanup;

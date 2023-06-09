@@ -10,6 +10,7 @@
 #import "MBCacheManager.h"
 #import "Constants.h"
 #import "NSDictionary+MBDictionary.h"
+#import "MBNetworkFactory.h"
 
 @implementation MBParkingManager
 
@@ -20,6 +21,8 @@
     dispatch_once(&onceToken, ^{
         NSURL *baseUrl = [NSURL URLWithString:[Constants kDBAPI]];
         sharedClient = [[self alloc] initWithBaseURL:baseUrl];
+        [MBNetworkFactory configureRISHeader:sharedClient];
+
     });
     return sharedClient;
 }
@@ -50,9 +53,6 @@
     
     NSString* endPoint = [NSString stringWithFormat:@"%@/parking-information/db-bahnpark/v2/parking-facilities?stopPlaceId=%@&withPassengerRelevance=true", [Constants kDBAPI], stationId];
     NSLog(@"endPoint %@",endPoint);
-    [self.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [self.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
-    [self.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
 
     return [self GET:endPoint parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //

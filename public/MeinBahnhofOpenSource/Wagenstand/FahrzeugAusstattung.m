@@ -393,7 +393,7 @@ static NSDictionary* staticConfig = nil;
     }
     return @"";
 }
--(NSArray*)iconNames{
+-(NSArray<NSString*>*)iconNames{
     NSDictionary* c = [self configForArtAndStatus];
     if(c){
         return c[@"icons"];

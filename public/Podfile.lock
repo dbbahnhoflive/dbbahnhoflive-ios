@@ -14,29 +14,29 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
-  - GoogleMaps (6.0.1):
-    - GoogleMaps/Maps (= 6.0.1)
-  - GoogleMaps/Base (6.0.1)
-  - GoogleMaps/Maps (6.0.1):
+  - GoogleMaps (6.2.1):
+    - GoogleMaps/Maps (= 6.2.1)
+  - GoogleMaps/Base (6.2.1)
+  - GoogleMaps/Maps (6.2.1):
     - GoogleMaps/Base
   - GTMNSStringHTMLAdditions (0.2.1)
   - Mantle (2.2.0):
     - Mantle/extobjc (= 2.2.0)
   - Mantle/extobjc (2.2.0)
-  - MBProgressHUD (1.1.0)
-  - Sentry (7.9.0):
-    - Sentry/Core (= 7.9.0)
-  - Sentry/Core (7.9.0)
+  - MBProgressHUD (1.2.0)
+  - Sentry (7.31.3):
+    - Sentry/Core (= 7.31.3)
+  - Sentry/Core (7.31.3)
   - TBXML (1.5)
 
 DEPENDENCIES:
-  - AFNetworking (~> 4.0)
-  - GoogleMaps (= 6.0.1)
-  - GTMNSStringHTMLAdditions (~> 0.2.1)
-  - Mantle (~> 2.2.0)
-  - MBProgressHUD (~> 1.1.0)
-  - Sentry (from `https://github.com/getsentry/sentry-cocoa.git`, tag `7.9.0`)
-  - TBXML (~> 1.5)
+  - AFNetworking (= 4.0.1)
+  - GoogleMaps (= 6.2.1)
+  - GTMNSStringHTMLAdditions (= 0.2.1)
+  - Mantle (= 2.2.0)
+  - MBProgressHUD (= 1.2.0)
+  - Sentry (from `https://github.com/getsentry/sentry-cocoa.git`, tag `7.31.3`)
+  - TBXML (= 1.5)
 
 SPEC REPOS:
   trunk:
@@ -50,22 +50,22 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Sentry:
     :git: https://github.com/getsentry/sentry-cocoa.git
-    :tag: 7.9.0
+    :tag: 7.31.3
 
 CHECKOUT OPTIONS:
   Sentry:
     :git: https://github.com/getsentry/sentry-cocoa.git
-    :tag: 7.9.0
+    :tag: 7.31.3
 
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
-  GoogleMaps: c213fc2334b7374144cede914da779b99be0ab74
+  GoogleMaps: 20d7b12be49a14287f797e88e0e31bc4156aaeb4
   GTMNSStringHTMLAdditions: 4bfc402b1b17165360728083156cae0a74ecb308
   Mantle: c5aa8794a29a022dfbbfc9799af95f477a69b62d
-  MBProgressHUD: e7baa36a220447d8aeb12769bf0585582f3866d9
-  Sentry: 2f7e91f247cfb05b05bd01e0b5d0692557a7687b
+  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
+  Sentry: 08884c523575ec0f6690d94ed3ccb0246a1600bf
   TBXML: 9f9dadb239f2f2af1dadb87fe43a0ce6e479379a
 
-PODFILE CHECKSUM: 0b0252d465ee7d6c345b08387746431228a88354
+PODFILE CHECKSUM: 56012bbe8afceb083969d94a0f900aabe49584b2
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

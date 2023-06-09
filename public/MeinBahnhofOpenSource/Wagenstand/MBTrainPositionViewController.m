@@ -80,11 +80,7 @@ static NSString *kHeadCell = @"HeadCell";
     self.wagenstandTable.delegate = self;
     self.wagenstandTable.dataSource = self;
     
-    if (@available(iOS 11.0, *)) {
-        self.wagenstandTable.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        // Fallback on earlier versions
-    }
+    self.wagenstandTable.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     
     if(ISIPAD){
         //cells will generate their own separator
@@ -294,10 +290,11 @@ static NSString *kHeadCell = @"HeadCell";
 
 -(void)updateLocalNotif{
     NSString* trainNumber  =[Wagenstand getTrainNumberForWagenstand:_wagenstand];
+    NSString* plantime = _wagenstand.time;
     NSString* time = _wagenstand.expectedTime;
     if(!time){
         //fallback to planed time
-        time = _wagenstand.time;
+        time = plantime;
     }
     NSLog(@"pushSwitch changed status to %d, must register/remove local notification for train %@ at %@", self.pushHeader.pushSwitch.on, trainNumber, time);
     
@@ -354,7 +351,7 @@ static NSString *kHeadCell = @"HeadCell";
             content.userInfo = @{
                 @"type":@"wagenstand",
                 WAGENSTAND_TRAINNUMBER:trainNumber,
-                WAGENSTAND_TIME:time,
+                WAGENSTAND_TIME:plantime,
                 WAGENSTAND_TYPETRAIN:trainType,
                 @"stationNumber":stationNumber,
                 @"stationName":stationName,

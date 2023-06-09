@@ -10,47 +10,13 @@
 
 @implementation NSString (MBString)
 
-- (NSString *)MD5String
-{
-    const char *cstr = [self UTF8String];
-    unsigned char result[16];
-    CC_MD5(cstr, (int)strlen(cstr), result);
-    
-    return [NSString stringWithFormat:
-            @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-            result[0], result[1], result[2], result[3],
-            result[4], result[5], result[6], result[7],
-            result[8], result[9], result[10], result[11],
-            result[12], result[13], result[14], result[15]
-            ];  
-}
-
-- (NSMutableAttributedString*) rawHtmlString
-{
-    NSError *error;
-    
-    NSDictionary *dict = @{
-                           NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
-                           NSCharacterEncodingDocumentAttribute:  @(NSUTF8StringEncoding)
-                           };
-    
-    NSMutableAttributedString *mutableHTML = [[NSMutableAttributedString alloc]
-                                              initWithData: [self dataUsingEncoding:NSUTF8StringEncoding]
-                                              options: dict
-                                              documentAttributes:&dict
-                                              error: &error];
-    if (error) {
-        return [[NSMutableAttributedString alloc] initWithString:@""];
-    }
-    return mutableHTML;
-}
 
 
-- (NSMutableAttributedString*) attributedHtmlString
+- (NSMutableAttributedString*) attributedStringFromHtml
 {
     NSMutableParagraphStyle *defaultParagraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    [defaultParagraphStyle setParagraphSpacing:defaultParagraphStyle.paragraphSpacing+5];
-    
+    [defaultParagraphStyle setParagraphSpacing:defaultParagraphStyle.paragraphSpacing+4];
+
     NSDictionary *dict = @{
                            NSFontAttributeName: [UIFont db_RegularFourteen],
                            NSCharacterEncodingDocumentAttribute:  @(NSUTF8StringEncoding),
@@ -213,64 +179,6 @@
     return mutableHTML;
 }
 
-- (NSAttributedString*) convertFonts:(NSDictionary*)options
-{
-    NSMutableAttributedString *tempString = [self attributedHtmlString];
-    NSRange range = (NSRange){0,[tempString length]};
-    [tempString enumerateAttribute:NSFontAttributeName inRange:range options:NSAttributedStringEnumerationReverse usingBlock:^(id value, NSRange range, BOOL *stop) {
-        UIFont *replacementFont = [options objectForKey:@"replacementFont"];
-        [tempString addAttribute:NSFontAttributeName value:replacementFont range:range];
-        [tempString addAttribute:NSForegroundColorAttributeName value:[options objectForKey:@"color"] range:range];
-    }];
-    return tempString;
-}
 
-- (CGSize) calculateSizeConstrainedTo:(CGSize)constraints
-{
-    UIFont *font = [UIFont db_HelveticaTwelve];
-    
-    return  [self calculateSizeConstrainedTo:constraints andFont:font];
-}
-
-- (CGSize) calculateSizeConstrainedTo:(CGSize)constraints andFont:(UIFont*)font
-{
-    CGSize constraintSize = constraints;
-    
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc]init];
-    NSDictionary *attrDict = [NSDictionary dictionaryWithObjectsAndKeys:font, NSFontAttributeName, paragraphStyle, NSParagraphStyleAttributeName, nil];
-    CGSize size = [self boundingRectWithSize:constraintSize
-                                     options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin
-                                  attributes:attrDict context:nil].size;
-    return size;
-}
-
-- (CGFloat)fontSizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size
-{
-    CGFloat fontSize = [font pointSize];
-    CGFloat height = [self boundingRectWithSize:CGSizeMake(size.width,FLT_MAX)
-                                     options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin
-                                     attributes:@{NSFontAttributeName: font} context:nil].size.height;
-    UIFont *newFont = font;
-    
-    //Reduce font size while too large, break if no height (empty string)
-    while (height > size.height && height != 0) {
-        fontSize--;
-        newFont = [UIFont fontWithName:font.fontName size:fontSize];
-        height = [self boundingRectWithSize:CGSizeMake(size.width,FLT_MAX)
-                                    options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin
-                                 attributes:@{NSFontAttributeName: newFont} context:nil].size.height;
-    };
-    
-    // Loop through words in string and resize to fit
-    for (NSString *word in [self componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]) {
-        CGFloat width = [word sizeWithAttributes:@{NSFontAttributeName: newFont}].width;
-        while (width > size.width && width != 0) {
-            fontSize--;
-            newFont = [UIFont fontWithName:font.fontName size:fontSize];
-            width = [word sizeWithAttributes:@{NSFontAttributeName: newFont}].width;
-        }
-    }
-    return fontSize;
-}
 
 @end

@@ -17,10 +17,6 @@
 
 @implementation MBLinkButton
 
-@synthesize labelText = _labelText;
-@synthesize value = _value;
-@synthesize titleColor = _titleColor;
-
 
 + (instancetype) buttonWithLeftImage:(NSString*)imageName
 {
@@ -61,6 +57,16 @@
 {
     MBLinkButton *button = [super buttonWithType:UIButtonTypeCustom];
     button.leftImage = [UIImage db_imageNamed:@"arrow-right-bold"];
+    button.labelFont = [UIFont db_BoldFourteen];
+    button.titleColor = [UIColor db_333333];
+    button.leftInset = 8;
+    return button;
+}
++ (instancetype) boldButtonWithRedExternalLink
+{
+    MBLinkButton *button = [super buttonWithType:UIButtonTypeCustom];
+    button.leftImage = [[UIImage db_imageNamed:@"app_extern_link"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    button.imageView.tintColor = UIColor.redColor;
     button.labelFont = [UIFont db_BoldFourteen];
     button.titleColor = [UIColor db_333333];
     button.leftInset = 8;

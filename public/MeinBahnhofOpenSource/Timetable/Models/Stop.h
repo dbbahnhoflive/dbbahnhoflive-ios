@@ -20,8 +20,8 @@
 @property (nonatomic) BOOL isExtraTourTrain;
 
 @property (nonatomic, strong) NSString *evaNumber;
-@property (nonatomic, strong) Event *arrival;
-@property (nonatomic, strong) Event *departure;
+@property (nonatomic, strong) Event *arrivalEvent;
+@property (nonatomic, strong) Event *departureEvent;
 @property (nonatomic, strong) Message *message;
 
 @property (nonatomic, strong) NSString *junctionType;

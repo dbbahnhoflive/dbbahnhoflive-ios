@@ -39,9 +39,7 @@
 {
     self = [super init];
     if(self){
-        self.cacheStore = [NSUserDefaults standardUserDefaults];
-
-        self.knownEvaIds = [NSMutableArray arrayWithCapacity:50];
+        self.cacheStore = NSUserDefaults.standardUserDefaults;
 
         self.stationRequestCache = [[NSMutableDictionary alloc] initWithCapacity:50];
         
@@ -114,16 +112,6 @@
 
 }
 
-- (void)addKnownEvaIds:(NSArray *)ids
-{
-    // NSLog(@"addKnownEvaIds: %@",ids);
-    for(NSString* idValue in ids){
-        if(![self.knownEvaIds containsObject:idValue]){
-            [self.knownEvaIds addObject:idValue];
-        }
-    }
-}
-
 - (NSDictionary *)cachedStationRequest:(NSString *)cacheUrl
 {
     [self.stationDictionaryLock lock];
@@ -160,7 +148,7 @@
     return distance;
 }
 
-- (void)storeStationRequest:(NSDictionary *)dict url:(NSString *)url
+- (void)storeStationRequestNearby:(NSDictionary *)dict coordinate:(NSString *)url
 {
     [self.stationDictionaryLock lock];
     

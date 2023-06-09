@@ -293,7 +293,7 @@
             }
         }
         
-        if(!self.preselectedInitialMarker && self.mapView.filterValues.count > 0){
+        if(!self.preselectedInitialMarker && self.mapView.hasActiveFilters){
             //no marker preselected but some filter settings are set, preselect a matching marker
             NSLog(@"preselect a visible marker");
             MBMarker* marker = [self.mapView preselectMarkerAfterFilterChange];
@@ -612,6 +612,9 @@
                 allActive = NO;
             }
         }
+    }
+    if(allActive){
+        filterValues = nil;
     }
     self.mapView.filterValues = filterValues;
     

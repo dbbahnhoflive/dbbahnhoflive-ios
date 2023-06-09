@@ -13,7 +13,6 @@
 @interface MBHafasTimetableDataSource : NSObject <UITableViewDataSource>
 
 @property (nonatomic,strong) NSDate* lastRequestedDate;
-@property (nonatomic, strong) NSIndexPath* selectedRow;
 @property (nonatomic, weak) MBTimetableViewController *viewController;
 @property (nonatomic, weak) id<MBTimeTableFilterViewCellDelegate> delegate;
 @property (nonatomic, strong) NSString *cellIdentifier;

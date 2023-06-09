@@ -20,7 +20,6 @@
 
 @implementation MBMapLevelPicker
 
-@synthesize levels = _levels;
 
 - (instancetype) initWithLevels:(NSArray*)levels
 {
@@ -44,14 +43,17 @@
         self.currentLevelLabel = [[UILabel alloc] init];
         self.currentLevelLabel.frame = CGRectMake(10, 50, 40, 40);
         self.currentLevelLabel.font = [UIFont db_RegularSeventeen];
-        self.currentLevelLabel.textColor = [UIColor yellowColor];
+        self.currentLevelLabel.textColor = [UIColor clearColor];
         [self.currentLevelLabel setTextAlignment:NSTextAlignmentCenter];
-        self.currentLevelLabel.hidden = YES;
+        //self.currentLevelLabel.hidden = YES;
         
         self.pickerDown = [UIButton buttonWithType:UIButtonTypeCustom];
         self.pickerDown.frame = CGRectMake(10, 90, 40, 40);
         [self.pickerDown setImage:arrowDown forState:UIControlStateNormal];
-        
+
+        self.pickerDown.accessibilityLabel = @"Ebene runter";
+        self.pickerUp.accessibilityLabel = @"Ebene hoch";
+
         [self.pickerDown addTarget:self action:@selector(didTapOnPicker:) forControlEvents:UIControlEventTouchUpInside];
         [self.pickerUp addTarget:self action:@selector(didTapOnPicker:) forControlEvents:UIControlEventTouchUpInside];
         
@@ -131,7 +133,7 @@
 - (void) updateLevelLabel:(LevelplanWrapper*)newLevel
 {
     self.currentLevel = newLevel;
-    self.currentLevelLabel.text = [NSString stringWithFormat:@"%ld", (long)newLevel.levelNumber];
+    self.currentLevelLabel.text = [NSString stringWithFormat:@"Aktuelle Ebene: %ld", (long)newLevel.levelNumber];
     [self checkPickerState];
     
     for(UIImageView* img in self.levelIndicatorImages){

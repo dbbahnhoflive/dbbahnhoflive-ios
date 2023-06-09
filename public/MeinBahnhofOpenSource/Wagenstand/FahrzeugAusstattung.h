@@ -19,7 +19,7 @@
 @property(nonatomic,strong) NSString* symbol;
 
 -(NSString*)displayText;
--(NSArray*)iconNames;
+-(NSArray<NSString*>*)iconNames;
 -(BOOL)displayEntry;
 -(BOOL)isOldAPI;
 

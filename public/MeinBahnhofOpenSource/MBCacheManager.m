@@ -27,7 +27,7 @@
     self = [super init];
     if(self){
         NSLog(@"setup cache manager with directory %@",[self applicationDocumentsDirectory]);
-        NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+        NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
         if([def integerForKey:@"mbcachemanager.version"] < MBCACHE_VERSION){
             [self deleteCache];
             NSLog(@"cache version changed, clear cache dir");
@@ -43,6 +43,7 @@
 }
 
 //cache for 24h = 60*60*24
+#define CACHE_TIME_RIS_EVA_UPDATE (60*60*24)
 #define CACHE_TIME_RIS_REQUEST (60*60*1)
 #define CACHE_TIME_RIMAP (60*60*1)
 #define CACHE_TIME_PARKING (60*60*1)
@@ -52,12 +53,15 @@
 
 -(NSTimeInterval)cacheTimeForType:(MBCacheResponseType)type{
     switch (type) {
+        case MBCacheResponseTypeInvalid:
+            return 0;
         case MBCacheResponseRISStationData:
         case MBCacheResponseRISStationServices:
+        case MBCacheResponseRISLocker:
             return CACHE_TIME_RIS_REQUEST;
-        case MBCacheResponseRIMapStatus:
+        case MBCacheResponseRISStopPlacesForEva:
+            return CACHE_TIME_RIS_EVA_UPDATE;
         case MBCacheResponseRIMapStatus07API:
-        case MBCacheResponseRIMapPOIs:
         case MBCacheResponseRIMapPOIs07Api:
         case MBCacheResponseRIMapSEV07API:
             return CACHE_TIME_RIMAP;
@@ -67,8 +71,6 @@
             return CACHE_TIME_EINKAUFSBAHNHOF;
         case MBCacheResponseEinkaufsbahnhofOverview:
             return CACHE_TIME_EINKAUFSBAHNHOF;
-        case MBCacheResponseTravelCenter:
-            return CACHE_TIME_TRAVELCENTER;
         case MBCacheResponseNews:
             return CACHE_TIME_NEWS;
     }
@@ -98,8 +100,8 @@
         case MBCacheResponseRISStationServices:
             filename = @"ris_station_services.json";
             break;
-        case MBCacheResponseRIMapStatus:
-            filename = @"rimapstatus.json";
+        case MBCacheResponseRISStopPlacesForEva:
+            filename = @"ris_stopplaces_foreva.json";
             break;
         case MBCacheResponseRIMapStatus07API:
             filename = @"rimapstatus07.json";
@@ -110,9 +112,6 @@
         case MBCacheResponseRIMapSEV07API:
             filename = @"rimap_sev.json";
             break;
-        case MBCacheResponseRIMapPOIs:
-            filename = @"rimappois.json";
-            break;
         case MBCacheResponseParking:
             filename = @"parking_v2.json";
             break;
@@ -122,11 +121,14 @@
         case MBCacheResponseEinkaufsbahnhofOverview:
             filename = @"einkauf_overview.json";
             break;
-        case MBCacheResponseTravelCenter:
-            filename = @"travelcenter.json";
-            break;
         case MBCacheResponseNews:
             filename = @"news.json";
+            break;
+        case MBCacheResponseTypeInvalid:
+            return nil;
+            break;
+        case MBCacheResponseRISLocker:
+            filename = @"locker.json";
             break;
     }
     filename = [station.stringValue stringByAppendingFormat:@"_%@",filename];

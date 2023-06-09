@@ -13,7 +13,7 @@
     NSString* status = NSProcessInfo.processInfo.environment[@"isTestRun"];
     return [status isEqualToString:@"1"];
 }
-+(NSString*)mockDataForKey:(NSString*)key{
++(NSString* _Nullable)mockDataForKey:(NSString*)key{
     NSString* jsonString = NSProcessInfo.processInfo.environment[@"mock_requests"];
     if(!jsonString){
         return nil;

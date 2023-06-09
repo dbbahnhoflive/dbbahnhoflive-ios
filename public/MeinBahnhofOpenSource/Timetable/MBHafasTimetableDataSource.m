@@ -77,8 +77,6 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.hafas = item;
         
-        [cell setExpanded: [self.selectedRow isEqual:indexPath] ];
-        
         returnedCell = cell;
     }
     return returnedCell;

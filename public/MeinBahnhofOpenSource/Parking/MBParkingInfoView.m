@@ -48,6 +48,7 @@
     [self.navigationButton setImage:[UIImage db_imageNamed:@"app_extern_link"] forState:UIControlStateNormal];
     [self addSubview:self.navigationButton];
     [buttons addObject:self.navigationButton];
+    self.navigationButton.accessibilityLabel = @"Externer Link: Route öffnen";
     
     self.overviewButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, PARKING_BUTTON_SIZE,PARKING_BUTTON_SIZE)];
     [self.overviewButton setImage:[UIImage db_imageNamed:@"app_details"] forState:UIControlStateNormal];
@@ -55,12 +56,14 @@
     [self.overviewButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:self.overviewButton];
     [buttons addObject:self.overviewButton];
-    
+    self.overviewButton.accessibilityLabel = @"Details öffnen";
+
     self.tarifButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, PARKING_BUTTON_SIZE,PARKING_BUTTON_SIZE)];
     [self setupLayerForButton:self.tarifButton];
     [self.tarifButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self.tarifButton setImage:[UIImage db_imageNamed:@"app_preis"] forState:UIControlStateNormal];
     [self addSubview:self.tarifButton];
+    self.tarifButton.accessibilityLabel = @"Tarifinformationen öffnen";
     [buttons addObject:self.tarifButton];
     self.buttons = buttons;
 }

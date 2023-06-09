@@ -93,7 +93,8 @@
                                    @"Bahnhofsinformation Barrierefreiheit": @"IconBarrierFree",
                                    @"Bahnhofsinformation Aufzüge": @"app_aufzug",
                                    @"Bahnhofsinformation Parkplätze": @"rimap_parkplatz_grau",
-                                   @"Bahnhofsinformation Schienenersatzverkehr": @"sev_bus",
+                                   @"Bahnhofsinformation Ersatzverkehr": @"sev_bus",
+                                   @"Bahnhofsinformation Schließfächer": @"rimap_schliessfach_grau",
                                    };
 
         if([iconMap objectForKey:self.keywordString]){
@@ -351,8 +352,12 @@
     return [self.keywordString isEqualToString:@"Bahnhofsinformation WLAN"];
 }
 -(BOOL)isSEVSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Schienenersatzverkehr"];
+    return [self.keywordString isEqualToString:@"Bahnhofsinformation Ersatzverkehr"];
 }
+-(BOOL)isLockerSearch{
+    return [self.keywordString isEqualToString:@"Bahnhofsinformation Schließfächer"];
+}
+
 -(BOOL)isElevatorSearch{
     return [self.keywordString isEqualToString:@"Bahnhofsinformation Aufzüge"];
 }

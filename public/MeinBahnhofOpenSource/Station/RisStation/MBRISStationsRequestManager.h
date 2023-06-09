@@ -29,5 +29,5 @@ failureBlock:(void (^)(NSError *error))failure;
 
 -(void)requestEvaIdsForStation:(MBStationFromSearch*)station success:(void (^)(NSArray<NSString*>* evaIds))success failureBlock:(void (^)(NSError *))failure;
 
--(void)requestAccessibility:(NSString *)eva success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure;
+-(void)requestAccessibility:(NSString *)stationId success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure;
 @end

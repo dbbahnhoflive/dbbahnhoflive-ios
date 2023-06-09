@@ -114,7 +114,7 @@ static NSDateFormatter *formatter = nil;
             Event *arrivalEvent = [TimetableParser parseEventFromElement: arrivalElement ofTypeDeparture:NO];
             if (arrivalEvent) {
                 arrivalEvent.stop = stop;
-                [stop setArrival:arrivalEvent];
+                stop.arrivalEvent = arrivalEvent;
                 [arrivalEvent updateComposedIrisWithStop:stop];
             }
         }
@@ -123,7 +123,7 @@ static NSDateFormatter *formatter = nil;
             Event *departureEvent = [TimetableParser parseEventFromElement: departureElement ofTypeDeparture:YES];
             if (departureEvent) {
                 departureEvent.stop = stop;
-                [stop setDeparture:departureEvent];
+                stop.departureEvent = departureEvent;
                 [departureEvent updateComposedIrisWithStop:stop];
             }
         }
@@ -205,11 +205,10 @@ static NSDateFormatter *formatter = nil;
     NSDate *delayDate = [[TimetableParser cachedDateFormatter] dateFromString:delayTimestampString];
     NSString *station = nil;
     
-    if ([hidden isEqualToString:@"1"]) {
-        return nil;
-    }
-    
     Event *event = [[Event alloc] init];
+    if ([hidden isEqualToString:@"1"]) {
+        event.isHidden = true;
+    }
     [event setPlannedDistantEndpoint:distantEndpoint];
     [event setHidden:[hidden isEqualToString:@"1"]];
     [event setWings:wingsTrips];

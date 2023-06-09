@@ -13,6 +13,7 @@
 
 @class MBMarker;
 @class RIMapConfigItem;
+@class POIFilterItem;
 
 typedef NS_ENUM(NSInteger, ShopOpenState) {
     POI_OPEN = 1,
@@ -66,6 +67,7 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 
 -(NSString*)allOpenTimes;
 -(BOOL)isTrack;
+-(BOOL)isLocker;
 -(UIImage*)iconImageForFlyout:(BOOL)forFlyout;
 -(NSString*)iconNameForFlyout:(BOOL)forFlyout;
 -(NSString*)title;
@@ -75,7 +77,7 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 
 -(void)getFilterTitle:(NSString**)filterTitle andSubTitle:(NSString**)filterSubTitle;
 
-+(NSArray*)createFilterItems;
++(NSArray<POIFilterItem*>*)createFilterItems;
 +(NSArray*)filterConfig;
 +(RIMapConfigItem*)configForMenuCat:(NSString*)cat subCat:(NSString*)subcat;
 +(NSString*)levelCodeToDisplayString:(NSString*)levelCode;

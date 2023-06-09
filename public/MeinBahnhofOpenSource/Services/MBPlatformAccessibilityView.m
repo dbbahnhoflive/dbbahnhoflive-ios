@@ -76,6 +76,7 @@
     
     if(self.trackList.count == 0){
         self.platformLabel.text = @"Keine Daten verfügbar";
+        self.size = CGSizeMake(self.frame.size.width, CGRectGetMaxY(self.platformLabel.frame));
         return;
     }
     

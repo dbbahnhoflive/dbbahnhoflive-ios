@@ -9,9 +9,4 @@
 
 @interface MBLabel : UILabel
 
-//@property (nonatomic, strong) NSString *htmlString;
-
-//- (void) convertFonts;
-+ (MBLabel *)labelWithTitle:(NSString *)title andText:(NSString *)text;
-
 @end

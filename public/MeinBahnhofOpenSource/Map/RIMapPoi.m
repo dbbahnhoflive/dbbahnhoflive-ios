@@ -129,6 +129,9 @@ static NSDictionary* levelCodeToNumber = nil;
     || [self.type isEqualToString:@"PLATFORM"] //naming in new api (without typo)
     || [self.type isEqualToString:@"Track"]; //naming in old api
 }
+-(BOOL)isLocker{
+    return [self.type isEqualToString:@"LOCKER"];
+}
 
 -(NSString *)allOpenTimes{
     NSMutableString* res = [[NSMutableString alloc] init];
@@ -403,7 +406,7 @@ static NSDictionary* levelCodeToNumber = nil;
         }
     }
 }
-+(NSArray*)createFilterItems{
++(NSArray<POIFilterItem*>*)createFilterItems{
     //return NSArray with POIFilterItem
     NSArray* filterItems = [RIMapPoi filterConfig];
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:filterItems.count];

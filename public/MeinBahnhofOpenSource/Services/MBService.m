@@ -37,6 +37,7 @@
         kServiceType_DBInfo: @"app_information",
         kServiceType_WLAN: @"rimap_wlan_grau",
         kServiceType_SEV: @"sev_bus",
+        kServiceType_Locker: @"rimap_schliessfach_grau",
         kServiceType_LocalTravelCenter: @"rimap_reisezentrum_grau",
         kServiceType_LocalDBLounge: @"app_db_lounge",
         kServiceType_LocalLostFound: @"app_fundservice",
@@ -106,13 +107,13 @@
                     status = @"";
                     break;
                 case MBPlatformAccessibilityType_AVAILABLE:
-                    status = @"Dieser Bahnhof bietet Ihnen stufenfreien Zugang.";
+                    status = @"Dieser Bahnhof bietet Ihnen einen stufenfreien Zugang zu den Bahnsteigen.";
                     break;
                 case MBPlatformAccessibilityType_NOT_AVAILABLE:
-                    status = @"Dieser Bahnhof bietet Ihnen leider <b>keinen</b> stufenfreien Zugang.";
+                    status = @"Dieser Bahnhof verfügt über <b>keinen</b> stufenfreien Zugang zu den Bahnsteigen.";
                     break;
                 case MBPlatformAccessibilityType_PARTIAL:
-                    status = @"Dieser Bahnhof bietet Ihnen <b>teilweise</b> stufenfreien Zugang.";
+                    status = @"Dieser Bahnhof bietet nur <b>teilweise</b> stufenfreien Zugang zu den Bahnsteigen. Für detaillierte Informationen wählen Sie bitte weiter unten auf dieser Seite ein Gleis aus.";
                     break;
                 default:
                     break;

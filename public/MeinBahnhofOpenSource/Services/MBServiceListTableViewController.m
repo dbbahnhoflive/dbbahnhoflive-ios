@@ -81,6 +81,8 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             self.trackingTitle = @"wlan";
         } else if([menuItem.type hasPrefix:kServiceType_SEV]){
             self.trackingTitle = @"schienenersatzverkehr";
+        } else if([menuItem.type isEqualToString:kServiceType_Locker]){
+            self.trackingTitle = @"locker";
         } else if([menuItem.type isEqualToString:kServiceType_Rating]){
             self.trackingTitle = nil;
             [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"bewerten"]];

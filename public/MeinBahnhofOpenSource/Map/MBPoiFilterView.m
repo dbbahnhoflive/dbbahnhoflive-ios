@@ -164,6 +164,7 @@
     if(self.filterTableViews.count <= 1){
         self.titleLabel.frame = CGRectMake(20, 0, self.frame.size.width, 50);
         self.titleLabel.text = @"Filter Einstellungen";
+        self.titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
         self.filterBackButton.alpha = 0;
     } else {
         self.filterBackButton.alpha = 1;

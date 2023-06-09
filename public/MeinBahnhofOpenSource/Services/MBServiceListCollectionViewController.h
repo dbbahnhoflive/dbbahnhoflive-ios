@@ -25,11 +25,13 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, assign) BOOL showsBackButton;
 
-@property (nonatomic, strong) MBStationTabBarViewController *tabBarViewController;
+@property (nonatomic, weak) MBStationTabBarViewController *tabBarViewController;
 
 /// @param type NSString @"info" for Bahnhofsinformationen, @"shopping" for Shoppen & Schlemmen
 - (instancetype)initWithType:(MBServiceCollectionType)type;
 
 - (NSArray *)prepareServices;
+
+-(void)reloadData;
 
 @end

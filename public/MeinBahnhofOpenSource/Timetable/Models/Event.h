@@ -23,6 +23,11 @@ enum EventType {
 @property (nonatomic, weak) Stop* stop;
 
 /*!
+ *  @brief  Event was marked with "hi=1" and should not be displayed
+ */
+@property (nonatomic) BOOL isHidden;
+
+/*!
  *  @brief  The time of the arrival/departure (raw)
  */
 @property (nonatomic, assign) double timestamp;

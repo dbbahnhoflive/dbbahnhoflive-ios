@@ -32,11 +32,7 @@
     self.scrollView.delegate = self;
     [self.view addSubview:self.scrollView];
     self.scrollView.pagingEnabled = YES;
-    if (@available(iOS 11.0, *)) {
-        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        // Fallback on earlier versions
-    }
+    self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     [self.view addSubview:self.scrollView];
     self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     
@@ -67,7 +63,7 @@
     
     NSInteger x = 8;
     for(MBNews* news in _newsList){
-        MBNewsContainerView* newsView = [[MBNewsContainerView alloc] initWithFrame:CGRectMake(x, 0, self.scrollView.frame.size.width-2*8, self.scrollView.frame.size.height)];
+        MBNewsContainerView* newsView = [[MBNewsContainerView alloc] initWithFrame:CGRectMake(x, 0, self.scrollView.frame.size.width-2*8, self.scrollView.frame.size.height) news:news];
         newsView.containerVC = self;
         [self.scrollView addSubview:newsView];
         [self.newsViews addObject:newsView];

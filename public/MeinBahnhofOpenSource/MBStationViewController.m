@@ -74,19 +74,12 @@
 
 @property (nonatomic, strong) UIRefreshControl *refresher;
 
-@property (nonatomic, strong) NSNumber *parkingDataAvailable;
 @property (nonatomic, strong) NSNumber *stationDataAvailable;
-@property (nonatomic, strong) NSNumber *mapPOIsAvailable;
-@property (nonatomic, strong) NSNumber *indoorMapLevelsAvailable;
-@property (nonatomic, strong) NSNumber *parkingOccupancyAvailable;
-@property (nonatomic, strong) NSNumber *einkaufDataAvailable;
 @property (nonatomic, strong) NSNumber *facilityDataAvailable;
 @property (nonatomic, strong) NSNumber *opnvDataAvailable;
-@property (nonatomic) BOOL finishedAllLoading;
 
 @property(nonatomic,strong) NSArray<MBOPNVStation*>* nearestStationsForOPNV;
 
-@property (nonatomic, strong) NSString *parkingOccupancy;
 @property (nonatomic) BOOL whiteNavBar;
 @property (nonatomic) CGFloat currentNavbarHeight;
 
@@ -155,12 +148,6 @@
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
     self.collectionView.backgroundColor = [UIColor db_f0f3f5];
-    if (@available(iOS 11.0, *)) {
-        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        // Fallback on earlier versions
-    }
-    
     self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.collectionView.contentInset = UIEdgeInsetsMake(STATION_NAVIGATION_PICTURE_HEIGHT, 8.0, 80.0, 8.0);//80 to keep space for map button, this is modified later after layout!
     
@@ -278,10 +265,7 @@
 
     if(self.station.isGreenStation){
         //increase insets at bottom to avoid collision with map button
-        UIEdgeInsets safeAreInsets = UIEdgeInsetsZero;
-        if (@available(iOS 11.0, *)) {
-            safeAreInsets = self.navigationController.view.safeAreaInsets;//self.view.safeAreaInsets;
-        }
+        UIEdgeInsets safeAreInsets = self.navigationController.view.safeAreaInsets;
         //NSLog(@"will appear with insets %@",NSStringFromUIEdgeInsets(safeAreInsets));
         self.collectionView.contentInset = UIEdgeInsetsMake(STATION_NAVIGATION_PICTURE_HEIGHT, 8.0, 80.0+40+safeAreInsets.top+safeAreInsets.bottom, 8.0);
     }
@@ -331,7 +315,7 @@
     f.size.height = f.size.height-8;
     f.origin.y = 0;
     self.fernVC.view.frame = f;
-    NSLog(@"self.station.occupancy %@",self.station.occupancy);
+    //NSLog(@"self.station.occupancy %@",self.station.occupancy);
     if(self.station.occupancy){
         [self.occupancyVC loadData];
         self.occupancyContainerView.hidden = NO;
@@ -719,16 +703,11 @@
     CGFloat maxHeight = STATION_NAVIGATION_PICTURE_HEIGHT;
     CGFloat minHeight = self.navigationController.navigationBar.frame.size.height;
     //NSLog(@"initial minHeight %f, distance %f",minHeight,distance);
-    if (@available(iOS 11.0, *)) {
-        // safe area + 2 points for red bar, for iPhoneX this is a bit higher than usual
-        // because of the camera area, for other iPhones this corresponds to the status bar,
-        CGFloat additionalHeight = self.view.safeAreaInsets.top + 2.0;
-        minHeight += additionalHeight;
-    } else {
-        // Fallback on earlier versions
-        CGFloat additionalHeight = [[UIApplication sharedApplication] statusBarFrame].size.height + 2.0;
-        minHeight += additionalHeight;
-    }
+    
+    // safe area + 2 points for red bar, for iPhoneX this is a bit higher than usual
+    // because of the camera area, for other iPhones this corresponds to the status bar,
+    CGFloat additionalHeight = self.view.safeAreaInsets.top + 2.0;
+    minHeight += additionalHeight;
     // do not manipulate the navigation bar if the scroll view content is too small
     if (scrollView.contentSize.height > self.view.frame.size.height - maxHeight) {
         if (nil != self.navigationController) {
@@ -846,6 +825,9 @@
     MBStationKachel* kachel = _kacheln[indexPath.section][indexPath.item];
     if(kachel.isGreenTeaser)
     {
+        if(UIAccessibilityIsVoiceOverRunning()){
+            [MBStationGreenTeaserCollectionViewCell openExternalLink];
+        }
         return;
     }
     if(kachel.isChatbotTeaser){
@@ -1033,66 +1015,45 @@
 
 -(void)didLoadIndoorMapLevels:(BOOL)success{
     NSLog(@"didLoadIndoorMapLevels: %d",success);
-    self.indoorMapLevelsAvailable = @(success);
-    
 }
 
 -(void)didLoadMapPOIs:(BOOL)success{
     NSLog(@"didLoadMapPOIs: %d, shops %lu",success,(unsigned long)self.station.riPois.count);
-    self.mapPOIsAvailable = @(success);
 
     if((success && self.station.hasShops) || self.station.hasPickPack){
         [self.tabBarViewController enableTabAtIndex:4];
     }
 }
 
--(void)didLoadParkingData:(BOOL)success{
-    NSLog(@"didLoadParkingData: %d",success);
-    if(_station.parkingInfoItems.count == 0){
-        success = NO;
-    }
-    self.parkingDataAvailable = @(success);
-    BOOL occupancyAvailable = NO;
-    for (MBParkingInfo *pinfo in _station.parkingInfoItems) {
-        occupancyAvailable = pinfo.hasPrognosis ? pinfo.hasPrognosis : occupancyAvailable;
-    }
-    self.parkingOccupancyAvailable = @(occupancyAvailable);
-}
-
-- (void)didLoadNewsData:(BOOL)success{
+- (void)didLoadNewsData{
     [self reloadStationData];
 }
 
--(void)didLoadParkingOccupancy:(BOOL)success{
-    // NSLog(@"didLoadParkingOccupancy: %d",success);
-    NSInteger allocation = 0;
-    NSString *allocationInfo = @"0";
-    BOOL closed = NO;
-    self.parkingOccupancyAvailable = @(NO);
-    for (MBParkingInfo *pinfo in _station.parkingInfoItems) {
-        if (pinfo.hasPrognosis) {
-            self.parkingOccupancyAvailable = @(YES);
-            if (closed || pinfo.allocationCategory.integerValue > allocation) {
-                allocation = pinfo.allocationCategory.integerValue;
-                closed = pinfo.isOutOfOrder;
-                if (closed) {
-                    allocationInfo = @"0";
-                } else {
-                    allocationInfo = [pinfo shortTextForAllocation];
-                }
-            }
-        }
+//async, called later
+-(void)didLoadSEVData{
+    [self refreshInfoView];
+}
+-(void)didLoadLockerData{
+    [self refreshInfoView];
+}
+-(void)didLoadParkingData{
+    [self refreshInfoView];
+}
+-(void)didLoadEinkaufsbahnhofStatus{
+    [self refreshInfoView];
+}
+-(void)refreshInfoView{
+    if([self infoViewIsVisible]){
+        [MBRootContainerViewController.currentlyVisibleInstance.infoVC reloadData];
     }
-    self.parkingOccupancy = allocationInfo;
-    
+}
+-(BOOL)infoViewIsVisible{
+    return MBRootContainerViewController.currentlyVisibleInstance.stationTabBarViewController.visibleViewController == MBRootContainerViewController.currentlyVisibleInstance.infoVC;
 }
 
 -(void)didLoadEinkaufData:(BOOL)success{
     NSLog(@"didLoadEinkaufData: %d, shop cats %@",success,self.station.einkaufsbahnhofCategories);
-    self.einkaufDataAvailable = @(success);
-    if (self.station.einkaufsbahnhofCategories.count == 0) {
-        // no einkauf shopping
-    } else {
+    if (self.station.einkaufsbahnhofCategories.count > 0) {
         [self.tabBarViewController enableTabAtIndex:4];
     }
 }
@@ -1106,7 +1067,6 @@
 
 -(void)didFinishAllLoading{
     NSLog(@"didFinishAllLoading");
-    self.finishedAllLoading = YES;
     
     if([self infoTabHasServices]){
         [self.tabBarViewController enableTabAtIndex:3];

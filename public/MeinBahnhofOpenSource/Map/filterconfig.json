@@ -28,9 +28,9 @@
         "presets": ["local_timetable STR"]
       },
       {
-        "title": "Schienenersatzverkehr",
+        "title": "Ersatzverkehr",
         "menucat": "Öffentlicher Nahverkehr",
-        "menusubcat": "Schienenersatzverkehr",
+        "menusubcat": "Ersatzverkehr",
         "presets": ["local_timetable SEV", "stationinfos"]
       }
     ]
@@ -132,7 +132,7 @@
         "title": "Gepäckaufbewahrung",
         "menucat": "Bahnhofseinrichtungen",
         "menusubcat": "Gepäckaufbewahrung",
-        "presets": ["locker"]
+        "presets": ["luggage"]
       },
       {
         "title": "Wlan",

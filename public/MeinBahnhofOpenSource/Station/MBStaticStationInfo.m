@@ -14,6 +14,7 @@
 #import "MBTravelcenter.h"
 #import "MBOSMOpeningHoursParser.h"
 #import "RIMapSEV.h"
+#import "MBLocker.h"
 
 @implementation MBStaticStationInfo
 
@@ -72,22 +73,63 @@
                 }
             }
         } else if([type isEqualToString:kServiceType_SEV]){
+            BOOL skipTitle = false;
+            if(station.sevPois.count == 1 && [station.sevPois.firstObject.text isEqualToString: SEV_TEXT_FALLBACK]){
+                skipTitle = true;
+            }
             NSString* headerText = station.sevPois.count > 1 ? @"An diesem Bahnhof finden Sie folgende Ersatzhaltestellen" : @"An diesem Bahnhof finden Sie folgende Ersatzhaltestelle";
-            NSMutableString* text = [NSMutableString stringWithFormat:@"<p>%@:</p>",headerText];
+            NSMutableString* text = [NSMutableString string];
+            if(station.hasStaticAdHocBox){
+                [text appendString:@"<p>Aufgrund von Bauarbeiten kommt es zwischen Würzburg und Nürnberg vom 26. Mai bis zum 11. September 2023 zu Einschränkungen im Zugverkehr.</p><p>Ein Ersatzverkehr mit Bussen ist eingerichtet.</p>"];
+            }
+            if(!skipTitle){
+                [text appendFormat:@"<p>%@:</p>",headerText];
+            }
             NSArray<NSArray<RIMapSEV *> *> * groups = [RIMapSEV groupSEVByWalkDescription:station.sevPois];
             for(NSArray<RIMapSEV*>* list in groups){
-                //all SEV in this group have the same walkDescription: just collect the title texts
-                NSMutableString* titles = [NSMutableString new];
-                for(RIMapSEV* sev in list){
-                    if(!UIAccessibilityIsVoiceOverRunning()){
-                        [titles appendString:@"• "];
+                if(skipTitle){
+                    //do we have walkDescription?
+                    if(list.firstObject.walkDescription){
+                        [text appendFormat:@"<p>Lagebeschreibung:<br>%@</p>", list.firstObject.walkDescription];
                     }
-                    [titles appendString:sev.text];
-                    if(sev != list.lastObject){
-                        [titles appendString:@"<br>"];
+                } else {
+                    //all SEV in this group have the same walkDescription: just collect the title texts
+                    NSMutableString* titles = [NSMutableString new];
+                    for(RIMapSEV* sev in list){
+                        if(!UIAccessibilityIsVoiceOverRunning()){
+                            [titles appendString:@"• "];
+                        }
+                        [titles appendString:sev.text];
+                        if(sev != list.lastObject){
+                            [titles appendString:@"<br>"];
+                        }
                     }
+                    [text appendFormat:@"<p><b>%@</b></p><p>Lagebeschreibung:<br>%@</p>", titles, list.firstObject.walkDescription];
                 }
-                [text appendFormat:@"<p><b>%@</b></p><p>Lagebeschreibung:<br>%@</p>", titles, list.firstObject.walkDescription];
+            }
+            if(station.hasStaticAdHocBox){
+                [text appendString:@"<p>Die Sanierung erfolgt in zwei Abschnitten. Zunächst wird die Strecke zwischen Rottendorf und Neustadt (Aisch) Bahnhof vom 26. Mai bis 06. August 2023 für den Zugverkehr komplett gesperrt. Anschließend erfolgt eine Sperrung der Strecke zwischen Neustadt (Aisch) Bahnhof und Fürth Hauptbahnhof vom 06. August bis 11. September 2023. Durch die Sperrung in dem zweiten genannten Zeitraum erfolgt auf der Strecke Markt Erlbach – Siegelsdorf – Fürth Hauptbahnhof zudem ebenfalls kein Zugverkehr.</p><p>Weiterführende Informationen finden Sie unter bahnhof.de.</p>"];
+            }
+            service.title = @"Ersatzverkehr";
+            service.descriptionText = text;
+        } else if([type isEqualToString:kServiceType_Locker]){
+            service.title = @"Schließfächer";
+            NSMutableString* text = [NSMutableString stringWithString:@"<p>"];
+            [text appendString:@"An diesem Bahnhof können Sie Ihr Gepäck sicher aufbewahren. "];
+            if(!UIAccessibilityIsVoiceOverRunning()){
+                [text appendString:@"Alle Größenangaben zu den Schließfächern sind L x B x H in cm. "];
+            } else {
+                [text appendString:@"Alle Größenangaben zu den Schließfächern sind Länge, Breite und Höhe in Zentimeter. "];
+            }
+            [text appendString:@"Bitte beachten Sie auch die Nutzungsbedingungen vor Ort."];
+            [text appendString:@"</p>"];
+            for(MBLocker* locker in station.lockerList){
+                [text appendFormat:@"<p><b>%@</b>",locker.headerText];
+                NSString* desc = [locker lockerDescriptionTextForVoiceOver:UIAccessibilityIsVoiceOverRunning()];
+                desc = [desc stringByReplacingOccurrencesOfString:@"\n" withString:@"<br>"];
+                [text appendString:@"<br>"];
+                [text appendFormat:@"%@</p>",desc];
+//                [text appendString:@"<br>"];
             }
             service.descriptionText = text;
         }

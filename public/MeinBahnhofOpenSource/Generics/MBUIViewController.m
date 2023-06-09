@@ -109,12 +109,6 @@
 }
 
 
-
-
-//- (void) showViewController:(UIViewController *)vc{
-//    [self presentViewController:vc animated:YES completion:nil];
-//}
-
 - (void) showWagenstandForUserInfo:(NSDictionary *)userInfo
 {
     // NSLog(@"load and display wagenstand for %@",userInfo);

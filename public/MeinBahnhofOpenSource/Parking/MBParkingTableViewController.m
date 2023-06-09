@@ -18,19 +18,22 @@
 #import "MBRoutingHelper.h"
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
+#import "MBStation.h"
 
 @interface MBParkingTableViewController () <MBMapViewControllerDelegate, MBParkingInfoDelegate>
 @property (nonatomic, strong) NSIndexPath *selectedRow;
 @property (nonatomic, assign) CGFloat additionalHeightForExpandedCell;
+@property(nonatomic,strong) NSArray* parkingList;
 
 @end
 
 @implementation MBParkingTableViewController
 
--(instancetype)init{
+-(instancetype)initWithStation:(MBStation*)station{
     self = [super init];
     if(self){
         self.trackingTitle = @"parkplaetze";
+        self.parkingList = station.parkingInfoItems;
     }
     return self;
 }
@@ -78,7 +81,6 @@
 
 #pragma mark UITableViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [self.tableView beginUpdates];
     MBParkingExpandableTableViewCell *tableCell = [self.tableView cellForRowAtIndexPath:indexPath];
     if (self.selectedRow && self.selectedRow.row == indexPath.row) {
         self.selectedRow = [NSIndexPath indexPathForRow:-1 inSection:-1];
@@ -94,14 +96,15 @@
         tableCell.expanded = YES;
         self.additionalHeightForExpandedCell = tableCell.bottomViewHeight + 4.0;
     }
-    [self.tableView endUpdates];
+    [self.tableView reloadData];
     [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
 #pragma mark - Table view data source
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [indexPath isEqual:self.selectedRow] ? 88.0 + self.additionalHeightForExpandedCell : 88.0;
+    CGFloat res = [indexPath isEqual:self.selectedRow] ? 88.0 + self.additionalHeightForExpandedCell : 88.0;
+    return res;
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {

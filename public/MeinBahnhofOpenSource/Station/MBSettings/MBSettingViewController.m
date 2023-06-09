@@ -182,7 +182,7 @@
             sw.on = NO;
         }]];
         [alert addAction:[UIAlertAction actionWithTitle:@"Löschen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_LAST_SEARCHES];
+            [NSUserDefaults.standardUserDefaults removeObjectForKey:SETTINGS_LAST_SEARCHES];
             sw.on = NO;
         }]];
         [self presentViewController:alert animated:YES completion:nil];

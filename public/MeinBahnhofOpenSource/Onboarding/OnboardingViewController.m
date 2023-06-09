@@ -212,10 +212,7 @@
         topHeight = 1350/3;//iphoneX
     }
     //NSLog(@"topHeight %f",topHeight);
-    UIEdgeInsets safeArea = UIEdgeInsetsZero;
-    if (@available(iOS 11.0, *)) {
-        safeArea = self.view.safeAreaInsets;
-    }
+    UIEdgeInsets safeArea = self.view.safeAreaInsets;
     //NSLog(@"safearea %f",safeArea.top);
     self.topImage.frame = CGRectMake(0, 0, self.view.frame.size.width, topHeight);
     self.topImage2.frame = self.topImage.frame;

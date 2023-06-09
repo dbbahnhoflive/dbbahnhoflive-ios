@@ -59,14 +59,25 @@
         [self.navigationButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
         [self.whiteBox addSubview:self.navigationButton];
 
-        
+        self.mainLabel.isAccessibilityElement = NO;
+        self.textLabel.isAccessibilityElement = NO;
+        self.subLabel.isAccessibilityElement  = NO;
+        self.numberLabel.isAccessibilityElement = NO;
+        self.isAccessibilityElement = true;
+        self.accessibilityTraits |= UIAccessibilityTraitButton;
+        self.accessibilityLabel = [NSString stringWithFormat:@"%@. %@ %@ %@",self.mainLabel.text,self.subLabel.text,self.textLabel.text,self.numberLabel.text];
+        self.accessibilityHint = @"Zum Öffnen eines externen Links doppeltippen.";
     }
     return self;
 }
 
--(void)buttonTapped:(id)sender{
++(void)openExternalLink{
     [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"oekostrom-teaser"]];
     [MBUrlOpening openURL:[NSURL URLWithString:@"https://gruen.deutschebahn.com/de/projekte/oekostrombahnhof"]];
+}
+
+-(void)buttonTapped:(id)sender{
+    [MBStationGreenTeaserCollectionViewCell openExternalLink];
 }
 
 - (void)layoutSubviews {

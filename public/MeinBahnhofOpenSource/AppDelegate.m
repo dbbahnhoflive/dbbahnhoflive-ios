@@ -44,7 +44,6 @@
     // Override point for customization after application launch.
     // NSLog(@"didFinishLaunching with %@",launchOptions);
     [Constants setup];
-    [self increaseAppStartCount];
 
     [self registerDefaultsFromSettingsBundle];
 
@@ -70,6 +69,7 @@
         NSLog(@"starting sentry %@",sentryDNS);
         [SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
             options.dsn = sentryDNS;
+            options.sendClientReports = false;
             //options.debug = @YES;
             //options.logLevel = kSentryLogLevelVerbose;
         }];
@@ -115,11 +115,11 @@
 }
 
 -(BOOL)trackingEnabled{
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"enabled_tracking"];
+    return [NSUserDefaults.standardUserDefaults boolForKey:@"enabled_tracking"];
 }
 -(BOOL)needsInitialPrivacyScreen{
     //return true;
-    return ![[NSUserDefaults standardUserDefaults] boolForKey:@"got_tracking_decisison"];
+    return ![NSUserDefaults.standardUserDefaults boolForKey:@"got_tracking_decisison"];
 }
 -(void)userFeedbackOnPrivacyScreen:(BOOL)enabledTracking{
     [NSUserDefaults.standardUserDefaults setBool:YES forKey:@"got_tracking_decisison"];
@@ -167,16 +167,6 @@
 
 }
 
-
-- (void) increaseAppStartCount
-{
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
-    NSNumber* count = [def objectForKey:@"APP_START_COUNTER"];
-    count = [NSNumber numberWithInteger:count.integerValue+1];
-    // NSLog(@"update count to %@",count);
-    [def setObject:count forKey:@"APP_START_COUNTER"];
-    [def synchronize];
-}
 
 - (void) applicationWillEnterForeground:(UIApplication *)application
 {
@@ -275,7 +265,7 @@
 
 - (void) registerDefaultsFromSettingsBundle
 {
-    NSUserDefaults *defs = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *defs = NSUserDefaults.standardUserDefaults;
 
     NSString *settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"bundle"];
 

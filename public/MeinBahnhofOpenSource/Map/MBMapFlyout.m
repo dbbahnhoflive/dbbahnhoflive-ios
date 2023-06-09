@@ -274,7 +274,7 @@
         case SEV:
         {
             RIMapSEV* sev = (RIMapSEV*)_payload;
-            self.titleLabel.text = @"Schienenersatzverkehr";
+            self.titleLabel.text = @"Ersatzverkehr";
             self.headerIcon.image = [UIImage db_imageNamed:@"rimap_sev"];
             y = [self addStatusLineWithIcon:nil text:sev.text color:[self colorBlack] font:UIFont.db_BoldFourteen externalLink:nil internalLink:nil orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
             y += 10;
@@ -308,6 +308,10 @@
             if(!isTrack){
                 //add the level string
                 y = [self addStatusLineWithIcon:nil text:[NSString stringWithFormat:@"%@",[RIMapPoi levelCodeToDisplayString:poi.riMapPoi.levelcode]] color:[self colorBlack] externalLink:nil orSwitch:nil atY:y];
+            }
+            if(riMapPoi.isLocker && self.station.lockerList.count > 0){
+                y += 10;
+                y = [self addStatusLineWithIcon:nil text:@"Informationen zu den Schließfächern finden Sie unter Bahnhofsinformationen" color:UIColor.blackColor font:[UIFont db_RegularFourteen] externalLink:nil internalLink:@selector(internalLink:) orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
             }
             //add internal links
             if(riMapPoi.isDBInfoPOI && self.station.stationDetails.hasDBInfo){
@@ -502,6 +506,8 @@
         searchString = CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO;
     } else if([self.payload isKindOfClass:RIMapSEV.class]){
         searchString = CONTENT_SEARCH_KEY_STATIONINFO_SEV;
+    } else if(self.poi.riMapPoi.isLocker){
+        searchString = CONTENT_SEARCH_KEY_STATIONINFO_LOCKER;
     }
     if(searchString){
         [self.viewController dismissViewControllerAnimated:YES completion:^{
@@ -636,7 +642,7 @@
         UILabel* timeLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, y, 60, 20)];
         [timeLabel setFont:[UIFont db_BoldSixteen]];
         [timeLabel setTextColor:[UIColor db_333333]];
-        timeLabel.text = stop.departure.formattedTime;
+        timeLabel.text = stop.departureEvent.formattedTime;
         [timeLabel sizeToFit];
         [self.moveableContentView addSubview:timeLabel];
         
@@ -703,7 +709,7 @@
         }
         y += 25;
 
-        NSLog(@"Train %@, %@, %@, %@",stop.departure.formattedTime, [stop formattedTransportType:event.lineIdentifier], event.actualStation, event.composedIrisMessage);
+        NSLog(@"Train %@, %@, %@, %@",stop.departureEvent.formattedTime, [stop formattedTransportType:event.lineIdentifier], event.actualStation, event.composedIrisMessage);
         
         if(stop == stopsForTrack.firstObject){
             //special case: the first item has always the height of the flyout
@@ -996,14 +1002,14 @@
                     // fill in data for "maxElements" stops
                     NSDictionary *abfahrtDict = [self.abfahrtLabels objectAtIndex:index];
                     UILabel *timeLabel = [abfahrtDict objectForKey:@"timeLabel"];
-                    timeLabel.text = stop.departure.formattedTime;
+                    timeLabel.text = stop.departureEvent.formattedTime;
                     [timeLabel sizeToFit];
                     timeLabel.hidden = NO;
                     UILabel *expectedTimeLabel = [abfahrtDict objectForKey:@"expectedTimeLabel"];
-                    expectedTimeLabel.text = stop.departure.formattedExpectedTime;
+                    expectedTimeLabel.text = stop.departureEvent.formattedExpectedTime;
                     [expectedTimeLabel sizeToFit];
                     expectedTimeLabel.hidden = NO;
-                    if(stop.departure.roundedDelay >= 5){
+                    if(stop.departureEvent.roundedDelay >= 5){
                         expectedTimeLabel.textColor = [UIColor db_mainColor];
                     } else {
                         expectedTimeLabel.textColor = [UIColor db_76c030];

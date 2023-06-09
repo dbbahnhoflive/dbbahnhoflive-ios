@@ -10,6 +10,5 @@
 @interface MBTimeTableOEPNVTableViewCell : UITableViewCell
 
 @property (nonatomic, strong) HafasDeparture *hafas;
-@property (nonatomic) BOOL expanded;
 
 @end

@@ -16,9 +16,6 @@
 
 @implementation HeadCell
 
-@synthesize head = _head;
-@synthesize waggon = _waggon;
-@synthesize train = _train;
 
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {

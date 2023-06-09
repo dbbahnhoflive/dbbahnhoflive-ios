@@ -9,16 +9,6 @@
 
 @interface NSString (MBString)
 
-- (NSMutableAttributedString*) attributedHtmlString;
-- (NSMutableAttributedString*) rawHtmlString;
-
-- (CGSize) calculateSizeConstrainedTo:(CGSize)constraints;
-- (CGSize) calculateSizeConstrainedTo:(CGSize)constraints andFont:(UIFont*)font;
-
-- (NSAttributedString*) convertFonts:(NSDictionary*)options;
-
-- (NSString *)MD5String;
-
-- (CGFloat)fontSizeWithFont:(UIFont *)font constrainedToSize:(CGSize)size;
+- (NSMutableAttributedString*)attributedStringFromHtml;
 
 @end

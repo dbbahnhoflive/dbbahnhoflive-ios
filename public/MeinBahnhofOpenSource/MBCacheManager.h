@@ -7,12 +7,10 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
-    MBCacheResponseRIMapStatus = 2,
-    MBCacheResponseRIMapPOIs = 3,
+    MBCacheResponseTypeInvalid = 0,
     MBCacheResponseParking = 4,
     MBCacheResponseEinkaufsbahnhof = 5,
     MBCacheResponseEinkaufsbahnhofOverview = 7,
-    MBCacheResponseTravelCenter = 8,
     MBCacheResponseNews = 9,
     MBCacheResponseRIMapPOIs07Api = 10,
     MBCacheResponseRIMapStatus07API = 11,
@@ -21,6 +19,10 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
     MBCacheResponseRISStationServices = 13,
 
     MBCacheResponseRIMapSEV07API = 14,
+
+    MBCacheResponseRISLocker = 15,
+
+    MBCacheResponseRISStopPlacesForEva = 16,
 
 };
 

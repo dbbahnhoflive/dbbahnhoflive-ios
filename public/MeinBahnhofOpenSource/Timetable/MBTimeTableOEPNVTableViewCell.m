@@ -5,7 +5,6 @@
 
 
 #import "MBTimeTableOEPNVTableViewCell.h"
-#import "MBStationListView.h"
 #import "HafasStopLocation.h"
 #import "MBUIHelper.h"
 
@@ -16,10 +15,6 @@
 @property (nonatomic, strong) UILabel *destLabel;
 @property (nonatomic, strong) UILabel *expectedTimeLabel;
 
-@property (nonatomic, strong) UIView *bottomView;
-@property (nonatomic, strong) MBStationListView *viaListView;
-
-@property (nonatomic,strong) UIActivityIndicatorView* act;
 
 @end
 
@@ -66,22 +61,9 @@
     
     [self.contentView addSubview:self.topView];
 
-    self.bottomView = [UIView new];
-    self.bottomView.hidden = YES;
-    self.bottomView.layer.shadowOffset = self.topView.layer.shadowOffset;
-    self.bottomView.layer.shadowColor = self.topView.layer.shadowColor;
-    self.bottomView.layer.shadowRadius = self.topView.layer.shadowRadius;
-    self.bottomView.layer.shadowOpacity = self.topView.layer.shadowOpacity;
+    self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
+    self.accessibilityHint = @"Zur Anzeige von Details doppeltippen.";
 
-    [self.contentView addSubview:self.bottomView];
-    
-    self.act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [self.act stopAnimating];
-    [self.bottomView addSubview:self.act];
-
-    self.viaListView = [[MBStationListView alloc] initWithFrame:CGRectZero];;
-    [self.bottomView addSubview:self.viaListView];
-    
 }
 
 - (void)layoutSubviews {
@@ -93,16 +75,11 @@
     self.destLabel.frame = CGRectMake(70, 16, self.frame.size.width-70-3*8, 20);
     self.lineLabel.frame = CGRectMake(self.destLabel.frame.origin.x, self.expectedTimeLabel.frame.origin.y, self.frame.size.width-self.destLabel.frame.origin.x-3*8, 20);
     
-    self.bottomView.hidden = !_expanded;
-    [self.bottomView setFrame:CGRectMake(8, self.topView.frame.origin.y+self.topView.frame.size.height+1.0, self.frame.size.width-2*8, self.viaListView.frame.size.height)];
-    
-    [self.act centerViewInSuperView];
 }
 
 - (void)prepareForReuse
 {
     [super prepareForReuse];
-    _expanded = NO;
 }
 
 - (void)setHafas:(HafasDeparture *)hafas {
@@ -120,33 +97,20 @@
     } else {
         self.expectedTimeLabel.textColor = [UIColor db_76c030];
     }
-//    [self.expectedTimeLabel sizeToFit];
-    //[self.delayLabel setWidth:40];//needs to be fixed for layout
-    if(hafas.stopLocationTitles){
-        [self.act stopAnimating];
-        self.viaListView.hidden = NO;
-        self.viaListView.stations = hafas.stopLocationTitles;
-    } else {
-        [self.act startAnimating];
-        self.viaListView.hidden = YES;
-        self.viaListView.stations = @[];
-    }
-    [self.viaListView setFrame:CGRectMake(0, 0, self.bottomView.frame.size.width, 92.0)];
+    
 }
 
 - (NSString *)accessibilityLabel
 {
     
-    NSString *viaStations = [self.viaListView.stations componentsJoinedByString:@", "];
     NSString* line = self.lineLabel.text;
     line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
 
-    return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@, %@",
+    return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@.",
             line,
             self.destLabel.text,
             self.timeLabel.text,
-            ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text]),
-            (viaStations.length > 0 ? [NSString stringWithFormat:@"über %@",viaStations] : @"")
+            ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text])
             ];
 }
 

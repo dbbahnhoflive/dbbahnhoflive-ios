@@ -71,11 +71,6 @@
 
 
 
-- (void)requestStopsForSearchterm:(NSString *)text withCoordinate:(BOOL)useCoordinat coordinate:(CLLocationCoordinate2D)coordinate completion:(void (^)(NSArray<MBOPNVStation*>* stopLocations))completion{
-    
-    completion(@[]);
-    
-}
 
 -(void)requestJourneyDetails:(HafasDeparture *)departure completion:(void(^)(HafasDeparture *, NSError *))completion{
     

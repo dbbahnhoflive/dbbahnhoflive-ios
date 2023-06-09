@@ -6,7 +6,7 @@
 		},
 
 		{
-			"descriptionText": "<p>Auf dem Bahnhof stehen Ihnen unsere mobilen Service-Mitarbeiter mit Rat und Tat zur Seite.<br>Achten Sie auf die rote Mütze mit der Aufschrift \"Service\".</p>",
+			"descriptionText": "<p>Auf dem Bahnhof stehen Ihnen unsere mobilen Service-Mitarbeitenden mit Rat und Tat zur Seite.<br>Die mobilen Service-Mitarbeitenden unterstützen Sie mit aktuellen Informationen und beantworten Ihnen Fragen auf Ihrer Reise. Bei Abweichungen, wie beispielsweise Verspätungen, erhalten Sie Reisealternativen und weiterführende Details.<br>Darüber hinaus unterstützt der mobile Service mobilitätseingeschränkte Reisende beim Ein-, Um- oder Aussteigen. Hierzu erhalten sie weitere Informationen unter <a href=\"mobilitaetsservice\">Mobilitätsservice</a>.</p>",
 			"title": "Mobiler Service",
 			"type": "mobiler_service"
 		},
@@ -30,13 +30,13 @@
 		},
 
 		{
-			"descriptionText": "<p>An diesem Bahnhof bieten wir Ihnen kostenloses WLAN an. Damit können Sie mit dem Smartphone oder Laptop surfen, E-Mails bearbeiten und vieles mehr.</p><p>Informationen zu den verschiedenen WLAN-Angeboten an unseren Bahnhöfen finden Sie <a href=\"https://www.bahnhof.de/bahnhof-de/service/WLAN-519242\">hier</a></p>",
+			"descriptionText": "<p>An diesem Bahnhof bieten wir Ihnen kostenloses WLAN an. Damit können Sie mit dem Smartphone oder Laptop surfen, E-Mails bearbeiten und vieles mehr.</p><p>Informationen zu den verschiedenen WLAN-Angeboten an unseren Bahnhöfen finden Sie <a href=\"https://www.bahnhof.de/service/wlan\">hier</a></p>",
 			"title": "WLAN",
 			"type": "wlan"
 		},
 
         {
-            "descriptionText": "<p>[STATUS]</p><p>Bei Fragen wenden Sie sich bitte an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>Die nachfolgend genannten Ausstattungsmerkmale dienen der barrierefreien Zugänglichkeit des Bahnhofs.",
+            "descriptionText": "<p>[STATUS]</p><p>Zu Informationen über die Barrierefreiheit des Bahnhofs oder bei weiteren Fragen wenden Sie Sich bitte an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>Die nachfolgend genannten Ausstattungsmerkmale dienen der barrierefreien Zugänglichkeit der Bahnsteige.",
             "title": "Barrierefreiheit",
             "type": "barrierefreiheit"
         },
@@ -72,7 +72,7 @@
          },
          
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/dbreiniger\">bahnhof.de/dbreiniger</a></p>",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/service/db-reinigungsteam\">bahnhof.de/service/db-reinigungsteam</a></p>",
              "title": "Verschmutzung und Defekte melden",
              "type": "verschmutzung_mitwhatsapp"
          },
@@ -82,7 +82,7 @@
              "type": "verschmutzung_ohnewhatsapp"
          },
          {
-             "descriptionText": "<p><b>Kontakt</b></p><p>Schreiben Sie uns, sollten Ihnen Unstimmigkeiten in der App auffallen.<br><dbactionbutton href=\"feedbackmail\">Kontakt aufnehmen</dbactionbutton></p></p>",
+             "descriptionText": "<p><b>Kontakt</b></p><p>Schreiben Sie uns, sollten Ihnen Unstimmigkeiten in der App auffallen.<br><dbactionbutton href=\"feedbackmail\">E-Mail</dbactionbutton></p></p>",
              "title": "Probleme mit der App melden",
              "type": "problemmelden"
          },

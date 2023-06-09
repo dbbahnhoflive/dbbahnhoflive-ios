@@ -115,12 +115,12 @@
     if(DEBUG_TUTORIAL){
         // NSLog(@"tutorial store status %@",status);
     }
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     [def setObject:status forKey:@"MBTUTORIAL_STATUS"];
     [def synchronize];
 }
 -(void)restoreStatus{
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     NSArray* status = [def objectForKey:@"MBTUTORIAL_STATUS"];
     if(status){
         for(NSDictionary* tutStatus in status){
@@ -145,7 +145,7 @@
 
 -(void)setUserDisabledTutorials:(BOOL)userDisabledTutorials{
     _userDisabledTutorials = userDisabledTutorials;
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     [def setBool:userDisabledTutorials forKey:@"MBTutorial.userDisabledTutorials"];
     [def synchronize];
 }
@@ -188,10 +188,7 @@
         AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
         UINavigationController* vc = (UINavigationController*) app.window.rootViewController;
         
-        CGFloat bottomSafeOffset = 0.0;
-        if (@available(iOS 11.0, *)) {
-            bottomSafeOffset = vc.view.safeAreaInsets.bottom;
-        }
+        CGFloat bottomSafeOffset = vc.view.safeAreaInsets.bottom;        
         view.viewYOffset = y+bottomSafeOffset;
         
         [vc.visibleViewController.view addSubview:view];

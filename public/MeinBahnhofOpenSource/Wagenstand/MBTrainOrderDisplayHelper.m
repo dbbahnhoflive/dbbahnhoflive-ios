@@ -87,9 +87,12 @@
         [queryValues setObject:event.originalPlatform forKey:@"platform"];
     }
     
-    NSString* dateString = [Wagenstand makeDateStringForTime:event.formattedTime];
+    NSString* dateString = nil;
+    if(event.formattedTime){
+        dateString = [Wagenstand makeDateStringForTime:event.formattedTime];
+    }
     
-    if ([Wagenstand isValidTrainTypeForIST:stop.transportCategory.transportCategoryType]) {
+    if (dateString && [Wagenstand isValidTrainTypeForIST:stop.transportCategory.transportCategoryType]) {
         // Request IST for ICE
         [self requestISTWagenstand:dateString forStop:stop withQueryValues:queryValues];
     } else {

@@ -13,7 +13,7 @@
 
 #import "MBTestHelper.h"
 #import "MBAFNetworkMock.h"
-
+#import "MBNetworkFactory.h"
 
 @interface MBRISStationsRequestManager()
 @property(nonatomic,strong) AFHTTPSessionManager* sessionManager;
@@ -36,12 +36,7 @@ static BOOL simulateSearchFailure = NO;
         } else {
             sharedClient.sessionManager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
         }
-        [sharedClient.sessionManager.requestSerializer setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
-
-        [sharedClient.sessionManager.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
-        [sharedClient.sessionManager.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
-        sharedClient.sessionManager.responseSerializer.acceptableContentTypes = [sharedClient.sessionManager.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
-
+        [MBNetworkFactory configureRISHeader:sharedClient.sessionManager];
 
     });
     return sharedClient;
@@ -285,8 +280,8 @@ static BOOL simulateSearchFailure = NO;
 
 #pragma mark Platform api
 
--(void)requestAccessibility:(NSString *)eva success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure{
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/platforms/%@?includeAccessibility=true",[Constants kDBAPI], [Constants kRISStationsPath],eva];
+-(void)requestAccessibility:(NSString *)stationId success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure{
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/platforms/by-key?includeAccessibility=true&keyType=STADA&key=%@",[Constants kDBAPI], [Constants kRISStationsPath], stationId];
     NSLog(@"RIS:Stations: %@",requestUrlWithParams);
     [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
@@ -319,28 +314,52 @@ static BOOL simulateSearchFailure = NO;
 
 
 -(void)requestEvaIdsForStation:(MBStationFromSearch*)station success:(void (^)(NSArray<NSString*>* evaIds))success failureBlock:(void (^)(NSError *))failure{
+    
+    MBCacheResponseType type = MBCacheResponseRISStopPlacesForEva;
+    MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:station.stationId type:type];
+    if(cacheState == MBCacheStateValid){
+        NSDictionary* cachedResponse = [[MBCacheManager sharedManager] cachedResponseForStationId:station.stationId type:type];
+        if(cachedResponse){
+            NSArray* evaIDs = [self getEvaIdsFromResponse:cachedResponse forStation:station.stationId];
+            if(evaIDs){
+                success(evaIDs);
+            } else {
+                failure(nil);
+            }
+            return;
+        }
+    }
+    //note: even thought we use the station name as the request parameter the caching works with the stationID!
     NSString* searchTerm = [station.title stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet letterCharacterSet]];
     NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-name/%@",[Constants kDBAPI], [Constants kRISStationsPath], searchTerm];
     NSLog(@"RIS:Stations: %@",requestUrlWithParams);
     [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
     } success:^(NSURLSessionTask *operation, id responseObject) {
-        
-        if([responseObject isKindOfClass:NSDictionary.class]){
-            NSArray* stations = [self parseResponse:responseObject];
-            for(MBStationFromSearch* searchResult in stations){
-                if([searchResult.stationId isEqualToNumber:station.stationId]){
-                    success(searchResult.eva_ids);
-                    return;
-                }
-            }
-            NSLog(@"Error: station not found in search");
+        NSArray* evaIDs = [self getEvaIdsFromResponse:responseObject forStation:station.stationId];
+        if(evaIDs){
+            [[MBCacheManager sharedManager] storeResponse:responseObject forStationId:station.stationId type:type];
+            success(evaIDs);
+        } else {
+            failure(nil);
         }
-        failure(nil);
     } failure:^(NSURLSessionTask *operation, NSError *error) {
         NSLog(@"risstations stopPlaces failed: %@",error.localizedDescription);
         failure(error);
     }];
+}
+
+-(NSArray*)getEvaIdsFromResponse:(NSDictionary*)responseObject forStation:(NSNumber*)stationId{
+    if([responseObject isKindOfClass:NSDictionary.class]){
+        NSArray* stations = [self parseResponse:responseObject];
+        for(MBStationFromSearch* searchResult in stations){
+            if([searchResult.stationId isEqualToNumber:stationId]){
+                return searchResult.eva_ids;
+            }
+        }
+        NSLog(@"Error: station not found in search");
+    }
+    return nil;
 }
 
 @end

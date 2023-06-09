@@ -65,6 +65,11 @@
     return self;
 }
 
+
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations{
+    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskPortraitUpsideDown;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -82,7 +87,7 @@
     self.searchTagResults = [NSMutableArray arrayWithCapacity:55];
     self.searchTagOPNVResults = [NSMutableArray arrayWithCapacity:10];
     
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     self.previousSearches = [[def objectForKey:@"CONTENT_SEARCH_LAST_SEARCH_WORDS"] mutableCopy];
     if(!self.previousSearches){
         self.previousSearches = [NSMutableArray arrayWithCapacity:20];
@@ -222,9 +227,6 @@
     if(!self.station.stationDetails.hasTravelNecessities){
         //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung Reisebedarf"];
     }
-    if(!self.station.stationDetails.hasLockerSystem){
-        //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung Schließfächer"];
-    }
     if(!self.station.stationDetails.hasTaxiRank){
         if(displaySomeEntriesOnlyWhenAvailable){
             [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Taxistand"];
@@ -240,7 +242,13 @@
         [self.searchTags removeObjectForKey:@"Bahnhofsinformation WLAN"];
     }
     if(!self.station.hasSEVStations){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Schienenersatzverkehr"];
+        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Ersatzverkehr"];
+    }
+    if(self.station.lockerList.count == 0){
+        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Schließfächer"];
+    } else {
+        //we have lockers, show only the Bahnhofsinformation link and remove the Ausstattung
+        [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Schließfächer"];
     }
     if(!self.station.stationDetails.hasDBInfo
        && !self.station.stationDetails.hasLocalServiceStaff
@@ -323,10 +331,7 @@
 -(void)viewDidLayoutSubviews{
     [super viewDidLayoutSubviews];
     
-    UIEdgeInsets safeArea = UIEdgeInsetsZero;
-    if (@available(iOS 11.0, *)) {
-        safeArea = self.view.safeAreaInsets;
-    }
+    UIEdgeInsets safeArea = self.view.safeAreaInsets;
     NSInteger x = CGRectGetMaxX(self.closeButton.frame)+5;
     self.stationLabel.frame = CGRectMake(x, 25+safeArea.top, self.view.frame.size.width-10-x, 30);
     [self.closeButton setGravityTop:self.stationLabel.frame.origin.y];
@@ -520,7 +525,7 @@
     }
 }
 -(void)storePreviousSearches{
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     [def setObject:self.previousSearches forKey:@"CONTENT_SEARCH_LAST_SEARCH_WORDS"];
 }
 
@@ -879,6 +884,8 @@
     cell.titleLabel.text = res.title;
     if([cell.titleLabel.text containsString:@" ICE "]){
         cell.titleLabel.accessibilityLabel = [res.title stringByReplacingOccurrencesOfString:@" ICE " withString:@" I C E "];
+    } else {
+        cell.titleLabel.accessibilityLabel = res.title;
     }
     NSString* icon = res.iconName;
     cell.iconView.image = [UIImage db_imageNamed:icon];

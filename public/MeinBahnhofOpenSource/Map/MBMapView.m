@@ -60,7 +60,6 @@
 @implementation MBMapView
 
 
-static const NSInteger outdoorLevel = 15;//changed from 17
 static const NSInteger skyHighLevel = 13;//changed from 14
 
 
@@ -68,7 +67,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 {
     GMSMapView *mapView = [[GMSMapView alloc] initWithFrame:frame];
     mapView.camera = cameraPosition;
-    //mapView.accessibilityElementsHidden = false;//enable this line to make markers accessible
+    mapView.accessibilityElementsHidden = false;//enable this line to make markers accessible
     mapView.frame = frame;
     mapView.selectedMarker = nil;
     self.showLinkToDetail = YES;
@@ -355,10 +354,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     }
 }
 
-- (BOOL) isOutdoor
-{
-    return self.currentZoomLevel <= outdoorLevel;
-}
 
 - (void) setFilterMarkerByLevel:(BOOL)filterByLevel
 {
@@ -417,7 +412,8 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 - (void) reloadMapView
 {
-    BOOL skyHigh = self.currentZoomLevel < skyHighLevel;
+    //are we zoomed out at sky level and there are no filters (or all are off?)
+    BOOL skyHigh = self.currentZoomLevel < skyHighLevel && self.filterValues.count == 0;
     if(skyHigh){
         [self clearIndoorPOIs];
         [self clearOutdoorPOIs];
@@ -435,6 +431,10 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     if (self.lastSelectedMarker) {
         [self configureMarkerIconDisabled:self.lastSelectedMarker];
     }
+}
+
+-(BOOL)hasActiveFilters{
+    return self.filterValues.count > 0;
 }
 
 
@@ -505,7 +505,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
                 MBMarker* outdoor = (MBMarker*)outdoorMarker;
                 NSNumber *markerLevelNumber = [outdoor.userData objectForKey:@"level"];
                 BOOL levelOk = !markerLevelNumber || markerLevelNumber.integerValue == level.levelNumber;
-                if(outdoor.zoomLevel <= zoomLevel && levelOk){
+                if(([self hasActiveFilters] || outdoor.zoomLevel <= zoomLevel) && levelOk){
                     outdoorMarker.map = self.gmsMapView;
                 } else {
                     if(levelOk && (outdoor.markerType == OEPNV_SELECTABLE || outdoor.markerType == STATION_SELECTABLE)){
@@ -538,7 +538,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
             if (!self.filterMarkerByLevel) {
                 indoorMarker.map = self.gmsMapView;
             } else {
-                if (level.levelNumber == [markerLevelNumber integerValue] && indoorMarker.zoomLevel <= zoomLevel) {
+                if (level.levelNumber == [markerLevelNumber integerValue] && ([self hasActiveFilters] || indoorMarker.zoomLevel <= zoomLevel)) {
                     indoorMarker.map = self.gmsMapView;
                 }
             }
@@ -808,6 +808,24 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     [self setIndoorMarkers:finalIndoorMarker];
     [self updateOutdoorMarkers:finalOutdorMarker];
     self.allIndoorAndOutdoorMarkersForCurrentFilter = [[finalIndoorMarker arrayByAddingObjectsFromArray:finalOutdorMarker] mutableCopy];
+    if(self.filterValues.count > 1){
+        self.allIndoorAndOutdoorMarkersForCurrentFilter = [self.allIndoorAndOutdoorMarkersForCurrentFilter sortedArrayUsingComparator:^NSComparisonResult(MBMarker* _Nonnull obj1, MBMarker* _Nonnull obj2) {
+            NSInteger filterIndex = [self.filterValues indexOfObject:obj1.category];
+            if(filterIndex == NSNotFound){
+                //must be 2nd category
+                filterIndex = [self.filterValues indexOfObject:obj1.secondaryCategory];
+            }
+            NSInteger filterIndex2 = [self.filterValues indexOfObject:obj2.category];
+            if(filterIndex2 == NSNotFound){
+                //must be 2nd category
+                filterIndex2 = [self.filterValues indexOfObject:obj2.secondaryCategory];
+            }
+            if(filterIndex == filterIndex2){
+                return NSOrderedSame;
+            }
+            return filterIndex < filterIndex2 ? NSOrderedAscending : NSOrderedDescending;
+        }];
+    }
 
     [self reloadMapView];
 }

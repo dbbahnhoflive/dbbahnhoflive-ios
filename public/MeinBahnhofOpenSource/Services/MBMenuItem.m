@@ -33,6 +33,7 @@
         @"aufzuegeundfahrtreppen": @"app_aufzug",
         kServiceType_WLAN : @"rimap_wlan_grau",
         kServiceType_SEV: @"sev_bus",
+        kServiceType_Locker: @"rimap_schliessfach_grau",
         kServiveType_Dirt_Whatsapp: @"verschmutzungmelden",
         kServiceType_Dirt_NoWhatsapp: @"verschmutzungmelden",
         kServiceType_Rating: @"app_bewerten",

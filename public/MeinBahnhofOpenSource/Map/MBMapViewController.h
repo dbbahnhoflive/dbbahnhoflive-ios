@@ -17,6 +17,8 @@
 #define PRESET_ELEVATORS @"elevators"
 #define PRESET_PARKING @"parking"
 #define PRESET_SEV @"local_timetable SEV"
+#define PRESET_LOCKER @"locker"
+#define PRESET_LUGGAGE @"luggage"
 
 //used when opening the map for the shopping categories
 #define PRESET_SHOPCAT_GROCERIES @"shop_groceries"

@@ -19,7 +19,6 @@
 
 @implementation POIFilterTableCell
 
-@synthesize item = _item;
 
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {

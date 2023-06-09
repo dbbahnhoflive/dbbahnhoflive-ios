@@ -24,6 +24,7 @@
 #import "MBParkingOccupancyManager.h"
 #import "RIMapManager2.h"
 #import "RIMapSEVManager.h"
+#import "MBLockerRequestManager.h"
 #import "MBContentSearchResult.h"
 
 #import "FacilityStatusManager.h"
@@ -35,7 +36,6 @@
 
 #import "MBRISStationsRequestManager.h"
 #import "MBNewsRequestManager.h"
-#import "MBEinkaufsbahnhofManager.h"
 #import "MBStationOccupancyRequestManager.h"
 #import "MBSettingViewController.h"
 #import "MBUIHelper.h"
@@ -127,6 +127,9 @@
 -(MBTimetableViewController *)timetableVC{
     return self.timetableViewController;
 }
+-(MBServiceListCollectionViewController*)infoVC{
+    return self.infoServiceListViewController;
+}
 
 - (void)dealloc
 {
@@ -135,6 +138,7 @@
 
 #pragma mark MBStationTabBarViewControllerDelegate
 - (void)goBackToSearch {
+    [[TimetableManager sharedManager] resetTimetable];
     [self.navigationController popViewControllerAnimated:YES];
     AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
     if([app.navigationController.topViewController isKindOfClass:[MBStationSearchViewController class]]){
@@ -232,41 +236,30 @@
     
     BOOL requestNewsAndCoupons = NO;
     BOOL requestParking = YES;
-    BOOL requestOccupancy = YES;
     
-    _openRequests = 6;
-    // - StationData (RIS:Station)
-    // - RIMapStatus
-    // - EinkaufsbahnhofOverview
+    _openRequests = 5;
+    // - StationData (RIS:Station): Station.stationDetails
+    // - RIMapStatus (Station.levels)
     // - MapPOIs
-    // - RiMaps SEV
     // - FacilityStatus
-    if(requestParking){
-        _openRequests = _openRequests+1;
-    }
+    // - Occupancy in station
     
-    if(requestNewsAndCoupons){
-        //NOTE: news does not count as a request to wait for, the inferface can be buildup before the api answers. Reason for this is a large delay in the api when its offline (30s) which would block buildup of the interface.
-        //_openRequests = _openRequests+1;
-    }
-    if(requestOccupancy){
-        _openRequests = _openRequests+1;
-    }
+    //the following are requested, but not required for H1 layout setup. Those marked with (*) show up in the Info-tab and search:
+    // - RiMaps SEV (*)
+    // - RIS:StationEquipments (locker) (*)
+    // - Parking (*)
+    // - ParkingOccupancy (*)
+    // - EinkaufsbahnhofOverview (*) - only used for the isEinkaufsbahnhof-Flag
+    // - News
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSNumber* requestId = station.mbId;
-        //NSString* mainEva = station.stationEvaIds.firstObject;
-        //if(mainEva){
-        //    requestId = [NSNumber numberWithLongLong:mainEva.longLongValue];
-        //}
         
         if([self.rootDelegate respondsToSelector:@selector(willStartLoadingData)] && del == self.rootDelegate){
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.rootDelegate willStartLoadingData];
             });
         }
-
-        [[HafasCacheManager sharedManager] addKnownEvaIds:station.stationEvaIds];
 
         [[MBRISStationsRequestManager sharedInstance] requestStationData:requestId forcedByUser:forcedByUser success:^(MBStationDetails *response) {
             
@@ -296,8 +289,10 @@
 
         [self requestOccupancy:station forcedByUser:forcedByUser];
         
-        [self loadEinkaufsbahnhofListStation:station forcedByUser:forcedByUser del:del];
-
+        if(station.hasStaticAdHocBox){
+            station.newsList = [MBNews staticInfoData];
+        }
+        
         if(requestNewsAndCoupons){
             [[MBNewsRequestManager sharedInstance] requestNewsForStation:station.mbId forcedByUser:forcedByUser success:^(MBNewsResponse *response) {
                 //NSLog(@"loaded news: %@",response.currentNewsItems);
@@ -307,23 +302,14 @@
                 //debugdata:
                 //station.newsList = [MBNews debugData]; station.couponsList = station.newsList;
                 
-                if([self.rootDelegate respondsToSelector:@selector(didLoadNewsData:)] && del == self.rootDelegate){
+                if(station.newsList.count > 0 && [self.rootDelegate respondsToSelector:@selector(didLoadNewsData)] && del == self.rootDelegate){
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadNewsData:YES];
+                        [self.rootDelegate didLoadNewsData];
                     });
                 }
                 
-                //[self changeOpenRequests:-1];
             } failureBlock:^(NSError *error) {
                 NSLog(@"news failure: %@",error);
-                
-                if([self.rootDelegate respondsToSelector:@selector(didLoadNewsData:)] && del == self.rootDelegate){
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadNewsData:NO];
-                    });
-                }
-                
-                //[self changeOpenRequests:-1];
             }];
         }
 
@@ -334,15 +320,6 @@
                 
                 station.parkingInfoItems = parkingInfoItems;
                 
-                if([self.rootDelegate respondsToSelector:@selector(didLoadParkingData:)] && del == self.rootDelegate){
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadParkingData:YES];
-                    });
-                }
-
-                //[self changeOpenRequests:+1];//the next request
-                //[self changeOpenRequests:-1];//for this one
-
                 dispatch_group_t group = dispatch_group_create();
                 dispatch_group_enter(group);
                 __block BOOL occupancySuccess = YES;
@@ -370,21 +347,16 @@
                 dispatch_group_leave(group);
                 
                 dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-                    if([self.rootDelegate respondsToSelector:@selector(didLoadParkingOccupancy:)] && del == self.rootDelegate){
+                    
+                    if(station.parkingInfoItems.count > 0 && [self.rootDelegate respondsToSelector:@selector(didLoadParkingData)] && del == self.rootDelegate){
                         dispatch_async(dispatch_get_main_queue(), ^{
-                            [self.rootDelegate didLoadParkingOccupancy:occupancySuccess];
+                            [self.rootDelegate didLoadParkingData];
                         });
                     }
-                    [self changeOpenRequests:-1];
+
                 });
                 
             } failureBlock:^(NSError *error) {
-                if([self.rootDelegate respondsToSelector:@selector(didLoadParkingData:)] && del == self.rootDelegate){
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadParkingData:NO];
-                    });
-                }
-                [self changeOpenRequests:-1];
             }];
         }
 
@@ -398,13 +370,10 @@
                     [self.rootDelegate didLoadMapPOIs:YES];
                 });
             }
-            if(pois.count == 0){
-                NSLog(@"missing ripoi, fallback to einkaufsbahnhof");
-                [self loadEinkaufsbahnhofStation:station forcedByUser:forcedByUser del:del];
-            } else {
+            if(pois.count != 0){
                 if([self.rootDelegate respondsToSelector:@selector(didLoadEinkaufData:)] && del == self.rootDelegate){
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadEinkaufData:NO];
+                        [self.rootDelegate didLoadEinkaufData:YES];
                     });
                 }
             }
@@ -416,16 +385,44 @@
                     [self.rootDelegate didLoadMapPOIs:NO];
                 });
             }
-            NSLog(@"failure ripoi, fallback to einkaufsbahnhof");
-            [self loadEinkaufsbahnhofStation:station forcedByUser:forcedByUser del:del];
             [self changeOpenRequests:-1];
         }];
         
+        if(station.hasStaticAdHocBox){
+            station.sevPois = @[[[RIMapSEV alloc] initWithDict:@{}]];
+        }
         [RIMapSEVManager.shared requestSEV:station.mbId forcedByUser:forcedByUser success:^(NSArray<RIMapSEV *> * _Nonnull list) {
             station.sevPois = list;
-            [self changeOpenRequests:-1];
+            
+            if(station.hasStaticAdHocBox && list.count == 0){
+                //fallback, use empty object
+                station.sevPois = @[[[RIMapSEV alloc] initWithDict:@{}]];
+            }
+            
+            if(list.count > 0 && [self.rootDelegate respondsToSelector:@selector(didLoadSEVData)] && del == self.rootDelegate){
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.rootDelegate didLoadSEVData];
+                });
+            }
         } failureBlock:^(NSError * _Nullable error) {
-            [self changeOpenRequests:-1];
+            
+        }];
+        
+        [MBLockerRequestManager.shared requestLocker:station.mbId forcedByUser:forcedByUser success:^(NSArray<MBLocker *> * _Nonnull list) {
+            /*NSLog(@"lockers:");
+            for(MBLocker* locker in list){
+                NSLog(@"%@",locker.headerText);
+                NSLog(@"%@",[locker lockerDescriptionTextForVoiceOver:false]);
+                NSLog(@"--\n");
+            }*/
+            station.lockerList = list;
+            NSLog(@"didLoad locker");
+            if(list.count > 0 && [self.rootDelegate respondsToSelector:@selector(didLoadLockerData)] && del == self.rootDelegate){
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.rootDelegate didLoadLockerData];
+                });
+            }
+        } failureBlock:^(NSError * _Nullable error) {
         }];
         
         [[FacilityStatusManager client] requestFacilityStatus:station.mbId success:^(NSArray *facilityStatusItems) {
@@ -469,7 +466,7 @@
 
 -(void)requestMapStationInfo:(MBStation*)station forcedByUser:(BOOL)forcedByUser del:(NSObject*)del{
     //request map-station info
-    [[RIMapManager2 client] requestMapStatus:station.mbId osm:station.useOSM eva:station.stationEvaIds.firstObject forcedByUser:forcedByUser success:^(NSArray<LevelplanWrapper*> *levels) {
+    [[RIMapManager2 client] requestMapStatus:station.mbId osm:station.useOSM forcedByUser:forcedByUser success:^(NSArray<LevelplanWrapper*> *levels) {
         // NSLog(@"got map levels: %@",levels);
         station.levels = levels;
         if([self.rootDelegate respondsToSelector:@selector(didLoadIndoorMapLevels:)] && del == self.rootDelegate){
@@ -495,7 +492,7 @@
             station.occupancy = response;
             [self changeOpenRequests:-1];
         } failureBlock:^(NSError *error) {
-            NSLog(@"no occupancy: %@",error);
+            //NSLog(@"no occupancy: %@",error);
             [self changeOpenRequests:-1];
         }];
     } else {
@@ -503,34 +500,6 @@
     }
 }
 
-
--(void)loadEinkaufsbahnhofStation:(MBStation*)station forcedByUser:(BOOL)forcedByUser del:(NSObject*)del{
-    [self changeOpenRequests:+1];
-    [[MBEinkaufsbahnhofManager sharedManager] requestEinkaufPOI:station.mbId forcedByUser:forcedByUser success:^(NSArray *categories) {
-        station.einkaufsbahnhofCategories = categories;
-        if([self.rootDelegate respondsToSelector:@selector(didLoadEinkaufData:)] && del == self.rootDelegate){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.rootDelegate didLoadEinkaufData:YES];
-            });
-        }
-        [self changeOpenRequests:-1];
-    } failureBlock:^(NSError *error) {
-        if([self.rootDelegate respondsToSelector:@selector(didLoadEinkaufData:)] && del == self.rootDelegate){
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.rootDelegate didLoadEinkaufData:NO];
-            });
-        }
-        [self changeOpenRequests:-1];
-    }];
-}
--(void)loadEinkaufsbahnhofListStation:(MBStation*)station forcedByUser:(BOOL)forcedByUser del:(NSObject*)del{
-    [[MBEinkaufsbahnhofManager sharedManager] requestAllEinkaufsbahnhofIdsForcedByUser:forcedByUser success:^(NSArray *idList) {
-        station.isEinkaufsbahnhof = [idList containsObject:station.mbId];
-        [self changeOpenRequests:-1];
-    } failureBlock:^(NSError *error) {
-        [self changeOpenRequests:-1];
-    }];
-}
 
 
 - (void) showAlertForStationDownloadFailed
@@ -631,6 +600,14 @@
     [self.timetableViewController showTrack:track trainOrder:trainStop];
 }
 -(void)handleSearchResult:(MBContentSearchResult*)search{
+    //close a possible overlay on H1 first
+    if(self.stationContainerViewController.presentedViewController != nil){
+        [self.stationContainerViewController dismissViewControllerAnimated:true completion:^{
+            [self handleSearchResult:search];
+        }];
+        return;
+    }
+
     if(search.isTimetableSearch){
         [self.timetableViewController handleSearchResult:search];
         [self selectTimetableTab];
@@ -682,10 +659,6 @@
 -(void)cleanup{
     NSLog(@"cleanup");
     self.rootDelegate = nil;
-    self.currentViewController = nil;
-    self.stationContainerViewController.tabBarViewController = nil;
-    [self.stationContainerViewController removeFromParentViewController];
-    self.stationContainerViewController = nil;
     [self.timetableViewController removeFromParentViewController];
     self.timetableViewController = nil;
     self.stationTabBarViewController.viewControllers = nil;
@@ -696,6 +669,10 @@
     self.shopServiceListViewController = nil;
     self.infoServiceListViewController.tabBarViewController = nil;
     self.infoServiceListViewController = nil;
+    self.stationContainerViewController.tabBarViewController = nil;
+    [self.stationContainerViewController removeFromParentViewController];
+    self.stationContainerViewController = nil;
+    self.currentViewController = nil;
 }
 
 @end

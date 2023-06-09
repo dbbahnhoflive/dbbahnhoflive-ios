@@ -22,6 +22,8 @@ typedef NS_ENUM(NSUInteger, MBNewsType) {
 
 @interface MBNews : NSObject
 
+@property(nonatomic,strong) NSString* headerOverwrite;
+
 -(BOOL)validWithData:(NSDictionary*)json;
 
 -(nullable UIImage*)image;
@@ -35,6 +37,7 @@ typedef NS_ENUM(NSUInteger, MBNewsType) {
 -(NSComparisonResult)compare:(MBNews *)news;
 
 +(NSArray*)debugData;
++(NSArray*)staticInfoData;
 
 @end
 

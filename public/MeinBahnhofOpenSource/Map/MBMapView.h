@@ -100,4 +100,6 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 -(void)updatePositionAndZoomForMarker:(MBMarker*)marker animated:(BOOL)animated;
 -(MBMarker*)findMarkerForPOI:(id)poi;
 -(NSArray<MBMarker*>*)visiblePOIList;
+
+-(BOOL)hasActiveFilters;
 @end

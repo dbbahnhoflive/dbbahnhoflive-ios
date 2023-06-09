@@ -86,6 +86,7 @@
     CGFloat originLeft = 16.0;
     self.abfahrtLabels = [NSMutableArray new];
     for (int i = 0; i < 3; i++) {
+        //NOTE: the labels are layouted later, origins here are not used!
         NSMutableDictionary *abfahrtDict = [NSMutableDictionary new];
         UILabel *timeLabel = [[UILabel alloc] init];
         timeLabel.font = [UIFont db_BoldSixteen];
@@ -119,10 +120,6 @@
         [abfahrtDict setObject:destLabel forKey:@"destLabel"];
         [destLabel setGravityTop:originTop];
         [destLabel setRight:timeLabel withPadding:30.0];
-        CGFloat labelWidth = self.frame.size.width - originLeft - timeLabel.frame.size.width - 30.0 - originLeft;
-        CGRect destFrame = destLabel.frame;
-        destFrame.size.width = labelWidth;
-        destLabel.frame = destFrame;
         UILabel *lineLabel = [UILabel new];
         lineLabel.font = [UIFont db_RegularFourteen];
         lineLabel.textColor = [UIColor db_787d87];
@@ -250,11 +247,15 @@
     [self.favButton setGravityTop:4];
     [self.favButton setGravityRight:6-3];
     
-    self.departureContainer.frame = CGRectMake(0, 50, self.frame.size.width, 194);
+    self.departureContainer.frame = CGRectMake(0, 50, self.frame.size.width, MBStationPickerTableViewCell.departureContainerHeight);
     
     [self.spinner centerViewVerticalInSuperView];
     [self.spinner centerViewHorizontalInSuperView];
 
+}
+
++(NSInteger)departureContainerHeight{
+    return ISIPAD ? 210 : 194;
 }
 
 -(void)favBtnPressed:(UIButton*)btn{
@@ -445,6 +446,8 @@
         destLabel.lineBreakMode = NSLineBreakByTruncatingTail;
         [destLabel sizeToFit];
         [destLabel setRight:timeLabel withPadding:30.0];
+        CGFloat labelWidth = self.frame.size.width - timeLabel.frame.origin.x - timeLabel.frame.size.width - 30.0 - timeLabel.frame.origin.x;
+        destLabel.width = labelWidth;
         destLabel.hidden = NO;
         UILabel *platformLabel = [abfahrtDict objectForKey:@"platformLabel"];
         platformLabel.hidden = YES;
@@ -496,14 +499,14 @@
             // fill in data for "maxElements" stops
             NSDictionary *abfahrtDict = [self.abfahrtLabels objectAtIndex:index];
             UILabel *timeLabel = [abfahrtDict objectForKey:@"timeLabel"];
-            timeLabel.text = stop.departure.formattedTime;
+            timeLabel.text = stop.departureEvent.formattedTime;
             [timeLabel sizeToFit];
             timeLabel.hidden = NO;
             UILabel *expectedTimeLabel = [abfahrtDict objectForKey:@"expectedTimeLabel"];
-            expectedTimeLabel.text = stop.departure.formattedExpectedTime;
+            expectedTimeLabel.text = stop.departureEvent.formattedExpectedTime;
             [expectedTimeLabel sizeToFit];
             expectedTimeLabel.hidden = NO;
-            if(stop.departure.roundedDelay >= 5){
+            if(stop.departureEvent.roundedDelay >= 5){
                 expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
                 expectedTimeLabel.textColor = [UIColor db_76c030];
@@ -516,7 +519,7 @@
             [platformLabel setGravityRight:timeLabel.frame.origin.x];
             platformLabel.hidden = NO;
             platformLabel.textColor = [UIColor db_787d87];
-            if(stop.departure.changedPlatform){
+            if(stop.departureEvent.changedPlatform){
                 platformLabel.textColor = [UIColor db_mainColor];
             }
             
@@ -533,6 +536,8 @@
             destLabel.text = event.actualStation;
             [destLabel sizeToFit];
             [destLabel setRight:timeLabel withPadding:30.0];
+            CGFloat labelWidth = self.frame.size.width - timeLabel.frame.origin.x - timeLabel.frame.size.width - 30.0 - timeLabel.frame.origin.x;
+            destLabel.width = labelWidth;
             destLabel.hidden = NO;
             
             UIImageView* warnIcon = [abfahrtDict objectForKey:@"warnIcon"];

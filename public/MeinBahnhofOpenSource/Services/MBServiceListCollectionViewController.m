@@ -167,8 +167,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                     [self collectionView:self.collectionView didSelectItemAtIndexPath:servicePath];
                 }
             } else if(self.searchResult.isParkingSearch){
-                MBParkingTableViewController* vc = [MBParkingTableViewController new];
-                [vc setParkingList:self.station.parkingInfoItems];
+                MBParkingTableViewController* vc = [[MBParkingTableViewController alloc] initWithStation:self.station];
                 [self.navigationController pushViewController:vc animated:NO];
             } else if(self.searchResult.isSteplessAccessSearch){
                 [self pushServiceViewForType:kServiceType_Barrierefreiheit];
@@ -180,6 +179,8 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 [self.navigationController pushViewController:facilityVC animated:NO];
             } else if(self.searchResult.isSEVSearch){
                 [self pushServiceViewForType:kServiceType_SEV];
+            } else if(self.searchResult.isLockerSearch){
+                [self pushServiceViewForType:kServiceType_Locker];
             }
         }
         self.searchResult = nil;
@@ -282,6 +283,11 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     self.isPrepared = YES;
 }
 
+-(void)reloadData{
+    self.isPrepared = false;
+    [self prepareForDisplay];
+}
+
 - (void) viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -297,8 +303,9 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     }
     
     if (self.tabBarViewController) {
+        __weak MBServiceListCollectionViewController* vcWeak = self;
         [MBUIViewController addBackButtonToViewController:self andActionBlockOrNil:^{
-            [self.tabBarViewController selectViewControllerAtIndex:1];
+            [vcWeak.tabBarViewController selectViewControllerAtIndex:1];
         }];
     }
     
@@ -488,10 +495,18 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     if(self.station.hasSEVStations){
         MBService* sevService = [MBStaticStationInfo serviceForType:kServiceType_SEV withStation:_station];
         MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": kServiceType_SEV,
-                                                                            @"title": @"Schienenersatzverkehr",
+                                                                            @"title": @"Ersatzverkehr",
                                                                             @"services": @[sevService],
                                                                             @"position": @"9"} error:nil];
         [infoServices addObject:sevItem];
+    }
+    if(self.station.lockerList.count > 0){
+        MBService* lockerService = [MBStaticStationInfo serviceForType:kServiceType_Locker withStation:_station];
+        MBMenuItem *lockerItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": kServiceType_Locker,
+                                                                            @"title": @"Schließfächer",
+                                                                            @"services": @[lockerService],
+                                                                            @"position": @"10"} error:nil];
+        [infoServices addObject:lockerItem];
     }
     
     if(filteredInfoServices.count > 0){
@@ -660,8 +675,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
             vc = facilityVC;
             trackingTitle = facilityVC.trackingTitle;
         } else if ([menuItem.type isEqualToString:kServiceType_Parking]) {
-            MBParkingTableViewController* pc = [MBParkingTableViewController new];
-            [pc setParkingList:self.station.parkingInfoItems];
+            MBParkingTableViewController* pc = [[MBParkingTableViewController alloc] initWithStation:self.station];
             vc = pc;
             trackingTitle = pc.trackingTitle;
         } else {

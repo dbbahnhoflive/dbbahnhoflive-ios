@@ -235,7 +235,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     NSString *appVersionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     NSString *savedAppVersion = [def objectForKey:@"onboarding_version_info"];
     BOOL didSeeTutorial = [def boolForKey:@"did_see_tutorial"];
     if(didSeeTutorial && savedAppVersion && ![savedAppVersion isEqualToString:appVersionString] && [appVersionString isEqualToString:@"2.6.0"]){
@@ -327,7 +327,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     
     _currentType = MBStationSearchTypeTextSearch;
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     if([def objectForKey:@"LAST_SEARCH_TYPE"]){
         _currentType = [[def objectForKey:@"LAST_SEARCH_TYPE"] integerValue];
     }
@@ -599,7 +599,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 -(void)setCurrentType:(MBStationSearchType)currentType{
     _currentType = currentType;
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     [def setObject:[NSNumber numberWithInteger:_currentType] forKey:@"LAST_SEARCH_TYPE"];
 }
 -(void)configureCurrentType{
@@ -733,7 +733,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         self.stationSearchInputField.delegate = self;
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Löschen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:SETTINGS_LAST_SEARCHES];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:SETTINGS_LAST_SEARCHES];
         btn.hidden = YES;
         [self fillPickerWithLastStations];
         [self.searchResultTableView reloadData];
@@ -881,11 +881,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     [self.mapFloatingBtn setGravityRight:10];
     
-    // special action for iOS11
-    CGFloat bottomSafeOffset = 0.0;
-    if (@available(iOS 11.0, *)) {
-        bottomSafeOffset = self.view.safeAreaInsets.bottom;
-    }
+    CGFloat bottomSafeOffset = self.view.safeAreaInsets.bottom;
     [self.mapFloatingBtn setGravityBottom:15+self.imprintButton.sizeHeight+bottomSafeOffset];
     
     [self.footerButtons setGravityBottom:bottomSafeOffset];
@@ -919,10 +915,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
 }
 
-- (NSUserDefaults*) sharedUserDefaultsManager
-{
-    return [NSUserDefaults standardUserDefaults];
-}
 
 
 - (void) showAlertForDeniedLocationServices
@@ -932,7 +924,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:errorHeadline message:errorMessage preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Einstellungen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        //open settings app in > iOS 8
+        //open settings app
         [MBUrlOpening openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
     }]];
     [alert addAction:[UIAlertAction actionWithTitle:@"Nein, danke" style:UIAlertActionStyleCancel handler:nil]];
@@ -942,8 +934,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (NSArray*) lastRequestedStations
 {
-    [[self sharedUserDefaultsManager] removeObjectForKey:@"last_three_requests"];//can be removed on a future update, cleanup old data
-    NSArray *data = [[self sharedUserDefaultsManager] objectForKey:SETTINGS_LAST_SEARCHES];
+    NSArray *data = [NSUserDefaults.standardUserDefaults objectForKey:SETTINGS_LAST_SEARCHES];
     if (data) {
         return data;
     }
@@ -988,7 +979,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(self.currentType == MBStationSearchTypeTextSearch && !self.searchResultTableView.hidden){
         self.searchResultDeleteButton.hidden = archivedStations.count == 0;
     }
-    [[self sharedUserDefaultsManager] setObject:archivedStations forKey:SETTINGS_LAST_SEARCHES];
+    [NSUserDefaults.standardUserDefaults setObject:archivedStations forKey:SETTINGS_LAST_SEARCHES];
     
 }
 
@@ -1049,10 +1040,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             }];
         }
         
-        for(MBStationFromSearch* s in results){
-            NSArray* evaIds = s.eva_ids;
-            [[HafasCacheManager sharedManager] addKnownEvaIds:evaIds];
-        }
         if(results.count > MAX_NUMBER_OF_RESULTS){
             results = [results subarrayWithRange:NSMakeRange(0, MAX_NUMBER_OF_RESULTS)];
         }
@@ -1372,9 +1359,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             [self.stationSearchInputField setGravityTop:60];
         } else {
             CGFloat topSafeOffset = 0.0;
-            if (@available(iOS 11.0, *)) {
-//                topSafeOffset = self.view.safeAreaInsets.top;
-            }
             [self.stationSearchInputField setGravityTop:15+60+topSafeOffset];
         }
     } completion:^(BOOL finished) {
@@ -1671,7 +1655,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSInteger height = 52;
     if(self.longPressStation && [self.longPressStation isEqual:indexPath]){
-        height += 194;
+        height += MBStationPickerTableViewCell.departureContainerHeight;
         if(tableView == self.geoSearchTableView){
             height += 50;//extra space for distance
         }

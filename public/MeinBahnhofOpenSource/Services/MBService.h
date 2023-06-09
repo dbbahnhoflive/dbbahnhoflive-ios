@@ -19,6 +19,7 @@
 #define kActionButtonKey @"actionButton"
 #define kActionButtonAction @"actionButtonAction"
 #define kActionChatbot @"chatbot"
+#define kActionMobilitaetsService @"mobilitaetsservice"
 #define kActionPickpackWebsite @"pickpackWebsite"
 #define kActionPickpackApp @"pickpackApp"
 #define kActionFeedbackMail @"feedbackmail"
@@ -27,6 +28,7 @@
 #define kActionFeedbackChatbotMail @"feedbackchatbot"
 
 #define kServiceType_SEV @"schienenersatzverkehr"
+#define kServiceType_Locker @"locker"
 #define kServiceType_LocalTravelCenter @"local_travelcenter"
 #define kServiceType_LocalDBLounge @"local_db_lounge"
 #define kServiceType_DBInfo @"db_information"

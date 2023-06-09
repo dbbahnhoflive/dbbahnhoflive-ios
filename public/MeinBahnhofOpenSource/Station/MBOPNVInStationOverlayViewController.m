@@ -30,6 +30,7 @@
     [headerText setAttributes:@{NSFontAttributeName:[UIFont db_BoldSeventeen]} range:NSMakeRange(0, @"ÖPNV Anschlüsse".length)];
     [headerText setAttributes:@{NSFontAttributeName:[UIFont db_RegularSeventeen]} range:NSMakeRange(@"ÖPNV Anschlüsse".length, headerText.length-@"ÖPNV Anschlüsse".length)];
     self.titleLabel.attributedText = headerText;
+    self.titleLabel.accessibilityLabel = [NSString stringWithFormat:@"ÖPNV Anschlüsse im Umkreis von %d meter",NEAREST_STATIONS_LIMIT_IN_M];
 
     self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
     
@@ -108,6 +109,7 @@
             NSInteger subitemY = CGRectGetMaxY(label.frame);
             
             MBButtonWithAction* linkBtn = [[MBButtonWithAction alloc] initWithFrame:CGRectMake(0, y, 70, 70)];
+            __weak UIViewController* vcWeak = self;
             linkBtn.actionBlock = ^{
                 //move the selected station at the first place
                 NSMutableArray* mapMarkersWithCurrentInFront = [mapMarkers mutableCopy];
@@ -138,7 +140,7 @@
                 timeVC.oepnvOnly = YES;
                 timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
                 timeVC.hafasStation = station;
-                [self.navigationController pushViewController:timeVC animated:YES];
+                [vcWeak.navigationController pushViewController:timeVC animated:YES];
             };
             [linkBtn setBackgroundColor:[UIColor clearColor]];
             [linkBtn setImage:[UIImage db_imageNamed:@"MapInternalLinkButton"] forState:UIControlStateNormal];
@@ -154,23 +156,23 @@
                 switch(cat){
                     case HAFASProductCategoryS:
                         iconName = @"app_sbahn_klein";
-                        catVoiceOver = @"S-Bahn ";
+                        catVoiceOver = @"S-Bahn: ";
                         break;
                     case HAFASProductCategoryBUS:
                         iconName = @"app_bus_klein";
-                        catVoiceOver = @"Bus ";
+                        catVoiceOver = @"Bus: ";
                         break;
                     case HAFASProductCategoryTRAM:
                         iconName = @"app_tram_klein";
-                        catVoiceOver = [VOICEOVER_FOR_STR stringByAppendingString:@" "];
+                        catVoiceOver = [VOICEOVER_FOR_STR stringByAppendingString:@": "];
                         break;
                     case HAFASProductCategoryU:
                         iconName = @"app_ubahn_klein";
-                        catVoiceOver = @"U-Bahn ";
+                        catVoiceOver = @"U-Bahn: ";
                         break;
                     case HAFASProductCategorySHIP:
                         iconName = @"app_faehre_klein";
-                        catVoiceOver = @"Fähre ";
+                        catVoiceOver = @"Fähre: ";
                         break;
                     case HAFASProductCategoryCAL:
                         iconName = @"app_callabike_klein";
@@ -191,7 +193,11 @@
                 lineLabel.font = [UIFont db_RegularFourteen];
                 lineLabel.textColor = [UIColor db_333333];
                 lineLabel.text = [self lineString:[station productLinesForProduct:productIndex] forCat:cat];
-                lineLabel.accessibilityLabel = [catVoiceOver stringByAppendingString:lineLabel.text];
+                NSString* finalLineString = lineLabel.text;
+                if(cat == HAFASProductCategoryTRAM){
+                    finalLineString = [finalLineString stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
+                }
+                lineLabel.accessibilityLabel = [catVoiceOver stringByAppendingString:finalLineString];
                 lineLabel.size = [lineLabel sizeThatFits:lineLabel.size];
                 subitemY = MAX(CGRectGetMaxY(icon.frame),CGRectGetMaxY(lineLabel.frame));
                 productIndex++;

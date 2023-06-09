@@ -149,7 +149,7 @@ NSString * const kFacilityStatusBaseUrl = @"https://apis.deutschebahn.com/db-api
 
 -(void)restoreSettings
 {
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
 
     if([def objectForKey:@"facility_globalPush"]){
         self.globalPush = [def boolForKey:@"facility_globalPush"];
@@ -172,7 +172,7 @@ NSString * const kFacilityStatusBaseUrl = @"https://apis.deutschebahn.com/db-api
 
 -(void)storeSettings
 {
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     
     [def setBool:self.globalPush forKey:@"facility_globalPush"];
     [def setObject:[self.storedFavoriteEquipments allObjects] forKey:@"facility_storedFavoriteEquipments"];

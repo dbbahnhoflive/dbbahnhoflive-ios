@@ -51,15 +51,12 @@
 #define kHeaderDestinationTo @"Nach"
 #define kHeaderDestinationFrom @"Von"
 
-@interface MBTimetableViewController () <MBTimeTableFilterViewCellDelegate,MBTimetableFilterViewControllerDelegate,MBMapViewDelegate>
+@interface MBTimetableViewController () <MBTimeTableFilterViewCellDelegate,MBTimetableFilterViewControllerDelegate,MBMapViewDelegate,MBTimeTableViewCellDelegate>
 
 @property (nonatomic, strong) UITableView *timetableView;
-@property (nonatomic, strong) NSIndexPath *selectedRow;
 
 @property (nonatomic, strong) NSArray *timetableData;
 @property (nonatomic, strong) NSArray *timetableDataByDays;
-
-@property (nonatomic, strong) NSString *selectedStopId;
 
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
@@ -86,6 +83,8 @@
 @property(nonatomic,strong) MBContentSearchResult* searchresult;
 @property (nonatomic,strong) UIButton* mapFloatingBtn;//optional, only active when mapMarkers are present
 
+@property(nonatomic,strong) NSString* stopIdForSelectedVoiceOverCell;
+
 
 @end
 
@@ -107,11 +106,6 @@
     return self;
 }
 
-- (void)resetSelection
-{
-    self.selectedRow = [NSIndexPath indexPathForRow:-1 inSection:-1];
-    self.selectedStopId = nil;
-}
 
 - (void)viewDidLoad
 {
@@ -119,7 +113,6 @@
     
     self.view.backgroundColor = [UIColor whiteColor];
     
-    [self resetSelection];
     self.title = @"Abfahrt und Ankunft";
     // make sure back button in navigation bar shows only back icon (<)
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@" " style:UIBarButtonItemStylePlain target:nil action:nil];
@@ -379,7 +372,6 @@
     [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", abfahrt ? @"toggle_abfahrt" : @"toggle_ankunft"]];
 
     self.departure = abfahrt;
-    [self resetSelection];
     [self handleTimetableUpdate];
 }
 
@@ -463,11 +455,58 @@
         }
     }
     
-    [self resetSelection];
     [self.refreshControl endRefreshing];
+    if (!self.oepnvOnly && self.showFernverkehr) {
+        NSString* voiceOverStop = self.stopIdForSelectedVoiceOverCell;
+        if(voiceOverStop){
+            //ensure that we keep the focus on this train after a refresh of the tableview
+            NSLog(@"find stop in refreshed data: %@",voiceOverStop);
+            NSInteger index = 1;//the first cell is the "filter cell"
+            BOOL found = false;
+            for(Stop* stop in self.timetableDataByDays){
+                if([stop isKindOfClass:Stop.class] && [stop.stopId isEqualToString:voiceOverStop]){
+                    found = true;
+                    break;
+                } else {
+                    index++;
+                }
+            }
+            if(!found){
+                index = 0;
+            }
+            NSLog(@"found stop at index %ld",(long)index);
+            NSIndexPath* indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+            [CATransaction begin];
+            //after reloadData execute the scrolling and refocusing of voiceover
+            [CATransaction setCompletionBlock:^{
+                //the index path might be outside of the visible area, scroll it into visible view
+                [self.timetableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:NO];
+                UITableViewCell* cell = [self.timetableView cellForRowAtIndexPath:indexPath];
+                if(cell){
+                    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, cell);
+                } else {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        UITableViewCell* cell = [self.timetableView cellForRowAtIndexPath:indexPath];
+                        UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, cell);
+                    });
+                }
+            }];
+            [self.timetableView reloadData];
+            [CATransaction commit];
+            return;
+        }        
+    }
     [self.timetableView reloadData];
-    //[self reloadTimetable];
-    //[self.refreshControl endRefreshing];
+}
+
+-(void)cellWasSelectedViaVoiceOver:(MBTimeTableViewCell *)cell{
+    self.stopIdForSelectedVoiceOverCell = cell.stopId;
+    //NSLog(@"selected DB %@",self.stopIdForSelectedVoiceOverCell);
+}
+- (void)cellWasDeselectedViaVoiceOver:(MBTimeTableViewCell *)cell{
+    if(self.stopIdForSelectedVoiceOverCell && [cell.stopId isEqualToString:self.stopIdForSelectedVoiceOverCell]){
+        self.stopIdForSelectedVoiceOverCell = nil;
+    }
 }
 
 -(void)setTimetableData:(NSArray *)timetableData{
@@ -569,11 +608,7 @@
     [self updateEmptyView:self.lastStatus];
     
     [self.mapFloatingBtn setGravityRight:10];
-    // special action for iOS11
-    CGFloat bottomSafeOffset = 0.0;
-    if (@available(iOS 11.0, *)) {
-        bottomSafeOffset = self.view.safeAreaInsets.bottom;
-    }
+    CGFloat bottomSafeOffset = self.view.safeAreaInsets.bottom;
     [self.mapFloatingBtn setGravityBottom:15+bottomSafeOffset];
 
 }
@@ -793,7 +828,6 @@
         //on change reset filter
         self.currentlySelectedPlatform = @"Alle";
         self.currentlySelectedTransportType = @"Alle";
-        [self resetSelection];
     }
     _showFernverkehr = showFernverkehr;
     if (self.toggleFernverkehrSwitch.on != showFernverkehr) {
@@ -844,13 +878,11 @@
     }
     self.currentlySelectedPlatform = track;
     self.currentlySelectedTransportType = type;
-    [self resetSelection];
     [self filterByPlatformAndTransportType];
 }
 
 -(void)showTrack:(NSString *)track trainOrder:(Stop *)trainStop{
     //we only show DB-trains and only depature!
-    [self resetSelection];
     
     self.departure = YES;
     if(!self.showFernverkehr){
@@ -1035,12 +1067,12 @@
             tableCell.selectionStyle = UITableViewCellSelectionStyleNone;
             tableCell.autoresizingMask = UIViewAutoresizingFlexibleHeight;
             tableCell.clipsToBounds = YES;
-            
+            tableCell.delegate = self;
+            tableCell.stopId = timetableStop.stopId;
             tableCell.currentStation = self.station.title;
             tableCell.event = event;
             tableCell.timeLabel.text = event.formattedTime;
             tableCell.stationLabel.text = event.actualStation;
-            tableCell.intermediateStationsLabel.text = event.actualStations;
             NSString* trainCat = [timetableStop formattedTransportType:event.lineIdentifier];
             tableCell.trainLabel.text = trainCat;
             tableCell.platformLabel.text = [NSString stringWithFormat:@"Gl. %@",event.actualPlatform];
@@ -1050,12 +1082,7 @@
                 tableCell.platformLabel.textColor = [UIColor db_787d87];
             }
             //tableCell.platformTrainLabel.accessibilityLabel = [tableCell.platformTrainLabel.text stringByReplacingOccurrencesOfString:@"Gl." withString:@"Gleis"];
-            
-            [tableCell setExpanded:[self.selectedStopId isEqualToString: timetableStop.stopId] forIndexPath:indexPath];
-            
-            NSArray *stations = [event stationListWithCurrentStation:self.station.title];
-            tableCell.viaListView.stations = stations;
-            
+                        
             tableCell.expectedTimeLabel.text = event.formattedExpectedTime;
             if([event roundedDelay] >= 5){
                 tableCell.expectedTimeLabel.textColor = [UIColor db_mainColor];
@@ -1067,43 +1094,27 @@
 
             NSAttributedString *finalMessage = [self attributedIrisMessage:event.composedIrisMessage forTrain:trainCat];
             if (event.composedIrisMessage.length > 0) {
-                tableCell.messageTextLabel.attributedText = finalMessage;
-                [tableCell.messageTextLabel sizeToFit];
+//                tableCell.messageTextLabel.attributedText = finalMessage;
             }
-            [tableCell.intermediateStationsLabel sizeToFit];
             
             event.composedIrisMessageAttributed = finalMessage;
             
             // show additional container if we composed a message
-            tableCell.messageDetailContainer.hidden = event.composedIrisMessage.length == 0;
             tableCell.messageIcon.hidden = event.composedIrisMessage.length == 0;
             if(!tableCell.messageIcon.hidden){
                 //what icon do we need?
                 if(event.hasOnlySplitMessage){
                     tableCell.messageIcon.image = [UIImage db_imageNamed:@"app_warndreieck_dunkelgrau"];
-                    [tableCell.messageTextLabel setTextColor:[UIColor db_333333]];
                 } else {
                     tableCell.messageIcon.image = [UIImage db_imageNamed:@"app_warndreieck"];
-                    [tableCell.messageTextLabel setTextColor:[UIColor db_mainColor]];
                     if(event.shouldShowRedWarnIcon){
                         tableCell.messageIcon.hidden = NO;
                     } else {
                         tableCell.messageIcon.hidden = YES;
                     }
                 }
-                tableCell.messageIconDetail.image = tableCell.messageIcon.image;
-                tableCell.messageIconDetail.hidden = tableCell.messageIcon.hidden;
             }
-            tableCell.horizontalLine.hidden = event.composedIrisMessage.length == 0;
             
-            tableCell.wagenstandDelimeter.hidden = [timetableStop.transportCategory.transportCategoryType isEqualToString:@"S"];
-            
-            tableCell.wagenstandButton.enabled = [Stop stopShouldHaveTrainRecord:event.stop];
-            
-            if (tableCell.wagenstandButton.enabled) {
-                tableCell.wagenstandButton.data = indexPath;
-                [tableCell.wagenstandButton addTarget:self action:@selector(didTapOnWagenstandButton:) forControlEvents:UIControlEventTouchUpInside];
-            }
             return tableCell;
         }
     }
@@ -1116,10 +1127,7 @@
     if (self.showFernverkehr) {
         if ((indexPath.section == 0 && indexPath.row > 0) || indexPath.section > 0) {
             [[MBTutorialManager singleton] markTutorialAsObsolete:MBTutorialViewType_H2_Departure];
-            if (self.selectedRow && self.selectedRow.row == indexPath.row && self.selectedRow.section == indexPath.section) {
-                [self resetSelection];
-                [self.timetableView reloadData];
-            } else {
+            
                 [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"verbindung_auswahl"]];
                 NSInteger actualIndex = indexPath.row;
                 if(indexPath.section == 0){
@@ -1128,40 +1136,26 @@
                 if(actualIndex < self.timetableDataByDays.count && actualIndex >= 0){
                     id item = self.timetableDataByDays[actualIndex];
                     if([item isKindOfClass:NSString.class]){
-                        [self resetSelection];
                         return;
                     }
                     Stop *stop = item;
                     [self showJourneyForStop:stop indexPath:indexPath];
                 }
-            }
+            
         }
     } else {
         self.additionalHeightForExpandedCell = 92;//for OEPNV this is fix (thank god) we only need a fixed space for the stop locations
         //NSLog(@"hafas: %@", [[self.hafasDataSource.hafasDepartures objectAtIndex:indexPath.row] description]);
         if(indexPath.row > 0){
-            if (self.selectedRow && self.selectedRow.row == indexPath.row) {
-                [self resetSelection];
-                self.hafasDataSource.selectedRow = self.selectedRow;
-                [self.timetableView reloadData];
-            } else if(indexPath.row-1 < self.hafasDataSource.hafasDeparturesByDay.count){
+            if(indexPath.row-1 < self.hafasDataSource.hafasDeparturesByDay.count){
                 [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"verbindung_auswahl"]];
                 NSInteger actualIndex = indexPath.row - 1;
                 HafasDeparture* departure = self.hafasDataSource.hafasDeparturesByDay[actualIndex];
                 if([departure isKindOfClass:NSString.class]){
-                    [self resetSelection];
-                    self.hafasDataSource.selectedRow = self.selectedRow;
                     [self.timetableView reloadData];
                     return;
                 }
-                self.selectedRow = indexPath;
-                self.hafasDataSource.selectedRow = self.selectedRow;
-                self.selectedStopId = departure.stopid;
-                [self.timetableView reloadData];
-                [[HafasRequestManager sharedManager] requestJourneyDetails:departure completion:^(HafasDeparture * dep, NSError * err) {
-                    [self.timetableView reloadData];
-                    //[self scrollCellIntoViewportAtIndexPath:indexPath dataSource:self.hafasDataSource];
-                }];
+                [self showJourneyForHafasDeparture:departure];
             }
         }
     }
@@ -1185,18 +1179,23 @@
     }
 }
 
-- (void) didTapOnWagenstandButton:(MBButtonWithData*)sender
-{
-    NSIndexPath* indexPath = sender.data;
-    NSInteger actualIndex = indexPath.row;
-    if(indexPath.section == 0){
-        actualIndex--;
-    }
-    if (actualIndex >= 0 && actualIndex < self.timetableDataByDays.count) {
-        [MBTrackingManager trackActionsWithStationInfo:@[@"h2", @"tap", @"wagenreihung"]];
-        Stop* stop = self.timetableDataByDays[actualIndex];
-        [self showTrainOrderForStop:stop];
-    }
+-(void)showJourneyForHafasDeparture:(HafasDeparture*)departure{
+    [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    [[HafasRequestManager sharedManager] requestJourneyDetails:departure completion:^(HafasDeparture * dep, NSError * err) {
+        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+        Event* event = [Event new];
+        event.departure = true;
+        event.stations = departure.stopLocationTitles;
+        event.lineIdentifier = departure.name;
+
+        MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
+        detailViewController.hafasJourney = true;
+        detailViewController.departure = true;
+        detailViewController.station = self.station;
+        detailViewController.event = event;
+        detailViewController.showJourneyFromCurrentStation = true;
+        [self.navigationController pushViewController:detailViewController animated:YES];
+    }];
 }
 
 -(void)showJourneyForStop:(Stop *)stop indexPath:(NSIndexPath*)indexPath{
@@ -1223,7 +1222,6 @@
 }
 
 -(void)runSearchResult:(MBContentSearchResult*)search{
-    [self resetSelection];
     //reset filter
     self.currentlySelectedPlatform = @"Alle";
     self.currentlySelectedTransportType = @"Alle";
@@ -1321,16 +1319,6 @@
 }
 
 
-
-- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    //self.selectedRow = [NSIndexPath indexPathForRow:-1 inSection:-1];
-    
-    // needed for smooth collapsing
-    [tableView beginUpdates];
-    [tableView endUpdates];
-}
-
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return kDefaultCellHeight;
@@ -1350,18 +1338,10 @@
             if([item isKindOfClass:NSString.class]){
                 return 25;
             }
-            Stop *stop = item;
-            if([self.selectedStopId isEqualToString:stop.stopId]) {
-                //            return kDefaultCellHeight+[self calculateCellHeightForStop:self.timetableData[actualIndex]];
-                return kDefaultCellHeight+self.additionalHeightForExpandedCell;
-            }
         } else {
             id item = self.hafasDataSource.hafasDeparturesByDay[actualIndex];
             if([item isKindOfClass:NSString.class]){
                 return 25;
-            }
-            if([self.selectedRow isEqual:indexPath]) {
-                return kDefaultCellHeight+self.additionalHeightForExpandedCell;
             }
         }
         return kDefaultCellHeight;
@@ -1433,25 +1413,14 @@
 
 - (id)mapSelectedPOI
 {
-    NSInteger actualIndex = self.selectedRow.row;
-    if(self.selectedRow.section == 0){
-        actualIndex--;
-    }
     if(_showFernverkehr){
-        if(actualIndex >= 0 && actualIndex < self.timetableDataByDays.count){
-            Stop *stop = self.timetableDataByDays[actualIndex];
-            //self.selectedStopId = stop.stopId;
-            Event *event = [stop eventForDeparture:self.departure];
-            return [self.station poiForPlatform:event.actualPlatformNumberOnly];
-        } else {
-            //nothing selected, do we have a filter for track?
-            if(![self.currentlySelectedPlatform isEqualToString:@"Alle"]){
-                //do we have entries here?
-                Stop* stop = self.timetableData.firstObject;
-                if(stop){
-                    Event *event = [stop eventForDeparture:self.departure];
-                    return [self.station poiForPlatform:event.actualPlatformNumberOnly];
-                }
+        //nothing selected, do we have a filter for track?
+        if(![self.currentlySelectedPlatform isEqualToString:@"Alle"]){
+            //do we have entries here?
+            Stop* stop = self.timetableData.firstObject;
+            if(stop){
+                Event *event = [stop eventForDeparture:self.departure];
+                return [self.station poiForPlatform:event.actualPlatformNumberOnly];
             }
         }
     }

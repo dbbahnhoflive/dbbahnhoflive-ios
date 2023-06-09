@@ -31,9 +31,6 @@
 
 @implementation MBTrainJourneyStopTableViewCell
 
-static NSDateFormatter* outputTimeFormatter = nil;
-
-
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
@@ -44,11 +41,6 @@ static NSDateFormatter* outputTimeFormatter = nil;
 
 - (void) configureCell
 {
-    if(!outputTimeFormatter){
-        outputTimeFormatter = [[NSDateFormatter alloc] init];
-        [outputTimeFormatter setDateFormat:@"HH:mm"];
-    }
-    
     self.backgroundColor = [UIColor clearColor];
     self.stationLabel = [UILabel new];
     self.stationLabel.textColor = UIColor.db_333333;
@@ -115,14 +107,37 @@ static NSDateFormatter* outputTimeFormatter = nil;
     
     [self.platformLabel setGravityRight:15];
 
-    NSInteger x = 134;
+    NSInteger y = (_layoutWithStationNameOnly || _isFirst || _isLast) ? 26 : 15;
+    [self.stationLabel sizeToFit];
+    [self.warningLabel sizeToFit];
+    
+    [self.platformLabel setGravityTop:y];
+
+    [self.arrivalLabel sizeToFit];
+    [self.arrivalLabel setGravityLeft:31];
+    [self.arrivalLabel setGravityTop:y];
+    [self.departureLabel sizeToFit];
+    [self.departureLabel setGravityLeft:self.arrivalLabel.frame.origin.x];
+    if(self.arrivalLabel.text.length > 0){
+        [self.departureLabel setBelow:self.arrivalLabel withPadding:6];
+    } else {
+        //move departure up
+        [self.departureLabel setGravityTop:y];
+    }
+    [self.arrivalNewLabel sizeToFit];
+    [self.departureNewLabel sizeToFit];
+
+    [self.arrivalNewLabel setRight:self.arrivalLabel withPadding:7];
+    [self.departureNewLabel setRight:self.departureLabel withPadding:7];
+    [self.arrivalNewLabel setGravityTop:self.arrivalLabel.frame.origin.y];
+    [self.departureNewLabel setGravityTop:self.departureLabel.frame.origin.y];
+
+    NSInteger spaceRight = (self.frame.size.width-self.platformLabel.frame.origin.x)+10;
+    NSInteger x = MAX(MAX(CGRectGetMaxX(self.arrivalNewLabel.frame),CGRectGetMaxX(self.departureNewLabel.frame))+8,134);
     if(_layoutWithStationNameOnly){
         x = 45;
     }
-    [self.stationLabel sizeToFit];
-    [self.warningLabel sizeToFit];
-    NSInteger spaceRight = (self.frame.size.width-self.platformLabel.frame.origin.x)+10;
-    self.stationLabel.frame = CGRectMake(x, 15, self.frame.size.width-x-spaceRight, self.stationLabel.frame.size.height);
+    self.stationLabel.frame = CGRectMake(x, y, self.frame.size.width-x-spaceRight, self.stationLabel.frame.size.height);
     [self.warningImage setGravityLeft:x-5];
     [self.warningImage setBelow:self.stationLabel withPadding:1];
     if(self.warningImage.hidden){
@@ -132,26 +147,6 @@ static NSDateFormatter* outputTimeFormatter = nil;
     }
     [self.warningLabel setBelow:self.stationLabel withPadding:7];
     [self.warningLabel setWidth:self.frame.size.width-self.warningLabel.frame.origin.x-spaceRight];
-
-    [self.arrivalLabel sizeToFit];
-    [self.arrivalLabel setGravityLeft:31];
-    [self.arrivalLabel setGravityTop:self.stationLabel.frame.origin.y];
-    [self.departureLabel sizeToFit];
-    [self.departureLabel setGravityLeft:self.arrivalLabel.frame.origin.x];
-    if(self.arrivalLabel.text.length > 0){
-        [self.departureLabel setBelow:self.arrivalLabel withPadding:6];
-    } else {
-        //move departure up
-        [self.departureLabel setGravityTop:self.stationLabel.frame.origin.y];
-    }
-    [self.arrivalNewLabel sizeToFit];
-    [self.departureNewLabel sizeToFit];
-
-    [self.arrivalNewLabel setGravityLeft:82];
-    [self.departureNewLabel setGravityLeft:82];
-    [self.arrivalNewLabel setGravityTop:self.arrivalLabel.frame.origin.y];
-    [self.departureNewLabel setGravityTop:self.departureLabel.frame.origin.y];
-    [self.platformLabel setGravityTop:self.stationLabel.frame.origin.y];
 
     if(!_isFirst && !_isLast){
         [self.journeyLineBackground setGravityTop:0];
@@ -254,17 +249,28 @@ static NSDateFormatter* outputTimeFormatter = nil;
     }
 }
 
+-(NSString*)timeStringForDate:(NSDate*)date{
+    if(!date){
+        return @"";
+    }
+    NSCalendar *calendar  = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar components:(NSCalendarUnitHour| NSCalendarUnitMinute) fromDate:date];
+    NSInteger hour = [components hour];
+    NSInteger minutes = [components minute];
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)hour, (long)minutes];
+}
+
 -(void)setStop:(MBTrainJourneyStop *)stop isFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation{
     self.stop = stop;
     self.layoutWithStationNameOnly = false;
     self.stationLabel.text = stop.stationName;
 //    self.stationLabel.text = @"Lorem impsum lorem ipsum lorem ipsum";
     
-    self.arrivalLabel.text = [outputTimeFormatter stringFromDate:stop.arrivalTimeSchedule];
-    self.departureLabel.text = [outputTimeFormatter stringFromDate:stop.departureTimeSchedule];
+    self.arrivalLabel.text = [self timeStringForDate:stop.arrivalTimeSchedule];
+    self.departureLabel.text = [self timeStringForDate:stop.departureTimeSchedule];
 
-    self.arrivalNewLabel.text = [outputTimeFormatter stringFromDate:stop.arrivalTime];
-    self.departureNewLabel.text = [outputTimeFormatter stringFromDate:stop.departureTime];
+    self.arrivalNewLabel.text = [self timeStringForDate:stop.arrivalTime];
+    self.departureNewLabel.text = [self timeStringForDate:stop.departureTime];
 
     [self configureDeltaStringPlaned:stop.arrivalTimeSchedule actual:stop.arrivalTime label:self.arrivalNewLabel];
     [self configureDeltaStringPlaned:stop.departureTimeSchedule actual:stop.departureTime label:self.departureNewLabel];

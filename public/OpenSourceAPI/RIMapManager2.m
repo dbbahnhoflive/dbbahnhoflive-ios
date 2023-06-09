@@ -29,7 +29,6 @@
 
 - (NSURLSessionTask *)requestMapStatus:(NSNumber*)stationId
                                    osm:(BOOL)osm
-                                   eva:(NSString*)evaId
                           forcedByUser:(BOOL)forcedByUser
                                success:(void (^)(NSArray<LevelplanWrapper*> *levels))success
                           failureBlock:(void (^)(NSError * _Nullable))failure{

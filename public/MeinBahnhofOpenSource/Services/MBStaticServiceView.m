@@ -15,6 +15,9 @@
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
 #import "MBRoutingHelper.h"
+#import "MBLargeButton.h"
+#import "MBContentSearchResult.h"
+#import "MBRootContainerViewController.h"
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
 @property (nonatomic, weak) UIViewController* viewController;
@@ -138,6 +141,41 @@
         [baseView addSubview:descriptionHTMLLabel];
     }
     
+    BOOL sevHack = [self.service.type isEqualToString: kServiceType_SEV] && self.station.hasStaticAdHocBox;
+    if(sevHack && self.station.newsList.count == 1){
+        UIImageView* icon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"NEV_Icon"]];
+        icon.frame = CGRectMake(15, offset.y, 52, 52);
+        [baseView addSubview:icon];
+        NSInteger x = CGRectGetMaxX(icon.frame)+15;
+        NSInteger contentWidth = self.frame.size.width-20-x;
+        UILabel* title = [[UILabel alloc] initWithFrame:CGRectZero];
+        [baseView addSubview:title];
+        title.numberOfLines = 2;
+        title.font = [UIFont db_BoldFourteen];
+        title.textColor = [UIColor db_333333];
+        title.text = self.station.newsList.firstObject.title;
+        CGSize size = [title sizeThatFits:CGSizeMake(contentWidth, 300)];
+        [title setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
+        [title setGravityLeft:x];
+        [title setGravityTop:offset.y];
+
+        NSInteger y = CGRectGetMaxY(title.frame)+5;
+        UILabel* content = [[UILabel alloc] initWithFrame:CGRectZero];
+        [baseView addSubview:content];
+        content.numberOfLines = 3;
+        content.font = [UIFont db_RegularFourteen];
+        content.textColor = [UIColor db_333333];
+        content.text = self.station.newsList.firstObject.content;
+        size = [content sizeThatFits:CGSizeMake(contentWidth, 300)];
+        [content setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
+        [content setGravityLeft:x];
+        [content setGravityTop:y];
+        
+        offset.y = CGRectGetMaxY(content.frame)+20;
+        contentSize.height = CGRectGetMaxY(content.frame)+20;
+    }
+
+    
     NSArray *descriptionComponents = [self.service descriptionTextComponents];
     if (descriptionComponents && descriptionComponents.count > 0) {
         [descriptionComponents enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
@@ -148,6 +186,9 @@
                 descriptionHTMLLabel.htmlString = obj;
                 descriptionHTMLLabel.delegado = self;
                 [self sizeViewForWidth:descriptionHTMLLabel];
+                if(sevHack){
+                    descriptionHTMLLabel.dataDetectorTypes = UIDataDetectorTypeNone;
+                }
                 
                 offset.y += descriptionHTMLLabel.frame.size.height;
                 contentSize.height += descriptionHTMLLabel.frame.size.height;
@@ -337,6 +378,20 @@
         offset.y += additionalTextHTMLLabel.frame.size.height;
         contentSize.height += additionalTextHTMLLabel.frame.size.height;
     }
+    
+    if(sevHack){
+        offset.y += 10;
+        contentSize.height += 10;
+        MBLargeButton* btn = [[MBLargeButton alloc] initWithFrame:CGRectMake(16, 16, self.frame.size.width-2*16, 60)];
+        [btn setTitle:@"bahnhof.de öffnen" forState:UIControlStateNormal];
+        [btn addTarget:self action:@selector(didTapOnBahnhofLink:) forControlEvents:UIControlEventTouchUpInside ];
+        [baseView addSubview:btn];
+        [btn setGravityLeft:15];
+        [btn setGravityTop:offset.y];
+        offset.y += btn.frame.size.height+10;
+        contentSize.height += btn.frame.size.height+10;
+    }
+    
     contentSize.height += 16;
     if([baseView isKindOfClass:UIScrollView.class]){
         contentSize.height += 30;
@@ -345,6 +400,9 @@
     } else {
         [self setSize:CGSizeMake(self.frame.size.width, contentSize.height)];
     }
+}
+-(void)didTapOnBahnhofLink:(id)sender{
+    [self didInteractWithURL:[NSURL URLWithString:@"https://bahnhof.de/bfl/ev-nw"]];
 }
 
 -(void)sizeViewForWidth:(UIView*)v{
@@ -387,6 +445,10 @@
         [self.delegate didTapOnPhoneLink:phoneString];
     } else if ([url.absoluteString rangeOfString:@"mailto:"].location != NSNotFound) {
         [self.delegate didTapOnEmailLink:url.absoluteString];
+    } else if([url.absoluteString isEqualToString:kActionMobilitaetsService]){
+        MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+        MBContentSearchResult* search = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Info & Services Mobilitätsservice"];
+        [root handleSearchResult:search];
     } else {
         [self.delegate didOpenUrl:url];
     }

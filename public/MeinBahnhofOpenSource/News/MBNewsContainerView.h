@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MBNewsContainerView : UIView
 
+-(instancetype)initWithFrame:(CGRect)frame news:(MBNews*)news;
 @property(nonatomic,strong) MBNews* news;
 @property(nonatomic,weak) MBNewsContainerViewController* containerVC;
 

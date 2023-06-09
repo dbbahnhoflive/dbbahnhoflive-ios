@@ -15,11 +15,16 @@
 #import "MBPlatformAccessibilityView.h"
 #import "MBLinkButton.h"
 #import "MBTrainJourneyRequestManager.h"
+#import "MBLinkButton.h"
+
+#import "MBContentSearchResult.h"
+#import "MBRootContainerViewController.h"
 
 @interface MBTrainJourneyViewController ()<UITableViewDataSource,UITableViewDelegate>
 @property (nonatomic, strong) UIImageView *messageIcon;
 @property (nonatomic, strong) UILabel *messageTextLabel;
 @property (nonatomic, strong) MBLinkButton *showFullJourneyButton;
+@property (nonatomic, strong) MBLinkButton *sevButton;
 
 @property(nonatomic,strong) MBLargeButton* trainOrderButton;
 
@@ -29,6 +34,7 @@
 @property(nonatomic) BOOL layoutForIRIS;
 @property(nonatomic,strong) NSString* currentEva;
 @property(nonatomic) NSInteger firstIndexWithCurrentStation;
+@property(nonatomic) BOOL journeyHasPreviousStations;
 
 @property(nonatomic,strong) NSDate* dateForTrainPosition;
 @property(nonatomic,strong) UIRefreshControl* refreshControl;
@@ -70,11 +76,27 @@
     self.messageTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.view addSubview:self.messageTextLabel];
 
-    NSString* train = [self.event.stop formattedTransportType:self.event.lineIdentifier];
-    if(self.event.departure){
-        self.title = [NSString stringWithFormat:@"Zuglauf %@ nach %@", train,self.event.actualStation];
+    BOOL isSEV = false;
+    if(self.hafasJourney){
+        NSString* train = self.event.lineIdentifier;
+        isSEV = [train.uppercaseString containsString:@"SEV"];
+        self.title = [NSString stringWithFormat:@"Haltestellen %@ nach %@", train,self.event.actualStation];
     } else {
-        self.title = [NSString stringWithFormat:@"Zuglauf %@ von %@", train,self.event.actualStation];
+        NSString* train = [self.event.stop formattedTransportType:self.event.lineIdentifier];
+        isSEV = [train.uppercaseString containsString:@"SEV"];
+        if(self.event.departure){
+            self.title = [NSString stringWithFormat:@"Zuglauf %@ nach %@", train,self.event.actualStation];
+        } else {
+            self.title = [NSString stringWithFormat:@"Zuglauf %@ von %@", train,self.event.actualStation];
+        }
+    }
+    
+    if(self.showJourneyMessageAndTrainLinks && isSEV){
+        self.sevButton = [MBLinkButton buttonWithRedLink];
+        self.sevButton.labelFont = [UIFont db_BoldFourteen];
+        [self.sevButton addTarget:self action:@selector(openSEV) forControlEvents:UIControlEventTouchUpInside];
+        [self.sevButton setLabelText:@"Übersicht Ersatzverkehr"];
+        [self.view addSubview:self.sevButton];
     }
 
     if(self.showJourneyMessageAndTrainLinks && [Stop stopShouldHaveTrainRecord:self.event.stop]){
@@ -103,6 +125,12 @@
     [self.view addSubview:self.segmentTableView];
 }
 
+-(void)openSEV{
+    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Ersatzverkehr"];
+    MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+    [root handleSearchResult:res];
+}
+
 -(void)processData{
     [self configureMessage];
     
@@ -110,11 +138,18 @@
         self.journeyStops = self.journey.journeyStops;
     }
     self.firstIndexWithCurrentStation = -1;
+    self.journeyHasPreviousStations = false;
     NSInteger index = 0;
     if(!self.journeyStops){
         //create segments from IRIS station list
         self.layoutForIRIS = true;
-        NSArray *stations = [self.event stationListWithCurrentStation:self.station.title];
+        
+        NSArray *stations = nil;
+        if(self.hafasJourney){
+            stations = self.event.actualStationsArray;
+        } else {
+            stations = [self.event stationListWithCurrentStation:self.station.title];
+        }
         NSMutableArray* res = [NSMutableArray arrayWithCapacity:stations.count];
         for(NSString* station in stations){
             MBTrainJourneyStop* s = [MBTrainJourneyStop new];
@@ -138,7 +173,11 @@
         [self updateJourneyProgress];
     }
     
-    if(self.journey && self.showJourneyFromCurrentStation && self.firstIndexWithCurrentStation > 0){
+    if(self.firstIndexWithCurrentStation > 0){
+        self.journeyHasPreviousStations = true;
+    }
+    
+    if(self.journey && self.showJourneyFromCurrentStation && self.journeyHasPreviousStations){
         NSLog(@"showing only stations from current station...");
         self.journeyStops = [self.journeyStops subarrayWithRange:NSMakeRange(self.firstIndexWithCurrentStation, self.journeyStops.count-self.firstIndexWithCurrentStation)];
         self.firstIndexWithCurrentStation = 0;
@@ -154,7 +193,7 @@
         self.segmentTableView.tableFooterView = nil;
     }
     
-    if(self.layoutForIRIS){
+    if(self.layoutForIRIS && !self.hafasJourney){
         UIView* header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
         header.backgroundColor = [UIColor clearColor];
         UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 15, self.view.frame.size.width-30, 20)];
@@ -176,6 +215,7 @@
         self.segmentTableView.tableHeaderView = nil;
     }
 }
+
 
 -(void)refreshData{
     [self.refreshControl beginRefreshing];
@@ -342,6 +382,16 @@
     } else if(self.trainOrderButton){
         topSpace = 15;
     }
+    
+    if(self.sevButton){
+        if(topSpace == 0){
+            topSpace = 15;
+        }
+        [self.sevButton setGravityTop:topSpace];
+        [self.sevButton centerViewHorizontalInSuperView];
+        topSpace = CGRectGetMaxY(self.sevButton.frame)+15;
+    }
+    
     if(self.trainOrderButton){
         [self.trainOrderButton setSize:CGSizeMake(self.view.frame.size.width-2*24, 60)];
         [self.trainOrderButton setGravityTop:topSpace];
@@ -358,11 +408,20 @@
 
 - (id)mapSelectedPOI
 {
+    if(self.hafasJourney){
+        return nil;
+    }
     RIMapPoi* res = [self.station poiForPlatform:self.event.actualPlatformNumberOnly];
     return res;
 }
 -(BOOL)mapShouldCenterOnUser{
     return NO;
+}
+-(NSArray<NSString *> *)mapFilterPresets{
+    if(self.hafasJourney){
+        return @[ PRESET_LOCAL_TIMETABLE ];
+    }
+    return @[ PRESET_DB_TIMETABLE ];
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -375,7 +434,8 @@
     if(_layoutForIRIS){
         [cell setStopWithString:j.stationName isFirst:(j==self.journeyStops.firstObject) isLast:((j==self.journeyStops.lastObject)) isCurrentStation:[j.evaNumber isEqualToString:self.currentEva]];
     } else {
-        [cell setStop:j isFirst:(j==self.journeyStops.firstObject) isLast:((j==self.journeyStops.lastObject)) isCurrentStation:[j.evaNumber isEqualToString:self.currentEva]];
+        BOOL isFirst = (j==self.journeyStops.firstObject && ((self.showJourneyFromCurrentStation && !self.journeyHasPreviousStations) || (!self.showJourneyFromCurrentStation)));
+        [cell setStop:j isFirst:isFirst isLast:((j==self.journeyStops.lastObject)) isCurrentStation:[j.evaNumber isEqualToString:self.currentEva]];
     }
     return cell;
 }

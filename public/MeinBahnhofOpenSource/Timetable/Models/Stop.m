@@ -43,9 +43,9 @@
 {
     Event *event;
     if (departure) {
-        event = self.departure;
+        event = self.departureEvent;
     } else {
-        event = self.arrival;
+        event = self.arrivalEvent;
     }
     return event;
 }
@@ -118,6 +118,14 @@
         || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"IC"]
         || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"EC"])
     {
+        if(timetableStop.departureEvent.stations.count == 0){
+            //at the destination station (no departure event stations), no train record is available
+//            NSLog(@"stopShouldHaveTrainRecord would return NO");
+//            NSLog(@"stop %@",timetableStop.transportCategory.transportCategoryNumber);
+//            NSLog(@"stop %@ with %@",timetableStop.departureEvent,timetableStop.departureEvent.stations);
+//            NSLog(@"stop %@ with %@",timetableStop.arrivalEvent,timetableStop.arrivalEvent.stations);
+            return NO;
+        }
         return YES;
     }
     return NO;

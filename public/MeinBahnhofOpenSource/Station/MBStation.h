@@ -6,9 +6,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import <Mantle/Mantle.h>
 #import "MBStationDetails.h"
-
 
 #define STATION_ID_BERLIN_HBF 1071
 #define STATION_ID_FRANKFURT_MAIN_HBF 1866
@@ -22,6 +20,7 @@
 @class RIMapPoi;
 @class RIMapMetaData;
 @class RIMapSEV;
+@class MBLocker;
 @class GMSMarker;
 @class MBNews;
 @class MBParkingInfo;
@@ -48,6 +47,7 @@
 @property (nonatomic, strong) NSArray<RIMapPoi*>* riPois;
 @property (nonatomic, strong) NSArray<MBPXRShopCategory*>* riPoiCategories;
 @property (nonatomic, strong) NSArray<RIMapSEV*>* sevPois;
+@property (nonatomic, strong) NSArray<MBLocker*>* lockerList;
 
 // FacilityStatus
 @property (nonatomic, strong) NSArray<FacilityStatus*> *facilityStatusPOIs;
@@ -82,6 +82,7 @@
 -(BOOL)hasOccupancy;
 -(BOOL)useOSM;
 -(BOOL)hasSEVStations;
+-(BOOL)hasStaticAdHocBox;
 +(BOOL)stationShouldBeLoadedAsOPNV:(NSString*)stationId;
 
 + (NSArray<NSString*>*) categoriesForShoppen;

@@ -18,19 +18,15 @@
 
 + (instancetype)sharedManager;
 
-@property(nonatomic,strong) NSMutableArray* knownEvaIds;
--(void)addKnownEvaIds:(NSArray *)ids;
-
 -(NSDictionary*)cachedDepartureRequest:(NSString*)cacheUrl;
 -(void)storeDepartureRequest:(NSDictionary*)dict url:(NSString*)url;
 
--(NSDictionary*)cachedStationRequest:(NSString*)cacheUrl;
--(void)storeStationRequest:(NSDictionary*)dict url:(NSString*)url;
+-(NSDictionary *)cachedRequestForNearbyStation:(CLLocationCoordinate2D)coordinate;
+-(void)storeStationRequestNearby:(NSDictionary*)dict coordinate:(NSString*)url;
 
 -(NSDictionary*)cachedJourneyRequest:(NSString*)cacheUrl;
 -(void)storeJourneyRequest:(NSDictionary*)dict url:(NSString*)url;
 
--(NSDictionary *)cachedRequestForNearbyStation:(CLLocationCoordinate2D)coordinate;
 
 
 @end

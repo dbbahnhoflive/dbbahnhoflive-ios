@@ -65,18 +65,13 @@
 
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
-    for(NSString* eva in self.station.stationEvaIds){
-        dispatch_group_enter(group);
-        //NSLog(@"loading platform data for eva %@",eva);
-        [[MBRISStationsRequestManager sharedInstance] requestAccessibility:eva success:^(NSArray<MBPlatformAccessibility *> *platformList) {
-            //NSLog(@"got platform acc: %@",platformList);
-            [self.station addPlatformAccessibility:platformList];
-            dispatch_group_leave(group);
-        } failureBlock:^(NSError *error) {
-            dispatch_group_leave(group);
-        }];
-    }
-    dispatch_group_leave(group);
+    [[MBRISStationsRequestManager sharedInstance] requestAccessibility:self.station.mbId.stringValue success:^(NSArray<MBPlatformAccessibility *> *platformList) {
+        //NSLog(@"got platform acc: %@",platformList);
+        [self.station addPlatformAccessibility:platformList];
+        dispatch_group_leave(group);
+    } failureBlock:^(NSError *error) {
+        dispatch_group_leave(group);
+    }];
     dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.act stopAnimating];
@@ -94,6 +89,8 @@
             return @[PRESET_ELEVATORS];
         } else if([self.service.type isEqualToString:kServiceType_SEV]){
             return @[PRESET_SEV];
+        } else if([self.service.type isEqualToString:kServiceType_Locker]){
+            return @[PRESET_LOCKER, PRESET_LUGGAGE];
         }
     }
     return nil;

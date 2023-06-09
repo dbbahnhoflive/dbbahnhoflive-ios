@@ -28,8 +28,6 @@
 
 @implementation MBStation
 
-@synthesize facilityStatusPOIs = _facilityStatusPOIs;
-@synthesize levels = _levels;
 
 -(instancetype)initWithId:(NSNumber *)stationId name:(NSString *)title evaIds:(NSArray<NSString*>*)evaIds location:(NSArray<NSNumber*>*)location{
     self = [super init];
@@ -44,6 +42,11 @@
         }
     }
     return self;
+}
+
+- (void)dealloc
+{
+    NSLog(@"dealloc MBStation");
 }
 
 - (CLLocationCoordinate2D) positionAsLatLng
@@ -125,7 +128,7 @@
     NSMutableArray* sevMarker = [NSMutableArray arrayWithCapacity:self.sevPois.count];
     
     NSString* cat = @"Öffentlicher Nahverkehr";
-    NSString* subcat = @"Schienenersatzverkehr";
+    NSString* subcat = @"Ersatzverkehr";
     RIMapConfigItem* config = [RIMapPoi configForMenuCat:cat subCat:subcat];
     
     for (RIMapSEV *sev in self.sevPois) {
@@ -723,6 +726,37 @@
 
 -(BOOL)hasSEVStations{
     return self.sevPois.count > 0;
+}
+
+-(BOOL)hasStaticAdHocBox{
+    //BAHNHOFLIVE-2353
+    NSString* stationId = self.mbId.stringValue;
+    BOOL isAffectedStation =
+           [@[ @"6945",
+               @"5400",
+               @"1181",
+               @"927",
+               @"3212",
+               @"3001",
+               @"3968",
+               @"4443",
+               @"8195",
+               @"1591",
+               @"2466",
+               @"5060",
+               @"5841",
+               @"1988",
+               @"1991",
+               @"1984",
+               @"4593",
+               ] containsObject:stationId];
+    if(isAffectedStation){
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        NSDate* endDate = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
+        return endDate.timeIntervalSinceNow > 0;
+    }
+    return false;
 }
 
 -(NSDate*)dateForYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day{

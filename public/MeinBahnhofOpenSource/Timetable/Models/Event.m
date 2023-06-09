@@ -10,9 +10,6 @@
 
 @implementation Event
 
-@synthesize originalPlatform = _originalPlatform;
-@synthesize changedPlatform = _changedPlatform;
-@synthesize messagesAvailable = _messagesAvailable;
 
 - (instancetype) init
 {

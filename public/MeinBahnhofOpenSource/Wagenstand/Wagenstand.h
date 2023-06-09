@@ -8,7 +8,7 @@
 #import "Train.h"
 #import "Waggon.h"
 
-@interface Wagenstand : MTLModel <MTLJSONSerializing>
+@interface Wagenstand : NSObject
 
 /**
  return @{
@@ -37,8 +37,6 @@
 @property (nonatomic, copy) NSArray* evaIds;//all ids for a station
 
 @property (nonatomic) BOOL isISTData;
-
-@property (nonatomic, strong) NSDate* objectCreationTime;
 
 - (Train*) destinationForWaggon:(Waggon*)waggon;
 - (NSArray*) joinedSectionsList;

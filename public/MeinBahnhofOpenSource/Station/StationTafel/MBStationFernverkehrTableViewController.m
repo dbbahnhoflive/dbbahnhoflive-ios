@@ -28,11 +28,7 @@
     //self.tableView.rowHeight = 60.0;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.userInteractionEnabled = NO;
-    if (@available(iOS 11.0, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        // Fallback on earlier versions
-    }
+    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
 }
 
 - (void)didReceiveMemoryWarning {

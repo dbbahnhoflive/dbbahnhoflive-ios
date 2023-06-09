@@ -24,8 +24,6 @@
 
 @implementation MBImprintViewController
 
-@synthesize url = _url;
-@synthesize openAsModal = _openAsModal;
 
 -(instancetype)init{
     self = [super init];
@@ -89,8 +87,10 @@
 {
     NSString *htmlFile = [[NSBundle mainBundle] pathForResource:url ofType:@"html"];
     NSString* htmlString = [NSString stringWithContentsOfFile:htmlFile encoding:NSUTF8StringEncoding error:nil];
-    NSString *appVersionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-    htmlString = [htmlString stringByReplacingOccurrencesOfString:@"{APP_VERSION}" withString:appVersionString];
+    NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString *build   = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    NSString *versionInfo = [NSString stringWithFormat:@"%@ (%@)", version, build];
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:@"{APP_VERSION}" withString:versionInfo];
     return htmlString;
 }
 

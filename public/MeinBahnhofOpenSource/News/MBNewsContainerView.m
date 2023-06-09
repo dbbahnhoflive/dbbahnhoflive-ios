@@ -32,11 +32,10 @@
 
 @implementation MBNewsContainerView
 
-#define endlessAnimation YES
-
--(instancetype)initWithFrame:(CGRect)frame{
+-(instancetype)initWithFrame:(CGRect)frame news:(MBNews*)news{
     self = [super initWithFrame:frame];
     if(self){
+        _news = news;
         self.clipsToBounds = NO;
         self.backgroundColor = [UIColor whiteColor];
         self.layer.shadowColor = [[UIColor db_dadada] CGColor];
@@ -50,6 +49,13 @@
         self.staticHeaderlabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 44)];
         self.staticHeaderlabel.textAlignment = NSTextAlignmentLeft;
         self.staticHeaderlabel.text = @"+++ Aktuelle Informationen ";
+        if(self.news.headerOverwrite != nil){
+            if(self.endlessAnimation){
+                self.staticHeaderlabel.text = [NSString stringWithFormat:@"+++ %@ ",self.news.headerOverwrite];
+            } else {
+                self.staticHeaderlabel.text = self.news.headerOverwrite;
+            }
+        }
         self.staticHeaderlabel.font = [UIFont db_BoldSixteen];
         self.staticHeaderlabel.textColor = [UIColor db_333333];
         [self.headerLabelContainer addSubview:self.staticHeaderlabel];
@@ -57,13 +63,13 @@
         
         self.sizeOfBlock = self.staticHeaderlabel.sizeWidth;
         NSString* txt = [self.staticHeaderlabel.text copy];
-        if(endlessAnimation){
+        if(self.endlessAnimation){
             for(NSInteger i=0; i<3; i++){
                 self.staticHeaderlabel.text = [self.staticHeaderlabel.text stringByAppendingString:txt];
             }
         } else {
-            self.staticHeaderlabel.text = [self.staticHeaderlabel.text stringByAppendingString:@"+++"];
-            [self.staticHeaderlabel setGravityLeft:34];
+//            self.staticHeaderlabel.text = [self.staticHeaderlabel.text stringByAppendingString:@"+++"];
+            [self.staticHeaderlabel setGravityLeft:16];
         }
         [self.staticHeaderlabel sizeToFit];
         [self.staticHeaderlabel setHeight:44];
@@ -86,7 +92,7 @@
         }
         self.staticHeaderlabel.attributedText = attrText;
         
-        if(endlessAnimation){
+        if(self.endlessAnimation){
             [UIView animateWithDuration:6 delay:0 options:UIViewAnimationOptionRepeat|UIViewAnimationOptionCurveLinear animations:^{
                 [self.staticHeaderlabel setGravityLeft:-self.sizeOfBlock];
             } completion:nil];
@@ -134,8 +140,12 @@
     return self;
 }
 
+-(BOOL)endlessAnimation{
+    return !UIAccessibilityIsVoiceOverRunning();
+}
+
 -(void)didBecomeActive{
-    if(endlessAnimation){
+    if(self.endlessAnimation){
         [self.staticHeaderlabel.layer removeAllAnimations];
         [self.staticHeaderlabel setGravityLeft:0];
         [UIView animateWithDuration:6 delay:0 options:UIViewAnimationOptionRepeat|UIViewAnimationOptionCurveLinear animations:^{
@@ -148,6 +158,13 @@
     [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 -(void)touchAreaButtonPressed:(id)sender{
+    //STATIC FIX BAHNHOFLIVE-2353
+    
+    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Ersatzverkehr"];
+    MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+    [root handleSearchResult:res];
+
+/*
     if(self.news.newsType == MBNewsTypeOffer && self.containerVC.station.hasShops){
         [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"coupon"]];
         MBContentSearchResult* res = [MBContentSearchResult searchResultWithCoupon:self.news];
@@ -160,7 +177,7 @@
         MBNewsOverlayViewController* vc = [[MBNewsOverlayViewController alloc] init];
         vc.news = self.news;
         [MBRootContainerViewController presentViewControllerAsOverlay:vc];
-    }
+    }*/
 }
 
 -(void)setNews:(MBNews *)news{
@@ -181,7 +198,7 @@
             break;
         case MBNewsTypeMajorDisruption:
         case MBNewsTypeDisruption:
-            iconName = @"news_malfunction";
+            iconName = @"NEV_Icon";//@"news_malfunction";//BAHNHOFLIVE-2353
             break;
         case MBNewsTypeProductsServices:
             iconName = @"news_neuambahnhof";
@@ -192,7 +209,7 @@
     if(iconName){
         self.icon.image = [UIImage db_imageNamed:iconName];
         CGRect f = self.icon.frame;
-        f.size = self.icon.image.size;
+        f.size = CGSizeMake(52, 52);//BAHNHOFLIVE-2353
         self.icon.frame = f;
     } else {
         self.icon.image = nil;
@@ -226,7 +243,9 @@
     [self.textBlock setY:blockY];
 
     self.touchAreaButton.accessibilityLabel = [NSString stringWithFormat:@"Aktuelle Informationen. %@. Zur Anzeige von Details doppeltippen",self.news.title];
-
+    if(self.news.headerOverwrite != nil){
+        self.touchAreaButton.accessibilityLabel = [NSString stringWithFormat:@"%@. %@: %@. Zur Anzeige von Details doppeltippen",self.news.headerOverwrite,self.news.title,self.news.content];
+    }
 }
 
 @end

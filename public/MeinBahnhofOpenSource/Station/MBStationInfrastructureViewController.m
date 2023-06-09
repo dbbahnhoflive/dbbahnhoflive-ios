@@ -279,8 +279,7 @@
                         //display directly the list of parking places
                         __weak MBStationInfrastructureViewController* weakSelf = self;
                         [self addLinkButtonToEntryView:entryView withBlock:^{
-                            MBParkingTableViewController* vc = [MBParkingTableViewController new];
-                            [vc setParkingList:weakSelf.station.parkingInfoItems];
+                            MBParkingTableViewController* vc = [[MBParkingTableViewController alloc] initWithStation:weakSelf.station];
                             [weakSelf.navigationController pushViewController:vc animated:YES];
                         }];
                     } else {
@@ -330,9 +329,13 @@
                     [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             } else if([key isEqualToString:KEY_SCHLIESSFACH]){
-                NSArray* mapFilter = @[PRESET_LOCKER];
+                NSArray* mapFilter = @[PRESET_LOCKER, PRESET_LUGGAGE];
                 if((poi = [self poiForFilter:mapFilter])){
                     [self addLinkButtonToEntryView:entryView withMapFilter:mapFilter poi:poi];
+                } else if(self.station.lockerList.count > 0) {
+                    //display directly the list of lockers
+                    MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Locker withStation:_station];
+                    [self addLinkButtonToEntryView:entryView withMBService:service];
                 }
             } else if([key isEqualToString:KEY_FUNDSERVICE]){
                 NSArray* mapFilter = @[PRESET_LOSTFOUND];
@@ -357,16 +360,18 @@
     if(!MBMapViewController.canDisplayMap){
         return nil;//map is not accessible via voiceover
     }
-    
-    for(RIMapPoi* poi in self.station.riPois){
-        NSString* filterTitle = nil;
-        NSString* filterSubTitle = nil;
-        [poi getFilterTitle:&filterTitle andSubTitle:&filterSubTitle];
-        
-        NSArray* filterItems = [MBMapViewController filterForFilterPresets:mapFilterPresets];
-        if([filterItems containsObject:filterTitle] || [filterItems containsObject:filterSubTitle]){
-            //NSLog(@"found");
-            return poi;
+
+    NSArray* filterItems = [MBMapViewController filterForFilterPresets:mapFilterPresets];
+    for(NSString* filter in filterItems){
+        for(RIMapPoi* poi in self.station.riPois){
+            NSString* filterTitle = nil;
+            NSString* filterSubTitle = nil;
+            [poi getFilterTitle:&filterTitle andSubTitle:&filterSubTitle];
+            
+            if([filter isEqualToString:filterTitle] || [filter isEqualToString:filterSubTitle]){
+                //NSLog(@"found");
+                return poi;
+            }
         }
     }
     //NSLog(@"not found %@",mapFilter);

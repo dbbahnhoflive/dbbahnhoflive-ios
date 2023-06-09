@@ -9,8 +9,6 @@
 
 @implementation MBTextView
 
-@synthesize htmlString = _htmlString;
-
 - (instancetype) initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
@@ -32,7 +30,7 @@
 - (void)setHtmlString:(NSString *)htmlString
 {
     _htmlString = [htmlString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSMutableAttributedString *mutableHTML = [htmlString attributedHtmlString];
+    NSMutableAttributedString *mutableHTML = [htmlString attributedStringFromHtml];
     self.attributedText = mutableHTML;
 }
 

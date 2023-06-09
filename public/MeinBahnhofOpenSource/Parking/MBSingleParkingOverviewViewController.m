@@ -6,7 +6,6 @@
 
 #import "MBSingleParkingOverviewViewController.h"
 #import "MBParkingOccupancyManager.h"
-#import "MBLabel.h"
 #import "MBUrlOpening.h"
 #import "MBUIHelper.h"
 
@@ -85,7 +84,6 @@
             
             self.contentScrollView.delegate = self;
             
-            // this does not work in ios9
             UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
             self.refreshControl = refreshControl;
             [self.contentScrollView addSubview:refreshControl];
@@ -207,14 +205,23 @@
     if(text.length == 0){
         return y;
     }
-    MBLabel *label = [MBLabel labelWithTitle:title andText:@""];
+    UILabel *label = [UILabel new];
+    label.text = title;
+    label.font = [UIFont db_BoldFourteen];
+    label.textColor = UIColor.db_333333;
+
     CGSize maxSize = CGSizeMake(self.contentView.frame.size.width - 32.0, CGFLOAT_MAX);
     CGSize wrappedSize = [label sizeThatFits:maxSize];
     label.frame = CGRectMake(16.0, y, wrappedSize.width, wrappedSize.height);
     [self.contentScrollView addSubview:label];
     y = label.frame.origin.y + label.frame.size.height + 8;
     
-    MBLabel *label2 = [MBLabel labelWithTitle:@"" andText:text];
+    UILabel *label2 = [UILabel new];
+    label2.text = text;
+    label2.numberOfLines = 0;
+    label2.font = [UIFont db_RegularFourteen];
+    label2.textColor = UIColor.db_333333;
+
     maxSize = CGSizeMake(self.contentView.frame.size.width - 32.0, CGFLOAT_MAX);
     wrappedSize = [label2 sizeThatFits:maxSize];
     label2.frame = CGRectMake(16.0, y, wrappedSize.width, wrappedSize.height);
@@ -226,10 +233,7 @@
     [super viewDidLayoutSubviews];
     //resize view for content
 
-    UIEdgeInsets safeArea = UIEdgeInsetsZero;
-    if (@available(iOS 11.0, *)) {
-        safeArea = self.view.safeAreaInsets;
-    }
+    UIEdgeInsets safeArea = self.view.safeAreaInsets;
     CGSize size = self.contentScrollView.contentSize;
     size.height = self.calculatedContentHeight+safeArea.bottom;
     self.contentScrollView.contentSize = size;

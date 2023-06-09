@@ -6,7 +6,6 @@
 
 #import "MBParkingExpandableTableViewCell.h"
 #import "MBParkingInfoView.h"
-#import "MBLabel.h"
 #import "MBUIHelper.h"
 
 @interface MBParkingExpandableTableViewCell()
@@ -64,7 +63,7 @@
     [self.topView addSubview:self.opencloseImage];
     
     
-    self.bottomView = [UIView new];
+    self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, 92, 0, 0)];
     self.bottomView.backgroundColor = [UIColor db_f3f5f7];
     self.bottomView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
     self.bottomView.layer.shadowColor = [[UIColor db_dadada] CGColor];
@@ -73,9 +72,9 @@
 
     [self.contentView addSubview:self.bottomView];
     
+    self.isAccessibilityElement = NO;
     self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
-    self.accessibilityHint = @"Zur Anzeige von Details doppeltippen.";
-
+    self.bottomView.isAccessibilityElement = NO;
 }
 
 -(NSInteger)bottomViewHeight{
@@ -123,14 +122,20 @@
 
 -(void)addLabelWithTitle:(NSString*)title andText:(NSString*)text{
     if(text.length > 0){
-        MBLabel *addressLabel = [MBLabel labelWithTitle:title andText:@""];
-        [self.bottomView addSubview:addressLabel];
-        [self.labels addObject:addressLabel];
+        UILabel *titleLabel = [UILabel new];
+        titleLabel.text = title;
+        [self.bottomView addSubview:titleLabel];
+        [self.labels addObject:titleLabel];
 
-        MBLabel *addressLabel2 = [MBLabel labelWithTitle:@"" andText:text];
+        UILabel *addressLabel2 = [UILabel new];
+        addressLabel2.text = text;
+        addressLabel2.numberOfLines = 0;
         [self.bottomView addSubview:addressLabel2];
         [self.labels addObject:addressLabel2];
 
+        titleLabel.font = [UIFont db_BoldFourteen];
+        addressLabel2.font = [UIFont db_RegularFourteen];
+        titleLabel.textColor = addressLabel2.textColor = UIColor.db_333333;
     }
 }
 
@@ -186,7 +191,13 @@
 
 - (void)setExpanded:(BOOL)expanded {
     _expanded = expanded;
+    if(expanded){
+        self.accessibilityHint = @"";
+    } else {
+        self.accessibilityHint = @"Zur Anzeige von Details doppeltippen.";
+    }
     self.bottomView.hidden = !_expanded;
+    
     [self layoutContentAndResize];
     [self setNeedsLayout];
 }

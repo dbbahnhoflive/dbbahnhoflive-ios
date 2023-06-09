@@ -172,13 +172,8 @@
     
     self.line.frame = CGRectMake(0, self.tabBarView.frame.origin.y, self.view.sizeWidth, 1);
 
-    CGFloat safeBottomOffset = 0.0;
-    if (@available(iOS 11.0, *)) {
-        safeBottomOffset = self.view.safeAreaInsets.bottom;
-        self.tabbarHeightConstraint.constant = 60.0 + safeBottomOffset;
-    } else {
-        // Fallback on earlier versions
-    }
+    CGFloat safeBottomOffset = self.view.safeAreaInsets.bottom;
+    self.tabbarHeightConstraint.constant = 60.0 + safeBottomOffset;
 
 }
 

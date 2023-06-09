@@ -7,11 +7,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@class MBEinkaufsbahnhofStore;
+
 @interface MBEinkaufsbahnhofCategory : NSObject
 
 @property(nonatomic,strong) NSNumber* number;
 @property(nonatomic,strong) NSString* name;
-@property(nonatomic,strong) NSArray* shops;
+@property(nonatomic,strong) NSArray<MBEinkaufsbahnhofStore*>* shops;
 
 -(NSString*)iconFilename;
 -(UIImage*)icon;

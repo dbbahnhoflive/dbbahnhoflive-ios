@@ -31,7 +31,6 @@
 
 @implementation WaggonCell
 
-@synthesize waggon = _waggon;
 
 - (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {

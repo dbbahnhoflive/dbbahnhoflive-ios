@@ -9,7 +9,6 @@
 
 @implementation FacilityStatus
 
-@synthesize centerLocation = _centerLocation;
 
 - (UIImage*)iconForState
 {

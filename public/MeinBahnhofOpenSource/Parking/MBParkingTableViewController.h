@@ -6,9 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
+@class MBStation;
+
 @interface MBParkingTableViewController : UITableViewController
 
-@property(nonatomic,strong) NSArray* parkingList;
 @property (nonatomic, strong) NSString *trackingTitle;
+
+-(MBParkingTableViewController*)initWithStation:(MBStation*)station;
 
 @end

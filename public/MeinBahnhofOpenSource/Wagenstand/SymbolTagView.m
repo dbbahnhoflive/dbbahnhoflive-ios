@@ -18,8 +18,6 @@
 
 @implementation SymbolTagView
 
-@synthesize symbolLabel = _symbolLabel;
-@synthesize symbolDescription = _symbolDescription;
 
 - (instancetype) initWithFrame:(CGRect)frame
 {

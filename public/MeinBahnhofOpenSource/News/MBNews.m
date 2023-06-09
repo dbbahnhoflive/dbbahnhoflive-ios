@@ -196,6 +196,38 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
     }
 }
 
++(NSArray *)staticInfoData{
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:10];
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+
+    MBNews* n = nil;
+    n = [MBNews new];
+    n.startTimestamp = [dateFormatter dateFromString: @"2023-05-01 23:59:59 GMT+02:00"];
+    n.endTimestamp = [dateFormatter dateFromString: @"2023-05-26 20:59:59 GMT+02:00"];
+    n.headerOverwrite = @"Ankündigung Ersatzverkehr";
+    n.title = @"26.05. – 11.09.2023";
+    n.content = @"Ersatzverkehr auf der Strecke Würzburg – Nürnberg aufgrund von Baumaßnahmen.";
+    n.groupId = MBNewsTypeMajorDisruption;
+    NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
+    if([n hasValidTime]){
+        [res addObject:n];
+    }
+    n = [MBNews new];
+    n.startTimestamp = [dateFormatter dateFromString: @"2023-05-26 21:00:00 GMT+02:00"];
+    n.endTimestamp = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
+    n.headerOverwrite = @"Ersatzverkehr beachten";
+    n.title = @"26.05. – 11.09.2023";
+    n.content = @"Ersatzverkehr auf der Strecke Würzburg – Nürnberg aufgrund von Baumaßnahmen.";
+    n.groupId = MBNewsTypeMajorDisruption;
+    NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
+    if([n hasValidTime]){
+        [res addObject:n];
+    }
+    return res;
+}
+
 +(NSArray*)debugData{
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:10];
     NSDate* date = [NSDate date];

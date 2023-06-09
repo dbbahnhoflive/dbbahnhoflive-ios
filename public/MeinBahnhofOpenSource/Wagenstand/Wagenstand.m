@@ -10,99 +10,11 @@
 @interface Wagenstand()
 
 //for IST-API: if this is true the train direction is ->, otherwise its <-
-//for SOLL-API: ??
 @property(nonatomic) BOOL trainWasReversed;
 
 @end
 
 @implementation Wagenstand
-
-@synthesize additionalText = _additionalText;
-
--(instancetype)init{
-    self = [super init];
-    if(self){
-        self.objectCreationTime = [NSDate date];
-    }
-    return self;
-}
-
-- (instancetype)initWithDictionary:(NSDictionary *)dictionaryValue error:(NSError *__autoreleasing *)error
-{
-    if (self = [super initWithDictionary:dictionaryValue error:error]) {
-        self.objectCreationTime = [NSDate date];
-        
-        if(self.subtrains.count == 1 && self.trainNumbers.count > 0){
-            //special case: a single train with multiple numbers
-            NSString *trainNumber = self.trainNumbers.firstObject;
-            NSString *trainType = self.traintypes.firstObject;
-            NSString *firstTrainType = [trainType copy];
-            for(int i=1; i<self.trainNumbers.count; i++){
-                trainNumber = [trainNumber stringByAppendingFormat:@"/%@",self.trainNumbers[i]];
-                if(i < self.traintypes.count){
-                    if(![self.traintypes[i] isEqualToString:firstTrainType]){
-                        trainType = [trainType stringByAppendingFormat:@"/%@",self.traintypes[i]];
-                    }
-                }
-            }
-            Train *train = self.subtrains.firstObject;
-            train.number = trainNumber;
-            train.type = trainType;
-        } else {
-            //old implementation, uses only last trainNumber for single train case
-            for (int i = 0; i < self.trainNumbers.count; i++) {
-                NSString *trainNumber = self.trainNumbers[i];
-                NSString *trainType = @"";
-                if (i < self.traintypes.count) {
-                    trainType = self.traintypes[i];
-                } else {
-                    trainType = [self.traintypes firstObject];
-                }
-                
-                if (i < self.subtrains.count) {
-                    Train *train = self.subtrains[i];
-                    train.number = trainNumber;
-                    train.type = trainType;
-                } else {
-                    Train *train = [self.subtrains firstObject];
-                    train.number = trainNumber;
-                    train.type = trainType;
-                }
-            }
-        }
-    }
-    return self;
-}
-
-+ (NSValueTransformer *)waggonsJSONTransformer
-{
-    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        NSArray *waggons = [MTLJSONAdapter modelsOfClass:Waggon.class fromJSONArray:value error:error];
-        
-        if (waggons) {
-            return waggons;
-        }
-        return @[];
-        
-    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        return value;
-    }];
-}
-
-
-+ (NSValueTransformer *)subtrainsJSONTransformer
-{
-    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        NSArray *trains = [MTLJSONAdapter modelsOfClass:Train.class fromJSONArray:value error:error];
-        
-        if (trains) {
-            return trains;
-        }
-        return @[];
-    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        return value;
-    }];
-}
 
 -(BOOL)isReversed{
     Waggon* firstWaggon = self.waggons.firstObject;
@@ -189,7 +101,7 @@
 
 - (NSString *) additionalText
 {
-    NSArray *textComponents = [_additionalText componentsSeparatedByString:@"\n"];
+    NSArray *textComponents = [self.additionalText componentsSeparatedByString:@"\n"];
     textComponents = [textComponents filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"SELF != ''"]];
     return [textComponents componentsJoinedByString:@", "];
 }

@@ -7,6 +7,7 @@
 #import <AFNetworking/AFNetworking.h>
 #import "Constants.h"
 #import "NSDictionary+MBDictionary.h"
+#import "MBNetworkFactory.h"
 
 @interface MBTrainJourneyRequestManager()
 @property (nonatomic, strong) AFHTTPSessionManager *sessionManager;
@@ -33,17 +34,10 @@
         sharedManager.dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"DE"];
         sharedManager.dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Europe/Berlin"];
 
-        AFJSONRequestSerializer *serializerRequest = [AFJSONRequestSerializer serializer];
-        
-        [serializerRequest setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
-        
-        [serializerRequest setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
-        [serializerRequest setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
-
         sharedManager.sessionManager = [[AFHTTPSessionManager alloc]
                                                  initWithBaseURL:[NSURL URLWithString:[[Constants kDBAPI] stringByAppendingString: kRISJourneyBaseURL]]];
-        sharedManager.sessionManager.requestSerializer = serializerRequest;
-        sharedManager.sessionManager.responseSerializer.acceptableContentTypes = [sharedManager.sessionManager.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
+        [MBNetworkFactory configureRISHeader:sharedManager.sessionManager];
+
     });
     return sharedManager;
 }

@@ -27,7 +27,7 @@
     self = [super init];
     if(self)
     {
-        self.favoriteStations = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"FAVORITE_STATIONS"] mutableCopy];
+        self.favoriteStations = [[NSUserDefaults.standardUserDefaults arrayForKey:@"FAVORITE_STATIONS"] mutableCopy];
         
         if(self.favoriteStations){
             //can be removed on a future update, tansform and cleanup old data
@@ -66,10 +66,10 @@
             }
             self.favoriteStations = newFavorites;
             [self storeFavorites];
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"FAVORITE_STATIONS"];
+            [NSUserDefaults.standardUserDefaults removeObjectForKey:@"FAVORITE_STATIONS"];
         } else {
             //new storage:
-            self.favoriteStations = [[[NSUserDefaults standardUserDefaults] arrayForKey:@"FAVORITE_STATIONS_V2"] mutableCopy];
+            self.favoriteStations = [[NSUserDefaults.standardUserDefaults arrayForKey:@"FAVORITE_STATIONS_V2"] mutableCopy];
         }
         
         if(!self.favoriteStations){
@@ -79,7 +79,7 @@
     return self;
 }
 -(void)storeFavorites{
-    NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     [def setObject:self.favoriteStations forKey:@"FAVORITE_STATIONS_V2"];
 }
 -(void)addStation:(MBStationFromSearch*)dict{
@@ -144,6 +144,9 @@
         MBStationFromSearch* station = [[MBStationFromSearch alloc] initWithDict:dict];
         [list addObject:station];
     }
+    [list sortUsingComparator:^NSComparisonResult(MBStationFromSearch* _Nonnull obj1, MBStationFromSearch* _Nonnull obj2) {
+        return [obj1.title compare:obj2.title];
+    }];
     return list;
 }
 

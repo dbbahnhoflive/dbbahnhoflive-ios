@@ -26,5 +26,6 @@
 @property(nonatomic) BOOL showDetails;
 @property(nonatomic) BOOL showDistance;
 @property(nonatomic,weak) MBStationListTableView* tableView;
++(NSInteger)departureContainerHeight;
 
 @end

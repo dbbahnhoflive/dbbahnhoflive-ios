@@ -52,6 +52,7 @@ static NSDate* initialSetupDate = nil;
     NSMutableArray *stopsToAdd = [NSMutableArray array];
     
     NSArray *changes = [TimetableParser parseChangesForTimetable:data evaNumber:evaNumber];
+    //NSLog(@"checking for unknown changes between %@ and %@",[Timetable now],self.lastRequestedDate);
     
     for (Stop *changedStop in changes) {
         // A change might introduce a new Stop as a replacement for a cancelled one
@@ -73,19 +74,19 @@ static NSDate* initialSetupDate = nil;
                 
                 // merge information from two events
                 
-                if (changedStop.departure) {
-                    [self updateEvent:stop.departure withNewEvent:changedStop.departure];
+                if (changedStop.departureEvent) {
+                    [self updateEvent:stop.departureEvent withNewEvent:changedStop.departureEvent];
                 }
                 
-                if (changedStop.arrival) {
-                    [self updateEvent:stop.arrival withNewEvent:changedStop.arrival];
+                if (changedStop.arrivalEvent) {
+                    [self updateEvent:stop.arrivalEvent withNewEvent:changedStop.arrivalEvent];
                     
                 }
             }
         }
         
         BOOL extraTrain = changedStop.isExtraTourTrain;
-        if(extraTrain && (changedStop.arrival.eventIsCanceled || changedStop.departure.eventIsCanceled)){
+        if(extraTrain && (changedStop.arrivalEvent.eventIsCanceled || changedStop.departureEvent.eventIsCanceled)){
             NSLog(@"ignore canceled sonderfahrt");
             extraTrain = NO;
         }
@@ -96,10 +97,10 @@ static NSDate* initialSetupDate = nil;
             if(extraTrain){
                 NSLog(@"adding sonderfahrt!");
             }
-            NSLog(@"added a stop %@ %@ %@ %@ %@ %@, %@ %@ ",changedStop.stopId,changedStop.transportCategory.transportCategoryType,changedStop.transportCategory.transportCategoryNumber,changedStop.arrival.formattedTime,changedStop.departure.formattedTime,changedStop.arrival.station,changedStop.departure.station,changedStop);
+            NSLog(@"added a stop %@ %@ %@ %@ %@ %@, %@ %@ ",changedStop.stopId,changedStop.transportCategory.transportCategoryType,changedStop.transportCategory.transportCategoryNumber,changedStop.arrivalEvent.formattedTime,changedStop.departureEvent.formattedTime,changedStop.arrivalEvent.station,changedStop.departureEvent.station,changedStop);
         }
         if(!hasUpdatedExisting && !hasAddedMissingStop && !hasRef){
-            if((changedStop.arrival.eventIsAdditional || changedStop.departure.eventIsAdditional) && (!changedStop.arrival.eventIsCanceled && !changedStop.departure.eventIsCanceled)){
+            if((changedStop.arrivalEvent.eventIsAdditional || changedStop.departureEvent.eventIsAdditional) && (!changedStop.arrivalEvent.eventIsCanceled && !changedStop.departureEvent.eventIsCanceled)){
                 [stopsToAdd addObject:changedStop];
                 hasAddedMissingStop = YES;
                 NSLog(@"added this train! %@",changedStop.stopId);
@@ -111,23 +112,32 @@ static NSDate* initialSetupDate = nil;
             double now = [[Timetable now] timeIntervalSince1970];
             double futureLimit = self.lastRequestedDate.timeIntervalSince1970;
             double timestamp = 0;
-            if(changedStop.departure){
+            if(changedStop.departure && !changedStop.departure.eventIsCanceled){
                 timestamp = changedStop.departure.changedTimestamp;
                 if(timestamp >= now && timestamp < futureLimit){
                     //not yet departed...
-                    //NSLog(@"TODO: missing stop with a change in departure: %@, %f",changedStop.stopId, changedStop.departure.changedTimestamp);
+                    NSLog(@"TODO: missing stop with a change in departure: %@, %@,%@",changedStop.stopId, [NSDate dateWithTimeIntervalSince1970:changedStop.departure.changedTimestamp],changedStop.evaNumber);
                     
-                } else if(timestamp == 0) {
-                    timestamp = changedStop.departure.timestamp;
-                    //NSLog(@"TODO: missing departure stop, additional train? %@, %@,%@,%@,%@",changedStop.stopId,changedStop.departure.formattedTime,changedStop.departure.lineIdentifier,changedStop.transportCategory.transportCategoryType,changedStop.transportCategory.transportCategoryNumber);
+                }
+//                 else {
+//                    double timestamp2 = changedStop.departure.timestamp;
+//                    if(timestamp != 0 || timestamp2 != 0){
+//                        NSLog(@"TODO: missing departure stop, additional train? %@, %@,%@,%@,%@,  %@, %@",changedStop.stopId,changedStop.departure.formattedTime,changedStop.departure.lineIdentifier,changedStop.transportCategory.transportCategoryType,changedStop.transportCategory.transportCategoryNumber, [NSDate dateWithTimeIntervalSince1970:timestamp], [NSDate dateWithTimeIntervalSince1970:timestamp2]);
+//                    } else {
+//                        //ignore this change, contains no time information
+//                    }
                 }
             }
-            if(!hasAddedMissingStop && changedStop.arrival){
+            if(changedStop.arrival && !changedStop.arrival.eventIsCanceled){
                 timestamp = changedStop.arrival.changedTimestamp;
                 if(timestamp >= now && timestamp < futureLimit){
                     //not yet arrived...
-                    //NSLog(@"TODO: missing stop with a change in arrival:  %@",changedStop.stopId);
-                    
+                    if(changedStop.departure.changedTimestamp >= futureLimit){
+                        //this an early arriving train with plan in the future, ignore this one
+                        NSLog(@"ignore a missing arrival from an early train");
+                    } else {
+                        NSLog(@"TODO: missing stop with a change in arrival:  %@, %@,%@",changedStop.stopId,[NSDate dateWithTimeIntervalSince1970:timestamp],changedStop.evaNumber);
+                    }
                 }
             }
         }*/
@@ -157,8 +167,8 @@ static NSDate* initialSetupDate = nil;
     event.formattedTime = @"12:00";
     event.originalPlatform = @"1";
     event.stations = @[@"Dresden",@"München"];
-    stop.arrival = event;
-    stop.departure = event;
+    stop.arrivalEvent = event;
+    stop.departureEvent = event;
     self.stops = [NSMutableArray arrayWithCapacity:1];
     [self.stops addObject:stop];
     self.arrivalStops = @[ stop ];
@@ -282,10 +292,15 @@ static NSDate* initialSetupDate = nil;
     
     for (Stop *stop in self.stops) {
         double timestamp = 0;
+        //NOTE: stops that are hidden will have timestamp=0 -> they are not displayed!
         if (departure) {
-            timestamp = stop.departure.timestamp+[stop.departure rawDelay];
+            if(!stop.departureEvent.isHidden){
+                timestamp = stop.departureEvent.timestamp+[stop.departureEvent rawDelay];
+            }
         } else {
-            timestamp = stop.arrival.timestamp+[stop.arrival rawDelay];
+            if(!stop.arrivalEvent.isHidden){
+                timestamp = stop.arrivalEvent.timestamp+[stop.arrivalEvent rawDelay];
+            }
         }
         
         //if ((timestamp+60) < now
@@ -297,8 +312,8 @@ static NSDate* initialSetupDate = nil;
         }
     }
     
-    NSString *sortKeyTime = departure ? @"departure.timestamp" : @"arrival.timestamp";
-    NSString *sortKeyPlatform = departure ? @"departure.actualPlatform" : @"arrival.actualPlatform";
+    NSString *sortKeyTime = departure ? @"departureEvent.timestamp" : @"arrivalEvent.timestamp";
+    NSString *sortKeyPlatform = departure ? @"departureEvent.actualPlatform" : @"arrivalEvent.actualPlatform";
     NSArray *sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:sortKeyTime ascending:YES],
                           [NSSortDescriptor sortDescriptorWithKey:sortKeyPlatform ascending:YES]];
     return [[filteredStops copy] sortedArrayUsingDescriptors:sortDescriptors];

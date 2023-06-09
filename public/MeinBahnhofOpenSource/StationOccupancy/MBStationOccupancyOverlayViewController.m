@@ -30,7 +30,6 @@
     @"Übliches Besucheraufkommen",@"Die Anzahl der Besucher vor Ort entspricht dem gewöhnlichen Besucheraufkommen zu dieser Uhrzeit an diesem Wochentag.",
     @"Mehr Besucher als üblich",@"Vor Ort ist aktuell mit mehr Besuchern als gewöhnlich zu rechnen. In der Regel ist das Besucheraufkommen zu dieser Uhrzeit an diesem Wochentag geringer.",
     @"Hinweise",@"Bitte beachten Sie: Diese Info-Grafik gibt Auskunft über das aktuelle Besucheraufkommen im Vergleich zum durchschnittlichen Besucheraufkommen der vergangenen acht Wochen. Für diese Grafik werden Näherungswerte errechnet und keine absoluten Zahlen verwendet. Folglich sind Abweichungen zum tatsächlichen Besucheraufkommen vor Ort möglich. Diese Grafik gibt außerdem keine Auskunft hinsichtlich des Besucheraufkommens im Verhältnis zu den räumlichen Kapazitäten vor Ort. Alle Angaben sind ohne Gewähr.",
-    @"Weiterführende Informationen",@"Aktuelle Informationen und Service-Hinweise zum sicheren Aufenthalt am Bahnhof sowie ihrer Reise finden sie auf gemeinsamgehtdas.de.",
     ];
     for(NSInteger i=0; i<texts.count; ){
         NSString* header = texts[i++];
@@ -65,31 +64,8 @@
         y += bodyLabel.sizeHeight + 25;
 
     }
-    y -= 5;
-    UIButton* button = [[UIButton alloc] init];
-    [self.contentScrollView addSubview:button];
-    [button setTitle:@"gemeinsamgehtdas.de" forState:UIControlStateNormal];
-    [button addTarget:self action:@selector(didTapOnButton:) forControlEvents:UIControlEventTouchUpInside];
-    button.backgroundColor = [UIColor db_GrayButton];
-    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [button.titleLabel setFont:[UIFont db_BoldEighteen]];
-    button.width = self.contentScrollView.frame.size.width-16*2;
-    button.height = 60;
-    [button setGravityTop:y];
-    [button centerViewHorizontalInSuperView];
-    button.layer.cornerRadius = button.frame.size.height / 2.0;
-    button.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    button.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    button.layer.shadowRadius = 1.5;
-    button.layer.shadowOpacity = 1.0;
-    y = CGRectGetMaxY(button.frame)+20;
-    
+    y += 20;
     self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
-
-}
-
--(void)didTapOnButton:(UIButton*)sender{
-    [MBUrlOpening openURL:[NSURL URLWithString:@"https://gemeinsamgehtdas.de"]];
 }
 
 -(void)viewDidLayoutSubviews{

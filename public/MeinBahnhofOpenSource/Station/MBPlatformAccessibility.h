@@ -14,8 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSString* name;
 @property(nonatomic) NSArray<MBPlatformAccessibilityFeature*>* features;
 
--(NSArray<NSString*>*)availableTypesDisplayStrings;
-
+-(NSArray<MBPlatformAccessibilityFeature*>*)availableFeatures;
 
 +(MBPlatformAccessibility* _Nullable)parseDict:(NSDictionary*)dict;
 +(MBPlatformAccessibilityType)statusStepFreeAccessForAllPlatforms:(NSArray<MBPlatformAccessibility*>*)platforms;

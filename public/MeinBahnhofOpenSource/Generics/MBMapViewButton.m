@@ -50,10 +50,7 @@
         [self setSize:CGSizeMake(72,72)];
         [self setBackgroundColor:[UIColor db_mainColor]];
         self.layer.cornerRadius = 36;
-        self.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.layer.shadowRadius = 1.5;
-        self.layer.shadowOpacity = 1.0;
+        [self configureDefaultShadow];
     }
     self.accessibilityLabel = @"Karte anzeigen";
 

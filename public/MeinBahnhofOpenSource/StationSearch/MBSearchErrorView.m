@@ -42,10 +42,7 @@
         [actionButton setBackgroundColor:[UIColor db_mainColor]];
         [actionButton.titleLabel setFont:[UIFont db_BoldEighteen]];
         [actionButton addTarget:self action:@selector(actionTapped:) forControlEvents:UIControlEventTouchUpInside];
-        actionButton.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        actionButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        actionButton.layer.shadowRadius = 1.5;
-        actionButton.layer.shadowOpacity = 1.0;
+        [actionButton configureDefaultShadow];
         [self addSubview:actionButton];
         
         [self addSubview:self.warnIcon];

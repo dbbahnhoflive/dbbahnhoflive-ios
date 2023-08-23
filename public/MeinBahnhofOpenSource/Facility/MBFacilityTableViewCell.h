@@ -12,6 +12,13 @@
 @protocol MBFacilityTableViewCellDelegate
 - (void)facilityCell:(MBFacilityTableViewCell *)cell addsFacility:(FacilityStatus *)status;
 - (void)facilityCell:(MBFacilityTableViewCell *)cell removesFacility:(FacilityStatus *)status;
+- (void)facilityCell:(MBFacilityTableViewCell *)cell addsPush:(FacilityStatus *)status;
+- (void)facilityCell:(MBFacilityTableViewCell *)cell removesPush:(FacilityStatus *)status;
+- (void)facilityCell:(MBFacilityTableViewCell *)cell wantsGlobalPushDialog:(FacilityStatus *)status;
+- (void)facilityCell:(MBFacilityTableViewCell *)cell wantsSystemPushDialog:(FacilityStatus *)status;
+
+- (void)facilityCell:(MBFacilityTableViewCell *)cell togglesPushSwitch:(UISwitch*)aSwitch newState:(BOOL)on forFacility:(FacilityStatus *)status;
+
 @end
 
 @interface MBFacilityTableViewCell : UITableViewCell

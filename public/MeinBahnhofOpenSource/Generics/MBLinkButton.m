@@ -72,6 +72,16 @@
     button.leftInset = 8;
     return button;
 }
++ (instancetype) boldButtonWithSmallRedExternalLink
+{
+    MBLinkButton *button = [super buttonWithType:UIButtonTypeCustom];
+    button.leftImage = [[UIImage db_imageNamed:@"link_external_red"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    button.imageView.tintColor = UIColor.redColor;
+    button.labelFont = [UIFont db_BoldFourteen];
+    button.titleColor = [UIColor db_333333];
+    button.leftInset = 12;
+    return button;
+}
 
 
 - (void) setLabelText:(NSString *)labelText
@@ -83,7 +93,7 @@
     
     CGSize sizeOfLabel = self.titleLabel.size;
     
-    self.frame = CGRectMake(0, 0, sizeOfLabel.width+self.leftInset+(self.leftImage.size.width), MAX(sizeOfLabel.height, self.leftImage.size.height));
+    self.frame = CGRectMake(0, 0, sizeOfLabel.width+self.leftInset+(self.leftImage.size.width)+1, MAX(sizeOfLabel.height, self.leftImage.size.height));
     
     [self setImage:self.leftImage forState:UIControlStateNormal];
 

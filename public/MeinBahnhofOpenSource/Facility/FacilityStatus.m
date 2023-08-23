@@ -9,26 +9,29 @@
 
 @implementation FacilityStatus
 
+-(NSString*)equipmentNumberString{
+    return self.equipmentNumber.description;
+}
 
 - (UIImage*)iconForState
 {
     switch (self.state) {
-        case ACTIVE:
-            if (self.type == ESCALATOR) {
+        case FacilityStateActive:
+            if (self.type == FacilityTypeEscalator) {
                 return [UIImage db_imageNamed:@"StairActive"];
             } else {
                 return [UIImage db_imageNamed:@"ElevatorActive"];
             }
             break;
-        case UNKNOWN:
-            if (self.type == ESCALATOR) {
+        case FacilityStateUnknown:
+            if (self.type == FacilityTypeEscalator) {
                 return [UIImage db_imageNamed:@"StairUnknown"];
             } else {
                 return [UIImage db_imageNamed:@"ElevatorUnknown"];
             }
             break;
         default:
-            if (self.type == ESCALATOR) {
+            if (self.type == FacilityTypeEscalator) {
                 return [UIImage db_imageNamed:@"StairInactive"];
             } else {
                 return [UIImage db_imageNamed:@"ElevatorInactive"];
@@ -47,13 +50,13 @@
 + (NSValueTransformer *)stateJSONTransformer {
 
     NSDictionary *states = @{
-                             @"UNKNOWN": @(UNKNOWN),
-                             @"INACTIVE": @(INACTIVE),
-                             @"ACTIVE": @(ACTIVE)
+                             @"UNKNOWN": @(FacilityStateUnknown),
+                             @"INACTIVE": @(FacilityStateInactive),
+                             @"ACTIVE": @(FacilityStateActive)
                              };
     return [MTLValueTransformer transformerUsingForwardBlock:^id(NSString *value, BOOL *success, NSError *__autoreleasing *error) {
         if (!value) { // fallback in case the value is null
-            return @(UNKNOWN);
+            return @(FacilityStateUnknown);
         }
         return states[value];
     }];
@@ -62,9 +65,9 @@
 
 - (NSString*) title
 {
-    if (self.type == ESCALATOR) {
+    if (self.type == FacilityTypeEscalator) {
         return @"Fahrtreppe";
-    } else if (self.type == ELEVATOR) {
+    } else if (self.type == FacilityTypeElevator) {
         return @"Aufzug";
     }
     return @"";
@@ -80,8 +83,8 @@
 
 + (NSValueTransformer *)typeJSONTransformer {
     return [NSValueTransformer mtl_valueMappingTransformerWithDictionary:@{
-                                                                           @"ELEVATOR": @(ELEVATOR),
-                                                                           @"ESCALATOR": @(ESCALATOR),
+                                                                           @"ELEVATOR": @(FacilityTypeElevator),
+                                                                           @"ESCALATOR": @(FacilityTypeEscalator),
                                                                            }];
 }
 

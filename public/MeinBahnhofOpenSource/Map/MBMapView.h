@@ -10,14 +10,6 @@
 #import "MBMapFlyout.h"
 #import "MBStation.h"
 
-typedef NS_ENUM(NSInteger, MAP_TYPE) {
-    OSM = 0,
-    GOOGLE = 1
-};
-
-
-
-
 #define MAX_ZOOM_NOINDOOR_OSM 17.00001
 
 #define MAX_ZOOM_REST 20.00001
@@ -26,14 +18,12 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 
 #define DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR 17
 
-@class Venue, MBMapView, MBParkingInfo;
+@class MBMapView, MBParkingInfo;
 
 @protocol MBMapViewDelegate <NSObject>
 
 @optional
 - (void) showRoutingForParking:(MBParkingInfo*)parking;
-- (void) showFacilityFavorites;
-//- (void) showViewController:(UIViewController*)vc;
 
 - (void) didTapOnFilterToggleButton:(id)sender;
 - (void) showRoutingControllerFor:(MBMarker*)item;
@@ -56,7 +46,6 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 
 @property (nonatomic, strong) NSMutableArray *filterValues;
 
-@property (nonatomic, assign) BOOL filterMarkerByLevel;
 @property (nonatomic, strong) NSArray *nearbyStations;
 
 @property (nonatomic, assign) BOOL supportsIndoor;
@@ -86,9 +75,7 @@ typedef NS_ENUM(NSInteger, MAP_TYPE) {
 
 -(void)userDidTapOnPinToUserButton:(id)sender;
 
--(void)setMapType:(MAP_TYPE)newMapType;
 -(void)setPOIs:(NSArray*)riPois;
--(void)updateMobilityMarker:(NSArray*)mobilityMarker;
 - (void) updateMarkers;
 -(MBMarker*)preselectMarkerAfterFilterChange;
 

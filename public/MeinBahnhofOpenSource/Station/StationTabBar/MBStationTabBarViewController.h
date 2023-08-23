@@ -10,7 +10,7 @@
 
 @protocol MBStationTabBarViewControllerDelegate <NSObject>
 
-- (void)goBackToSearch;
+- (void)goBackToSearchAnimated:(BOOL)animated;
 
 @end
 

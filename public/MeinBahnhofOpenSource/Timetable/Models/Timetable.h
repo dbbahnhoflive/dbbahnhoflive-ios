@@ -25,7 +25,8 @@
 @property (nonatomic, assign) NSInteger additionalRequestHours;
 
 - (void) initializeTimetableFromData:(NSData*)data evaNumber:(NSString*)evaNumber;
-- (void) updateTimetableFromData:(NSData*)data evaNumber:(NSString *)evaNumber;
+//returns a set of missing train ids
+- (NSMutableSet*) updateTimetableFromData:(NSData*)data evaNumber:(NSString *)evaNumber;
 
 - (void) clearTimetable;
 - (BOOL) hasTimetableData;

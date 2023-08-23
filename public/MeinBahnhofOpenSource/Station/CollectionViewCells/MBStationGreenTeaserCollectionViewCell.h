@@ -6,8 +6,6 @@
 
 #import "MBStationCollectionViewCell.h"
 
-#define GREEN_TEASER_HEIGHT 172
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MBStationGreenTeaserCollectionViewCell : MBStationCollectionViewCell

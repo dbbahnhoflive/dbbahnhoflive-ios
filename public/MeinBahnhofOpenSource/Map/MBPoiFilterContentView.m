@@ -7,6 +7,7 @@
 #import "MBPoiFilterContentView.h"
 #import "POIFilterTableCell.h"
 #import "MBUIHelper.h"
+#import "DBSwitch.h"
 
 #define POIFilterCellClassIdentifier @"POIFilterCellClass"
 
@@ -63,11 +64,13 @@
     [headerButton addTarget:self action:@selector(headerButton:) forControlEvents:UIControlEventTouchUpInside];
     [headerViewContainer addSubview:headerButton];
 
-    self.allToggleSwitch = [[UISwitch alloc] init];
+    self.allToggleSwitch = [[DBSwitch alloc] init];
+    self.allToggleSwitch.accessibilityLabel = @"Alle anzeigen";
     [self.allToggleSwitch setOn:[self isAllSelected]];
     
     UILabel *allLabel = [[UILabel alloc] init];
     allLabel.text = @"Alle anzeigen";
+    allLabel.isAccessibilityElement = false;
     allLabel.font = [UIFont db_RegularSeventeen];
     allLabel.textColor = [UIColor db_333333];
     [allLabel sizeToFit];

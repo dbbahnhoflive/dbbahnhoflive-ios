@@ -30,7 +30,7 @@
         self.mainLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.mainLabel.text = @"Das ist grün";
         self.mainLabel.textColor = [UIColor whiteColor];
-        self.mainLabel.font = [UIFont dbHeadBlackWithSize:30];
+        self.mainLabel.font = [UIFont db_HeadBlackThirty];
         [self.contentView addSubview:self.mainLabel];
         
         self.whiteBox = [[UIView alloc] initWithFrame:CGRectZero];
@@ -40,13 +40,13 @@
         self.subLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.subLabel.text = @"Grüner Halt. Fürs Klima.";
         self.subLabel.textColor = [UIColor db_333333];
-        self.subLabel.font = [UIFont dbHeadLightWithSize:17];
+        self.subLabel.font = [UIFont db_HeadLightSeventeen];
         [self.whiteBox addSubview:self.subLabel];
 
         self.textLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.textLabel.text = @"Ökostrom am Bahnhof.";
         self.textLabel.textColor = [UIColor db_333333];
-        self.textLabel.font = [UIFont dbHeadBlackWithSize:17];
+        self.textLabel.font = [UIFont db_HeadBlackSeventeen];
         [self.whiteBox addSubview:self.textLabel];
 
         self.numberLabel = [[UILabel alloc] initWithFrame:CGRectZero];

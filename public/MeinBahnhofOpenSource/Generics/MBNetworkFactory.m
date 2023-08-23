@@ -18,8 +18,8 @@
 +(void)configureRISHeader:(AFHTTPSessionManager*)networkManager{
     [networkManager.requestSerializer setValue:@"application/json, application/vnd.de.db.ris+json, */*" forHTTPHeaderField:@"Accept"];
 
-    [networkManager.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"db-api-key"];
-    [networkManager.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"db-client-id"];
+    [networkManager.requestSerializer setValue:[Constants dbAPIKey] forHTTPHeaderField:@"DB-Api-Key"];
+    [networkManager.requestSerializer setValue:[Constants dbAPIClient] forHTTPHeaderField:@"DB-Client-Id"];
     networkManager.responseSerializer.acceptableContentTypes = [networkManager.responseSerializer.acceptableContentTypes setByAddingObject:@"application/vnd.de.db.ris+json"];
 }
 

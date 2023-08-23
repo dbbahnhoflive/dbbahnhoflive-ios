@@ -63,10 +63,7 @@
 
 - (void)setupLayerForButton:(UIButton *)button {
     button.backgroundColor = [UIColor whiteColor];
-    button.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    button.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    button.layer.shadowRadius = 1.5;
-    button.layer.shadowOpacity = 1.0;
+    [button configureDefaultShadow];
 }
 
 - (void)buttonTapped:(UIButton *)sender {

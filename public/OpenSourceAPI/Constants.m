@@ -68,4 +68,10 @@
     return [UIColor dbColorWithRGB:0xED7200];
 }
 
+
++(BOOL)usePushServices{
+    return false;
+}
+
+
 @end

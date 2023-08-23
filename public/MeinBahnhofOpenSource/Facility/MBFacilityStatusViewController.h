@@ -11,6 +11,7 @@
 
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, strong) NSString *trackingTitle;
+@property (nonatomic) BOOL reloadStatusOnFirstView;
 
 
 @end

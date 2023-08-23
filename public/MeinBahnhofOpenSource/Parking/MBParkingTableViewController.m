@@ -144,7 +144,7 @@
 }
 
 - (void)didStartNavigationForParking:(MBParkingInfo *)parking {
-    [MBTrackingManager trackActionsWithStationInfo:@[TRACK_KEY_CONNECTION, @"parking", @"directions"]];
+    [MBTrackingManager trackActionsWithStationInfo:@[@"connection", @"parking", @"directions"]];
     if(!CLLocationCoordinate2DIsValid(parking.location)){
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Für diese Einrichtung liegen keine Ortsdaten vor." preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];

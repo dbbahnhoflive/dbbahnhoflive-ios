@@ -25,7 +25,7 @@
 
 +(MBMarker*)markerForSearchStation:(MBStationFromSearch*)searchStation{
     if(searchStation.isOPNVStation){
-        MBMarker *marker = [MBMarker markerWithPosition:searchStation.coordinate andType:OEPNV_SELECTABLE];
+        MBMarker *marker = [MBMarker markerWithPosition:searchStation.coordinate andType:MBMarkerType_OEPNV_SELECTABLE];
         if(UIAccessibilityIsVoiceOverRunning()){
             marker.title = searchStation.title;
         }
@@ -53,7 +53,7 @@
                     
     MBMarker *marker = (MBMarker *)[station markerForStation];
     marker.zoomLevel = DEFAULT_ZOOM_LEVEL_WITHOUT_INDOOR;
-    marker.markerType = STATION_SELECTABLE;
+    marker.markerType = MBMarkerType_STATION_SELECTABLE;
     marker.userData = @{@"name":fakeDict[@"title"],
                                 @"title":fakeDict[@"title"],
                                 @"eva_ids":fakeDict[@"eva_ids"],
@@ -70,7 +70,7 @@
 +(NSArray*)oepnvStationsToMBMarkerList:(NSArray<MBOPNVStation*>*)oepnvStations{
     NSMutableArray *trainMarkers = [NSMutableArray new];
     for (MBOPNVStation *station in oepnvStations) {
-        MBMarker *marker = [MBMarker markerWithPosition:station.coordinate andType:OEPNV_SELECTABLE];
+        MBMarker *marker = [MBMarker markerWithPosition:station.coordinate andType:MBMarkerType_OEPNV_SELECTABLE];
         if(UIAccessibilityIsVoiceOverRunning()){
             marker.title = station.name;
         }

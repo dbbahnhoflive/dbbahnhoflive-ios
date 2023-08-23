@@ -65,10 +65,7 @@
     
     [self.contentView addSubview:self.titleLabel];
     
-    self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-    self.layer.shadowRadius = 3.0;
-    self.layer.shadowOpacity = 1.0;
+    [self configureH1Shadow];
     
     return self;
 }

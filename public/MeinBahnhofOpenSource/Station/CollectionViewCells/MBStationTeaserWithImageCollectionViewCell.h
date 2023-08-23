@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MBStationTeaserWithImageCollectionViewCell : MBStationCollectionViewCell
 
 -(void)setKachel:(MBStationKachel *)kachel;
-@property(nonatomic) MBStationTeaserType type;
 
 @end
 

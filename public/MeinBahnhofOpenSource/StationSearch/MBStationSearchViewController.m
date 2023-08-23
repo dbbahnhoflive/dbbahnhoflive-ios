@@ -57,6 +57,8 @@
 #import "MBProgressHUD.h"
 #import "MBTrackingManager.h"
 #import "AppDelegate.h"
+#import "MBTrainPositionViewController.h"
+#import "MBBackNavigationState.h"
 
 @import Sentry;
 
@@ -66,6 +68,9 @@ typedef NS_ENUM(NSUInteger, MBStationSearchType){
     MBStationSearchTypeLocation = 2
 };
 
+#define SETTING_DIDSEE_TUTORIAL @"did_see_tutorial"
+#define SETTING_LAST_ONBOARDING_VERSION @"onboarding_version_info"
+#define SETTING_LAST_SEARCH_TYPE @"LAST_SEARCH_TYPE"
 
 #define kErrorMessage @"Die Anfrage konnte gerade nicht ausgeführt werden."
 #define kEmptyMessage @"Für diesen Suchbegriff konnten keine Stationen gefunden werden."
@@ -150,6 +155,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 @property (nonatomic) NSInteger requestDBOngoing;
 @property(nonatomic) BOOL didSelectStationRunning;
 
+@property(nonatomic,strong) NSMutableArray<MBBackNavigationState*>* backNavigationList;
+
 @end
 
 @implementation MBStationSearchViewController
@@ -158,7 +165,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 {
     [super viewDidLoad];
     self.requestDBOngoing = 0;
-    
+    self.backNavigationList = [NSMutableArray arrayWithCapacity:2];
     
     [(MBStationNavigationViewController *)self.navigationController setHideEverything:YES];
 
@@ -195,9 +202,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [super viewDidAppear:animated];
     
     [MBTrackingManager trackState:@"h0"];
-    
-    [[TimetableManager sharedManager] resetTimetable];
-    
 
     //NSLog(@"GPS viewDidAppear stops positioning");
     [[MBGPSLocationManager sharedManager] stopPositioning];
@@ -236,18 +240,11 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     NSString *appVersionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    NSString *savedAppVersion = [def objectForKey:@"onboarding_version_info"];
-    BOOL didSeeTutorial = [def boolForKey:@"did_see_tutorial"];
-    if(didSeeTutorial && savedAppVersion && ![savedAppVersion isEqualToString:appVersionString] && [appVersionString isEqualToString:@"2.6.0"]){
-        //user saw tutorial from another version and the current one is 2.6.0: force tutorial
-        didSeeTutorial = NO;
-    }
-    
+    BOOL didSeeTutorial = [def boolForKey:SETTING_DIDSEE_TUTORIAL];
     if (!didSeeTutorial) {
         
-        [def setBool:YES forKey:@"did_see_tutorial"];
-        [def setObject:appVersionString forKey:@"onboarding_version_info"];
-        [def synchronize];
+        [def setBool:YES forKey:SETTING_DIDSEE_TUTORIAL];
+        [def setObject:appVersionString forKey:SETTING_LAST_ONBOARDING_VERSION];
         
         self.onBoardingVisible = YES;
         OnboardingViewController *onboardingViewController = [[OnboardingViewController alloc] init];
@@ -256,8 +253,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         [self addChildViewController:onboardingViewController];
         [onboardingViewController didMoveToParentViewController:self];
         [self.view addSubview:onboardingViewController.view];
-        /*[self presentViewController:onboardingViewController animated:NO completion:^{
-        }];*/
    }
    [self displayPrivacyDialog];
 
@@ -328,8 +323,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     _currentType = MBStationSearchTypeTextSearch;
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    if([def objectForKey:@"LAST_SEARCH_TYPE"]){
-        _currentType = [[def objectForKey:@"LAST_SEARCH_TYPE"] integerValue];
+    if([def objectForKey:SETTING_LAST_SEARCH_TYPE]){
+        _currentType = [[def objectForKey:SETTING_LAST_SEARCH_TYPE] integerValue];
     }
     
     
@@ -348,8 +343,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.backgroundTapView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.backgroundTapView];
     
-    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
-    [self.closeButton setImage:[UIImage db_imageNamed:@"MapFilterBack"] forState:UIControlStateNormal];
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [self.closeButton setImage:[UIImage db_imageNamed:@"ChevronBlackLeft"] forState:UIControlStateNormal];
     self.closeButton.accessibilityLabel = @"Suche schließen";
     self.closeButton.accessibilityIdentifier = @"CloseButton";
     [self.closeButton addTarget:self action:@selector(closeButtonTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -540,7 +535,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     NSString* iconName = @"app_lupe";
     if(type == MBStationSearchTypeFavorite){
-        iconName = @"app_favorit_default";
+        iconName = @"app_favorit";
         button.accessibilityLabel = @"Favoriten";
     } else if(type == MBStationSearchTypeLocation){
         iconName = @"app_position";
@@ -600,7 +595,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 -(void)setCurrentType:(MBStationSearchType)currentType{
     _currentType = currentType;
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    [def setObject:[NSNumber numberWithInteger:_currentType] forKey:@"LAST_SEARCH_TYPE"];
+    [def setObject:[NSNumber numberWithInteger:_currentType] forKey:SETTING_LAST_SEARCH_TYPE];
 }
 -(void)configureCurrentType{
     self.triggerSearchAfterLocationUpdate = NO;
@@ -838,10 +833,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 
 
--(void)showFacilityForStation{
-    [self.stationMapController showFacilityForStation];
-}
-
 - (void)didTapOnImprintLink:(id)sender
 {
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
@@ -943,6 +934,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (void) updateLastRequestedStations:(MBStationFromSearch*)station
 {
+    if(station.isInternalLink){
+        //don't update the list of last searched stations
+        return;
+    }
     NSMutableArray *archivedStations = [[self lastRequestedStations] mutableCopy];
     
     BOOL contains = NO;
@@ -1136,7 +1131,53 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self didSelectStation:station startWithDepartures:YES];
 }
 
+-(void)popToSearchViewController{
+    AppDelegate* app = (AppDelegate*) UIApplication.sharedApplication.delegate;
+    if(MBRootContainerViewController.currentlyVisibleInstance){
+        [MBRootContainerViewController.currentlyVisibleInstance goBackToSearchAnimated:false clearBackHistory:false];
+    } else {
+        //the user is viewing a departure from H0
+        [app.viewController.navigationController popToRootViewControllerAnimated:NO];
+    }
+}
 
+-(void)openStationFromInternalLink:(MBStationFromSearch *)station  withBackState:(MBBackNavigationState*)state{
+    [self popToSearchViewController];
+    NSLog(@"adding to backNavigationList: %@",state);
+    [self.backNavigationList addObject:state];
+    [self didSelectStation:station];
+}
+-(BOOL)allowBackFromStation{
+    return self.backNavigationList.count > 0;
+}
+-(void)goBackToPreviousStation{
+    MBBackNavigationState* state = self.backNavigationList.lastObject;
+    NSLog(@"go back to the station from backNavigationList: %@",state);
+    if(state){
+        [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+        self.trainJourneyToRestore = state;
+        [self.backNavigationList removeLastObject];
+        [self popToSearchViewController];
+        [(MBStationNavigationViewController *)self.navigationController hideNavbar:true];
+        [(MBStationNavigationViewController *)self.navigationController setShowRedBar:false];
+        [(MBStationNavigationViewController *)self.navigationController setHideEverything:true];
+
+        MBStationFromSearch* station = [[MBStationFromSearch alloc] init];
+        station.isOPNVStation = state.isOPNVStation;
+        station.isInternalLink = true;
+        station.isGoingBack = true;
+        station.isFreshStationFromSearch = true;//not really, but we need to safe the request here
+        station.coordinate = state.position;
+        station.eva_ids = state.evaIds;
+        station.title = state.title;
+        station.stationId = state.mbId;
+        [self didSelectStation:station startWithDepartures:true];
+        [MBProgressHUD hideHUDForView:self.view animated:NO];
+    } else {
+        //there is no station to go back to, return to search controller
+        [self popToSearchViewController];
+    }
+}
 
 
 - (void) didSelectStation:(MBStationFromSearch *)station{
@@ -1149,6 +1190,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         NSLog(@"ignored %@, waiting for %@",stationFromSearch,_selectedStation);
         return;
     }
+    NSLog(@"didSelectStation: %@",stationFromSearch);
     _didSelectStationRunning = YES;
     [[MBTutorialManager singleton] hideTutorials];
 
@@ -1190,6 +1232,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }];
 
     if(stationFromSearch.isOPNVStation){
+        NSLog(@"opening an opnv station");
         switch(self.currentType){
             case MBStationSearchTypeTextSearch:
                 [MBTrackingManager trackActions:@[@"h0", @"tap", @"abfahrt_suche_opnv"]];
@@ -1202,15 +1245,13 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
                 break;
         }
 
-        MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithFernverkehr:NO];
+        NSString* idString = stationFromSearch.eva_ids.firstObject;
+        NSString* stationTitle = stationFromSearch.title;
+        MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithOPNVAndAllowBack:self.backNavigationList.count > 0];
         timeVC.oepnvOnly = YES;
         timeVC.includeLongDistanceTrains = false;
-        timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
-        
-        NSString* idString = stationFromSearch.eva_ids.firstObject;
-        
-        timeVC.hafasStation = [MBOPNVStation stationWithId:idString name:stationFromSearch.title];
-        [self.navigationController pushViewController:timeVC animated:YES];
+        timeVC.hafasStation = [MBOPNVStation stationWithId:idString name:stationTitle];
+        [self.navigationController pushViewController:timeVC animated:!stationFromSearch.isGoingBack];
         _didSelectStationRunning = NO;
         return;
     }
@@ -1235,10 +1276,13 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
     
     self.stationMapController = [[MBRootContainerViewController alloc] initWithRootBackButton];
-
+    self.stationMapController.startWithFacility = self.startWithFacilityView;
+    self.stationMapController.allowBackFromStation = self.allowBackFromStation;
+    self.startWithFacilityView = false;
     self.stationMapController.startWithDepartures = startWithDepartures;
     if(startWithDepartures){
         //ensure that timetable is setup early
+        self.stationMapController.preloadedDepartures = station.stationEvaIds;
         [[TimetableManager sharedManager] reloadTimetableWithEvaIds:station.stationEvaIds];
     }
     
@@ -1249,11 +1293,11 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.stationMapController.station = station;
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [navigationController pushViewController:self.stationMapController animated:YES];
+        [navigationController pushViewController:self.stationMapController animated:!stationFromSearch.isGoingBack];
         
         if(self.wagenstandUserInfo){
             //opened station from a wagenstand reminder
-            [self.stationMapController showWagenstandForUserInfo:self.wagenstandUserInfo];
+            [MBTrainPositionViewController showWagenstandForUserInfo:self.wagenstandUserInfo fromViewController:self.stationMapController];
             self.wagenstandUserInfo = nil;
         }
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -1263,14 +1307,21 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     });
 }
 
-- (void) freeStation
+- (void) freeStationAndClearBackHistory:(BOOL)clearBackHistory
 {
+    [[TimetableManager sharedManager] resetTimetable];
     [self.stationMapController cleanup];
     self.stationMapController = nil;
     self.selectedStation = nil;
     [SentrySDK configureScope:^(SentryScope *_Nonnull scope) {
         [scope removeContextForKey:@"station"];
     }];
+    if(clearBackHistory){
+        NSLog(@"clearing backNavigationList");
+        [self.backNavigationList removeAllObjects];
+        self.trainJourneyToRestore = nil;
+    }
+    NSLog(@"freeStation finished");
 }
 
 - (void) triggerSearchAround

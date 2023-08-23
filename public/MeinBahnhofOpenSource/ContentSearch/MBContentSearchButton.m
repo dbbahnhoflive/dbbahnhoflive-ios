@@ -25,10 +25,7 @@
         self.contentSearchButtonShadow.isAccessibilityElement = NO;
         self.contentSearchButtonShadow.userInteractionEnabled = NO;
         self.contentSearchButtonShadow.backgroundColor = [UIColor whiteColor];
-        self.contentSearchButtonShadow.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.contentSearchButtonShadow.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-        self.contentSearchButtonShadow.layer.shadowRadius = 2;
-        self.contentSearchButtonShadow.layer.shadowOpacity = 1.0;
+        [self.contentSearchButtonShadow configureH1Shadow];
         [self addSubview:self.contentSearchButtonShadow];
         
         UIImageView* lupeImg = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_lupe"]];

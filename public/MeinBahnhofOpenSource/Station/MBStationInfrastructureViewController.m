@@ -21,6 +21,7 @@
 #import "MBFacilityStatusViewController.h"
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
+#import "MBStatusImageView.h"
 
 @interface MBStationInfrastructureViewController ()<MBMapViewControllerDelegate>
 
@@ -199,7 +200,17 @@
         [entryView addSubview:label];
         //label.isAccessibilityElement = NO;
         
-        UIImageView* statusIcon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_check"]];
+        BOOL isAvailable = typeEntry != nil;
+        if(typeEntry != nil && [key isEqualToString:KEY_AUFZUG]){
+            isAvailable = _station.facilityStatusPOIs.count > 0;
+        }
+        
+        MBStatusImageView* statusIcon = [[MBStatusImageView alloc] init];
+        if(isAvailable){
+            [statusIcon setStatusActive];
+        } else {
+            [statusIcon setStatusInactive];
+        }
         [entryView addSubview:statusIcon];
         [statusIcon setBelow:label withPadding:0];
         [statusIcon setGravityLeft:label.originX];
@@ -209,25 +220,18 @@
         [entryView addSubview:statusLabel];
         statusLabel.isAccessibilityElement = NO;
         
-        BOOL isAvailable = typeEntry != nil;
-        if(typeEntry != nil && [key isEqualToString:KEY_AUFZUG]){
-            isAvailable = _station.facilityStatusPOIs.count > 0;
-        }
-        
         if (isAvailable) {
             statusLabel.text = @"vorhanden";
-            statusLabel.textColor = [UIColor db_76c030];
-            statusIcon.image = [UIImage db_imageNamed:@"app_check"];
+            statusLabel.textColor = [UIColor db_green];
         } else {
             statusLabel.text = @"nicht vorhanden";
             statusLabel.textColor = [UIColor db_mainColor];
-            statusIcon.image = [UIImage db_imageNamed:@"app_kreuz"];
         }
         
         if([key isEqualToString:KEY_STUFENFREI]){
             //no status display here
             statusLabel.text = @"mehr Informationen";
-            statusLabel.font = [UIFont db_ItalicWithSize:14];
+            statusLabel.font = [UIFont db_ItalicFourteen];
             [statusLabel setGravityLeft:statusIcon.frame.origin.x];
             statusLabel.textColor = UIColor.db_5f5f5f;
             statusIcon.hidden = YES;

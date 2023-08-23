@@ -12,12 +12,13 @@
 #import "MBStationSearchViewController.h"
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
+#import "FacilityStatusManager.h"
+#import "MBProgressHUD.h"
 
 @interface MBSettingViewController ()<UITableViewDelegate,UITableViewDataSource>
 
 @property(nonatomic,strong) UITableView* settingTableView;
 @property(nonatomic,strong) NSMutableArray<MBStationFromSearch*>* favStations;
-@property(nonatomic,strong) NSIndexPath* selectedCell;
 
 @end
 
@@ -45,9 +46,7 @@
     [self.settingTableView setContentInset:UIEdgeInsetsMake(0, 0, 80, 0)];
 
     [self.view addSubview:self.settingTableView];
-    
-    self.selectedCell = [NSIndexPath indexPathForRow:-1 inSection:-1];
-    
+        
     self.favStations = [[[MBFavoriteStationManager client] favoriteStationsList] mutableCopy];
     //is current station in list?
     BOOL currentStationIsFavorite = NO;
@@ -66,12 +65,23 @@
         s.coordinate = self.currentStation.positionAsLatLng;
         [self.favStations insertObject:s atIndex:0];
     }
+    
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"einstellungen"]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+-(void)didBecomeActive:(id)sender{
+    [self.settingTableView reloadData];
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 - (void) viewDidLayoutSubviews
@@ -92,14 +102,10 @@
     if(section == 0){
         return self.favStations.count;
     }
-    return 1;//Tipps
+    return 1+1;//Tipps+Push
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    if(indexPath.section == self.selectedCell.section && indexPath.row == self.selectedCell.row){
-        return 156;//maybe more for section 2?
-    } else {
-        return 84;
-    }
+    return 156+4;
 }
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
     return 43;
@@ -116,10 +122,7 @@
             title.text = @"Favoriten verwalten";
             break;
         case 1:
-            title.text = @"Tipps und Hinweise";
-            break;
-        case 2:
-            title.text = @"Suche";
+            title.text = @"Benachrichtigungen verwalten";
             break;
     }
     [header addSubview:title];
@@ -136,76 +139,83 @@
         cell.mainTitleLabel.text = dict.title;
         cell.subTitleLabel.text = @"Als Favorit hinzugefügt";
     } else if(indexPath.section == 1) {
-        cell.mainTitleLabel.text = @"Tipps & Hinweise";
-        cell.mainIcon.image = [UIImage db_imageNamed:@"tutorialicon"];
-        cell.subTitleLabel.text = @"Anzeigen";
-    } else {
-        cell.mainTitleLabel.text = @"Suchhistorie";
-        cell.mainIcon.image = [UIImage db_imageNamed:@"app_lupe"];
-        cell.subTitleLabel.text = @"Suchhistorie zurücksetzen";
-    }
-
-    [cell.aSwitch removeTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
-
-    if(self.selectedCell.section == indexPath.section && self.selectedCell.row == indexPath.row){
-        cell.showDetails = YES;
-        if(indexPath.section == 0){
-            MBStationFromSearch* dict = self.favStations[indexPath.row];
-            cell.aSwitch.on = [[MBFavoriteStationManager client] isFavorite:dict];
-            [cell.aSwitch addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
-        } else if(indexPath.section == 1) {
-            cell.aSwitch.on = ![MBTutorialManager singleton].userDisabledTutorials;
-            [cell.aSwitch addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
-        } else if(indexPath.section == 2){
-            cell.aSwitch.on = NO;
-            [cell.aSwitch addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
+        if(indexPath.row == 0){
+            cell.mainTitleLabel.text = @"Tipps & Hinweise";
+            cell.mainIcon.image = [UIImage db_imageNamed:@"setting_Tips"];
+            cell.subTitleLabel.text = @"Anzeigen";
+        } else {
+            cell.mainTitleLabel.text = @"Push-Mitteilungen";
+            cell.mainIcon.image = [UIImage db_imageNamed:@"setting_Push"];
+            cell.subTitleLabel.text = @"Push-Mitteilungen erhalten";
         }
-    } else {
-        cell.showDetails = NO;
     }
+    
+    cell.aSwitch.data = indexPath;
+    [cell.aSwitch removeTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
+    [cell.aSwitch addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
+    cell.showDetails = YES;
+        
+    if(indexPath.section == 0){
+        MBStationFromSearch* dict = self.favStations[indexPath.row];
+        cell.aSwitch.on = [[MBFavoriteStationManager client] isFavorite:dict];
+    } else if(indexPath.section == 1) {
+        if(indexPath.row == 0){
+            cell.aSwitch.on = ![MBTutorialManager singleton].userDisabledTutorials;
+        } else {
+            cell.aSwitch.on = FacilityStatusManager.client.isGlobalPushActive && FacilityStatusManager.client.isSystemPushActive;
+        }
+    }
+
+    cell.accessibilityLabel = [NSString stringWithFormat:@"%@. %@: %@",cell.mainTitleLabel.text,cell.subTitleLabel.text,cell.aSwitch.on ? @"Ein":@"Aus"];
+
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
 }
--(void)switchChanged:(UISwitch*)sw{
-    if(self.selectedCell.section == 0){
-        MBStationFromSearch* dict = self.favStations[self.selectedCell.row];
-        if(sw.on){
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    MBSettingsTableViewCell* cell = (MBSettingsTableViewCell*) [tableView cellForRowAtIndexPath:indexPath];
+    cell.aSwitch.on = !cell.aSwitch.on;
+    [self stateChangedForIndexPath:indexPath isOn:cell.aSwitch.on];
+    [self.settingTableView reloadData];
+}
+
+-(void)switchChanged:(DBSwitch*)sw{
+    NSIndexPath* path = sw.data;
+    BOOL isOn = sw.on;
+    [self stateChangedForIndexPath:path isOn:isOn];
+}
+-(void)stateChangedForIndexPath:(NSIndexPath*)path isOn:(BOOL)isOn{
+    if(path.section == 0){
+        MBStationFromSearch* dict = self.favStations[path.row];
+        if(isOn){
             [[MBFavoriteStationManager client] addStation:dict];
         } else {
             [[MBFavoriteStationManager client] removeStation:dict];
         }
-    } else if(self.selectedCell.section == 1) {
-        [MBTutorialManager singleton].userDisabledTutorials = !sw.on;
-    } else {
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Suchhistorie" message:@"Möchten Sie die Suchhistorie löschen?" preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-            sw.on = NO;
-        }]];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Löschen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [NSUserDefaults.standardUserDefaults removeObjectForKey:SETTINGS_LAST_SEARCHES];
-            sw.on = NO;
-        }]];
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-}
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    if(self.selectedCell.section == indexPath.section && self.selectedCell.row == indexPath.row){
-        //deselect and close
-        self.selectedCell = [NSIndexPath indexPathForRow:-1 inSection:-1];
-        [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else {
-        if(self.selectedCell.section >= 0){
-            //changed cell
-            NSIndexPath* oldSelection =self.selectedCell;
-            self.selectedCell = indexPath;
-            [tableView reloadRowsAtIndexPaths:@[oldSelection,indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    } else if(path.section == 1) {
+        if(path.row == 0){
+            [MBTutorialManager singleton].userDisabledTutorials = !isOn;
         } else {
-            //selected initial cell
-            self.selectedCell = indexPath;
-            [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            //global push setting changed
+            if(!FacilityStatusManager.client.isSystemPushActive){
+                [self.settingTableView reloadData];
+                [self presentViewController:FacilityStatusManager.client.alertForPushNotActive animated:YES completion:nil];
+                return;
+            }
+            
+            [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+
+            [FacilityStatusManager.client setGlobalPushActive:isOn completion:^(NSError * error) {
+                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                if(error){
+                    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Der Status wurde nicht für alle Aufzüge gespeichert. Bitte versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
+                    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
+                    [self presentViewController:alert animated:YES completion:nil];
+                }
+            }];
         }
     }
 }
+
 
 @end

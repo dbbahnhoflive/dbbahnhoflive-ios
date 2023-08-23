@@ -7,18 +7,21 @@
 #import "MBFacilityTableViewCell.h"
 #import "FacilityStatusManager.h"
 #import "MBUIHelper.h"
+#import "DBSwitch.h"
+#import "MBFavoriteButton.h"
+#import "MBStatusImageView.h"
 
 @interface MBFacilityTableViewCell()
 
 @property (nonatomic, strong) UIView *topView;
 @property (nonatomic, strong) UIView *bottomView;
-@property (nonatomic, strong) UIImageView *facilityImageView;
+@property (nonatomic, strong) UIView *bottomViewTop;
 @property (nonatomic, strong) UILabel *nameLabel;
 @property (nonatomic, strong) UILabel *descriptionLabel;
-@property (nonatomic, strong) UIImageView *statusImageView;
-@property (nonatomic, strong) UIImageView *bookmarkImageView;
-@property (nonatomic, strong) UISwitch *merkenSwitch;
-@property (nonatomic, strong) UILabel *merkenLabel;
+@property (nonatomic, strong) MBStatusImageView *statusImageView;
+@property (nonatomic, strong) MBFavoriteButton *favoriteButton;
+@property (nonatomic, strong) UISwitch *pushSwitch;
+@property (nonatomic, strong) UILabel *pushLabel;
 
 @end
 
@@ -32,31 +35,43 @@
 
 - (void)setStatus:(FacilityStatus *)status {
     _status = status;
-    [self.merkenSwitch setOn:[[FacilityStatusManager client] isPushActiveForFacility:status.equipmentNumber.description]];
+    BOOL isSystemPushActive = FacilityStatusManager.client.isSystemPushActive;
+    BOOL isFavorite = [FacilityStatusManager.client isFavoriteFacility:status.equipmentNumberString];
+    BOOL isPushActive = [FacilityStatusManager.client isPushActiveForFacility:status.equipmentNumberString];
+    
+    self.expanded = isFavorite;
 
-    self.bookmarkImageView.hidden = !self.merkenSwitch.on;
+    if(FacilityStatusManager.client.isGlobalPushActive && isSystemPushActive){
+        self.pushSwitch.on = isPushActive;
+    } else {
+        self.pushSwitch.on = false;
+    }
+    self.favoriteButton.isFavorite = isFavorite;
 
     NSString* statusString = nil;
     self.descriptionLabel.text = status.shortDescription;
-    if (status.state == ACTIVE) {
-        self.statusImageView.image = [UIImage db_imageNamed:@"app_check"];
+    if (status.state == FacilityStateActive) {
+        [self.statusImageView setStatusActive];
         statusString = @"Status: Aktiv";
-        self.descriptionLabel.textColor = [UIColor db_76c030];
-    } else if(status.state == UNKNOWN){
-        self.statusImageView.image = [UIImage db_imageNamed:@"app_unbekannt"];
+        self.descriptionLabel.textColor = [UIColor db_green];
+    } else if(status.state == FacilityStateUnknown){
+        [self.statusImageView setStatusUnknown];
         statusString = @"Status: Unbekannt";
         self.descriptionLabel.textColor = [UIColor db_787d87];
     } else {
-        self.statusImageView.image = [UIImage db_imageNamed:@"app_kreuz"];
+        [self.statusImageView setStatusInactive];
         statusString = @"Status: Defekt";
         self.descriptionLabel.textColor = [UIColor db_mainColor];
     }
-    NSString* voiceOverString = [NSString stringWithFormat:@"%@. %@. Aufzug in Merkliste speichern %@. Zum Umschalten doppeltippen.",status.shortDescription, statusString, self.bookmarkImageView.hidden ? @"Aus" : @"Ein"];
+    NSMutableString* voiceOverString = [NSMutableString stringWithFormat:@"%@ . %@. Aufzug in Merkliste: %@.",status.shortDescription, statusString, isFavorite ? @"Ein" : @"Aus"];
+    if(isFavorite){
+        [voiceOverString appendFormat:@" Mitteilungen zur Verfügbarkeit erhalten: %@.",self.pushSwitch.on ? @"Ein" : @"Aus"];
+    }
+    [voiceOverString appendString:@" Zur Anzeige von Optionen doppeltippen."];
     self.descriptionLabel.accessibilityLabel = voiceOverString;
 
-    [self.statusImageView sizeToFit];
     [self.descriptionLabel sizeToFit];
-    NSString *stationName = [[FacilityStatusManager client] stationNameForStationNumber:status.stationNumber.description];
+    NSString *stationName = [FacilityStatusManager.client stationNameForStationNumber:status.stationNumber.description];
     if (nil == stationName) {
         stationName = self.currentStationName;
     }
@@ -73,17 +88,9 @@
     
     self.topView = [UIView new];
     self.topView.backgroundColor = [UIColor whiteColor];
-    self.topView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.topView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.topView.layer.shadowRadius = 1.5;
-    self.topView.layer.shadowOpacity = 1.0;
+    [self.topView configureDefaultShadow];
 
     [self.contentView addSubview:self.topView];
-    
-    self.facilityImageView = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"rimap_aufzug_grau"]];
-    self.facilityImageView.contentMode = UIViewContentModeCenter;
-    [self.facilityImageView sizeToFit];
-    [self.topView addSubview:self.facilityImageView];
     
     self.nameLabel = [UILabel new];
     self.nameLabel.font = [UIFont db_BoldSixteen];
@@ -92,34 +99,39 @@
     
     self.descriptionLabel = [UILabel new];
     self.descriptionLabel.font = [UIFont db_RegularFourteen];
+    self.descriptionLabel.numberOfLines = 2;
     [self.topView addSubview:self.descriptionLabel];
     
-    self.statusImageView = [[UIImageView alloc] init];
+    self.statusImageView = [[MBStatusImageView alloc] init];
     [self.topView addSubview:self.statusImageView];
         
-    self.bookmarkImageView = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_bookmark"]];
-    [self.topView addSubview:self.bookmarkImageView];
+    self.favoriteButton = [MBFavoriteButton new];
+    self.favoriteButton.isAccessibilityElement = NO;
+    [self.topView addSubview:self.favoriteButton];
+    [self.favoriteButton addTarget:self action:@selector(favButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+
 
     self.bottomView = [UIView new];
     self.bottomView.backgroundColor = [UIColor whiteColor];
-    self.bottomView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.bottomView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.bottomView.layer.shadowRadius = 1.5;
-    self.bottomView.layer.shadowOpacity = 1.0;
+    [self.bottomView configureDefaultShadow];
     [self.contentView addSubview:self.bottomView];
+    self.bottomViewTop = [UIView new];
+    self.bottomViewTop.backgroundColor = UIColor.whiteColor;
+    [self.contentView addSubview:self.bottomViewTop];
     
+    self.pushLabel = [UILabel new];
+    self.pushLabel.font = [UIFont db_RegularFourteen];
+    self.pushLabel.textColor = [UIColor db_333333];
+    self.pushLabel.numberOfLines = 2;
+    self.pushLabel.text = @"Mitteilung zur Verfügbarkeit erhalten";
+    [self.bottomView addSubview:self.pushLabel];
+    self.pushLabel.isAccessibilityElement = NO;
     
-    self.merkenLabel = [UILabel new];
-    self.merkenLabel.font = [UIFont db_RegularFourteen];
-    self.merkenLabel.textColor = [UIColor db_333333];
-    self.merkenLabel.numberOfLines = 2;
-    self.merkenLabel.text = @"Aufzug der Merkliste\nhinzugefügt";
-    [self.bottomView addSubview:self.merkenLabel];
-    self.merkenLabel.isAccessibilityElement = NO;
-    
-    self.merkenSwitch = [UISwitch new];
-    [self.merkenSwitch addTarget:self action:@selector(toggleSwitch:) forControlEvents:UIControlEventValueChanged];
-    [self.bottomView addSubview:self.merkenSwitch];
+    self.pushSwitch = [DBSwitch new];
+    self.pushSwitch.isAccessibilityElement = NO;
+//    self.pushSwitch.accessibilityLabel = @"Mitteilung zur Verfügbarkeit erhalten.";
+    [self.pushSwitch addTarget:self action:@selector(toggleSwitch:) forControlEvents:UIControlEventValueChanged];
+    [self.bottomView addSubview:self.pushSwitch];
     
     self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
 
@@ -129,39 +141,44 @@
     [super layoutSubviews];
     
     self.topView.frame = CGRectMake(8, 8, self.frame.size.width-2*8, 80);
-    self.bottomView.frame = CGRectMake(8, CGRectGetMaxY(self.topView.frame)+4, self.frame.size.width-2*8, 70);
+    self.bottomView.frame = CGRectMake(8, CGRectGetMaxY(self.topView.frame), self.frame.size.width-2*8, 56);
+    self.bottomViewTop.frame = CGRectMake(self.bottomView.frame.origin.x, self.bottomView.frame.origin.y-2, self.bottomView.frame.size.width, 3);//this view hides the rests of the shadows at the top
 
-    [self.facilityImageView setGravityLeft:35];
-    [self.facilityImageView setGravityTop:16];
+    [self.favoriteButton setGravityRight:25];
+    [self.favoriteButton centerViewVerticalInSuperView];
 
-    NSInteger x = CGRectGetMaxX(self.facilityImageView.frame)+30;
-    self.nameLabel.frame = CGRectMake(x, self.facilityImageView.frame.origin.y, self.frame.size.width-x-16, 20);
+    NSInteger x = 24;
+    self.nameLabel.frame = CGRectMake(x, 16, self.favoriteButton.frame.origin.x-x-16, 20);
     [self.statusImageView setGravityLeft:self.nameLabel.frame.origin.x-3];
-    [self.statusImageView setGravityTop:CGRectGetMaxY(self.facilityImageView.frame)-self.statusImageView.sizeHeight+2];
-    x = CGRectGetMaxX(self.statusImageView.frame)+8;
-    self.descriptionLabel.frame = CGRectMake(x, self.statusImageView.frame.origin.y+2, self.frame.size.width-x-16, 20);
-    
-    [self.bookmarkImageView setGravityTop:-5];
-    [self.bookmarkImageView setGravityRight:13];
-
-    self.merkenLabel.frame = CGRectMake(16, 0, self.frame.size.width, self.bottomView.size.height);
-    [self.merkenSwitch setGravityRight:16];
-    [self.merkenSwitch centerViewVerticalInSuperView];
+    [self.statusImageView setBelow:self.nameLabel withPadding:4];
+    x = CGRectGetMaxX(self.statusImageView.frame)+6;
+    [self.descriptionLabel setGravityLeft:x];
+    [self.descriptionLabel setGravityTop:self.statusImageView.frame.origin.y+2];
+    CGSize size = [self.descriptionLabel sizeThatFits:CGSizeMake(self.favoriteButton.frame.origin.x-x-16, 30)];
+    self.descriptionLabel.size = CGSizeMake(ceilf(size.width), ceilf(size.height));
+        
+    [self.pushSwitch setGravityRight:16];
+    [self.pushSwitch centerViewVerticalInSuperView];
+    self.pushLabel.frame = CGRectMake(24, 0, self.pushSwitch.frame.origin.x-2*24, self.bottomView.size.height);
 }
 
 - (void)toggleSwitch:(UISwitch *)sender {
-    if (sender.on) {
+    [self.delegate facilityCell:self togglesPushSwitch:sender newState:sender.on forFacility:self.status];
+}
+-(void)favButtonPressed:(MBFavoriteButton*)btn{
+    btn.isFavorite = !btn.isFavorite;
+    if(btn.isFavorite){
         [self.delegate facilityCell:self addsFacility:self.status];
     } else {
-        [self.delegate facilityCell:self removesFacility:self.status];
+        [self.delegate facilityCell:self removesFacility:self.status]; //this also triggers a push deactivation
+        self.pushSwitch.on = false;
     }
-    
-    self.bookmarkImageView.hidden = !self.merkenSwitch.on;
 }
 
 - (void)setExpanded:(BOOL)expanded {
     _expanded = expanded;
     self.bottomView.hidden = !expanded;
+    self.bottomViewTop.hidden = !expanded;
     
 }
 

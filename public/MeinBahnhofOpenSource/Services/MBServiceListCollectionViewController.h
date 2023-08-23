@@ -11,16 +11,16 @@
 
 @class MBContentSearchResult;
 
-typedef enum : NSUInteger {
-    MBServiceCollectionTypeInfo,
-    MBServiceCollectionTypeShopping,
-} MBServiceCollectionType;
+typedef NS_ENUM(NSUInteger, MBServiceCollectionType) {
+    MBServiceCollectionTypeInfo = 0,
+    MBServiceCollectionTypeShopping = 1,
+};
+
 
 @interface MBServiceListCollectionViewController : UIViewController<MBMapViewControllerDelegate>
 
 @property (nonatomic, strong) MBContentSearchResult* searchResult;
 @property (nonatomic) BOOL openChatBotScreen;
-@property (nonatomic) BOOL openPickPackScreen;
 @property (nonatomic) BOOL openServiceNumberScreen;
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, assign) BOOL showsBackButton;

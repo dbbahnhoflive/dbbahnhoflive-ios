@@ -30,4 +30,8 @@
 
 +(UIColor*)dbMainColor;
 
+
++(BOOL)usePushServices;
+
+
 @end

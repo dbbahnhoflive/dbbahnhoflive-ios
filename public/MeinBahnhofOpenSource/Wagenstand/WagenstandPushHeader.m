@@ -6,6 +6,7 @@
 
 #import "WagenstandPushHeader.h"
 #import "MBUIHelper.h"
+#import "DBSwitch.h"
 
 @interface WagenstandPushHeader()
 
@@ -26,7 +27,7 @@
         
         self.label.isAccessibilityElement = NO;
 
-        self.pushSwitch = [[UISwitch alloc] init];
+        self.pushSwitch = [[DBSwitch alloc] init];
         self.pushSwitch.accessibilityLabel = self.label.text;
         
         self.leftIcon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_sprechblase"]];

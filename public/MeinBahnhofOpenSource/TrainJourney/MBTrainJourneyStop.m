@@ -46,7 +46,7 @@
 
 
 -(NSString *)description{
-    return [NSString stringWithFormat:@"Segment<\n%@, Gleis %@ (geplant %@), additional %d, canceled %d\nAnkunft: %@ (%@)\nAbfahrt: %@ (%@)\n>",_stationName,_platform,_platformSchedule,_additional,_canceled,self.arrivalTime,self.arrivalTimeSchedule,self.departureTime,self.departureTimeSchedule];
+    return [NSString stringWithFormat:@"Segment<\n%@, %@, Gleis %@ (geplant %@), additional %d, canceled %d\nAnkunft: %@ (%@)\nAbfahrt: %@ (%@)\n>",_stationName,_evaNumber,_platform,_platformSchedule,_additional,_canceled,self.arrivalTime,self.arrivalTimeSchedule,self.departureTime,self.departureTimeSchedule];
 }
 
 @end

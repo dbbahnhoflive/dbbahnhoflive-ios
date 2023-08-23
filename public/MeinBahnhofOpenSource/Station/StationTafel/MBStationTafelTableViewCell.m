@@ -100,7 +100,7 @@
     if([hafas delayInMinutes] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_76c030];
+        self.expectedTimeLabel.textColor = [UIColor db_green];
     }
     self.expectedTimeLabel.hidden = NO;
     [self setNeedsLayout];
@@ -113,7 +113,7 @@
     if([event roundedDelay] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_76c030];
+        self.expectedTimeLabel.textColor = [UIColor db_green];
     }
     //hide time when train is canceled
     self.expectedTimeLabel.hidden = event.eventIsCanceled;

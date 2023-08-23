@@ -8,23 +8,15 @@
 #import <CoreLocation/CoreLocation.h>
 #import "MBStationDetails.h"
 
-#define STATION_ID_BERLIN_HBF 1071
-#define STATION_ID_FRANKFURT_MAIN_HBF 1866
-#define STATION_ID_HAMBURG_HBF 2514
-#define STATION_ID_MUENCHEN_HBF 4234
-#define STATION_ID_KOELN_HBF 3320
-
 @class MBTravelcenter;
 @class MBOPNVStation;
 @class MBMarker;
 @class RIMapPoi;
-@class RIMapMetaData;
 @class RIMapSEV;
 @class MBLocker;
 @class GMSMarker;
 @class MBNews;
 @class MBParkingInfo;
-@class MBEinkaufsbahnhofCategory;
 @class LevelplanWrapper;
 @class MBPXRShopCategory;
 @class FacilityStatus;
@@ -35,12 +27,7 @@
 @property (nonatomic, copy, readonly) NSNumber *mbId;//station id (stada)
 @property (nonatomic, copy, readonly) NSString *title;
 
-@property (nonatomic, strong) NSArray<MBEinkaufsbahnhofCategory*> *einkaufsbahnhofCategories;
-@property (nonatomic) BOOL isEinkaufsbahnhof;
-
-
 @property (nonatomic, strong, readwrite) NSArray<LevelplanWrapper*> *levels;
-@property(nonatomic,strong) RIMapMetaData* additionalRiMapData;
 
 @property(nonatomic,strong) MBTravelcenter* travelCenter;
 
@@ -78,11 +65,12 @@
 -(BOOL)hasShops;
 -(BOOL)isGreenStation;
 -(BOOL)hasChatbot;
--(BOOL)hasPickPack;
 -(BOOL)hasOccupancy;
 -(BOOL)useOSM;
 -(BOOL)hasSEVStations;
 -(BOOL)hasStaticAdHocBox;
+-(BOOL)hasARTeaser;
+-(BOOL)hasAccompanimentService;
 +(BOOL)stationShouldBeLoadedAsOPNV:(NSString*)stationId;
 
 + (NSArray<NSString*>*) categoriesForShoppen;
@@ -98,5 +86,8 @@
 -(RIMapPoi*)poiForPlatform:(NSString*)platformNumber;
 
 +(NSString*)platformNumberFromPlatform:(NSString*)platform;
+
+
+-(NSString*)isAdditionalEvaId_MappedToMainEva:(NSString*)evaId;
 
 @end

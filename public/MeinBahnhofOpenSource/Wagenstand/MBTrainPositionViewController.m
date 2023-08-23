@@ -18,6 +18,9 @@
 #import "MBUIHelper.h"
 #import "NSDateFormatter+MBDateFormatter.h"
 #import "MBTrackingManager.h"
+#import "MBProgressHUD.h"
+#import "MBRootContainerViewController.h"
+#import "MBStationSearchViewController.h"
 
 @import UserNotifications;
 
@@ -601,6 +604,54 @@ static NSString *kHeadCell = @"HeadCell";
 }
 -(NSArray<NSString *> *)mapFilterPresets{
     return @[ PRESET_DB_TIMETABLE ];
+}
+
+
+#pragma mark helper methods
+
++(void) showWagenstandForUserInfo:(NSDictionary *)userInfo fromViewController:(MBUIViewController*)vc
+{
+    // NSLog(@"load and display wagenstand for %@",userInfo);
+    
+    [MBProgressHUD showHUDAddedTo:vc.navigationController.view animated:YES];
+    
+    UINavigationController* navi = vc.navigationController;
+
+    MBRootContainerViewController* root = nil;
+    if([vc isKindOfClass:[MBStationSearchViewController class]]){
+        //opened wagenstand when inside a station
+        root = ((MBStationSearchViewController*)vc).stationMapController;
+        navi = root.timetableNavigationController;
+    } else if([vc isKindOfClass:[MBRootContainerViewController class]]){
+        //opened wagenstand when outside of a station
+        root = (MBRootContainerViewController*)vc;
+        if(root.view){//force loading of view to get access to timetable
+            navi = root.timetableNavigationController;
+            // NSLog(@"open wagenstand for navi %@",navi);
+        }
+    }
+
+    NSString* dateAndTime = [Wagenstand makeDateStringForTime:userInfo[WAGENSTAND_TIME]];
+    // NSLog(@"request ist with evas %@",userInfo[WAGENSTAND_EVAS_NR]);
+    [[WagenstandRequestManager sharedManager] loadISTWagenstandWithTrain:userInfo[WAGENSTAND_TRAINNUMBER] type:userInfo[WAGENSTAND_TYPETRAIN] departure:dateAndTime evaIds:userInfo[WAGENSTAND_EVAS_NR] completionBlock:^(Wagenstand *istWagenstand) {
+        
+        if(istWagenstand){
+            MBTrainPositionViewController *wagenstandDetailViewController = [[MBTrainPositionViewController alloc] init];
+            wagenstandDetailViewController.station = vc.station;
+            wagenstandDetailViewController.wagenstand = istWagenstand;
+            [root selectTimetableTab];
+            [navi pushViewController:wagenstandDetailViewController animated:YES];
+        } else {
+            //no IST-data
+            UIAlertController* alertView = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Beim Abrufen des Wagenreihungsplans ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
+            [alertView addAction:[UIAlertAction actionWithTitle:@"Okay" style:UIAlertActionStyleCancel handler:nil]];
+            [root presentViewController:alertView animated:YES completion:nil];
+            [MBProgressHUD hideHUDForView:vc.navigationController.view animated:YES];
+            return;
+        }
+        
+        [MBProgressHUD hideHUDForView:vc.navigationController.view animated:YES];
+    }];
 }
 
 @end

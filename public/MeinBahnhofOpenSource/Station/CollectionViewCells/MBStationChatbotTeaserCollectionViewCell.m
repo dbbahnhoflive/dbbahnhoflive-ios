@@ -25,14 +25,14 @@
         self.mainLabel.text = @"Sie haben Fragen?";
         self.mainLabel.numberOfLines = 0;
         self.mainLabel.textColor = [UIColor db_333333];
-        self.mainLabel.font = [UIFont dbHeadBlackWithSize:17];
+        self.mainLabel.font = [UIFont db_HeadBlackSeventeen];
         [self.contentView addSubview:self.mainLabel];
         
         self.subLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.subLabel.text = @"Ich helfe Ihnen gerne weiter.";
         self.subLabel.numberOfLines = 0;
         self.subLabel.textColor = [UIColor db_333333];
-        self.subLabel.font = [UIFont dbHeadLightWithSize:17];
+        self.subLabel.font = [UIFont db_HeadLightSeventeen];
         [self.contentView addSubview:self.subLabel];
         
         //need more line spacing in the labels:

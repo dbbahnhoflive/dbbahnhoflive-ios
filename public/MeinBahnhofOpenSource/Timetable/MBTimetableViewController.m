@@ -38,6 +38,10 @@
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
 
+#import "MBStationSearchViewController.h"
+#import "AppDelegate.h"
+#import "MBBackNavigationState.h"
+
 
 #define kHeaderHeight 30.f
 #define kNumberOfSections 1
@@ -85,6 +89,7 @@
 
 @property(nonatomic,strong) NSString* stopIdForSelectedVoiceOverCell;
 
+@property(nonatomic) BOOL hasBackToPreviousStation;
 
 @end
 
@@ -95,6 +100,17 @@
     self = [super init];
     _showFernverkehr = showFernverkehr;
     self.oepnvOnly = NO;
+    self.trackingTitle = TRACK_KEY_TIMETABLE;
+    return self;
+}
+-(instancetype)initWithOPNVAndAllowBack:(BOOL)allowBack{
+    self = [super init];
+    if(self){
+        _showFernverkehr = false;
+        self.hasBackToPreviousStation = allowBack;
+        self.oepnvOnly = NO;
+        self.trackingTitle = TRACK_KEY_TIMETABLE;
+    }
     return self;
 }
 
@@ -102,6 +118,7 @@
     self = [super initWithBackButton:showBackButton];
     if(self){
         _showFernverkehr = showFernverkehr;
+        self.trackingTitle = TRACK_KEY_TIMETABLE;
     }
     return self;
 }
@@ -113,7 +130,13 @@
     
     self.view.backgroundColor = [UIColor whiteColor];
     
-    self.title = @"Abfahrt und Ankunft";
+    if(self.station){
+        self.title = self.station.title;
+    } else if(self.hafasStation.name){
+        self.title = self.hafasStation.name;
+    } else {
+        self.title = @"Abfahrt und Ankunft";
+    }
     // make sure back button in navigation bar shows only back icon (<)
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@" " style:UIBarButtonItemStylePlain target:nil action:nil];
     if(self.currentlySelectedPlatform == nil){
@@ -128,6 +151,22 @@
         self.timetableView.sectionHeaderHeight = 50.0;
         self.makeSmallTableHeader = NO;
     }
+    
+    if(self.hasBackToPreviousStation){
+        UIButton *backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+        [backButton setBackgroundImage:[UIImage imageNamed:@"ChevronBlackLeft"] forState:UIControlStateNormal];
+        backButton.accessibilityLabel = @"Zurück zur vorherigen Station";
+        UIBarButtonItem *barBackButtonItem = [[UIBarButtonItem alloc] initWithCustomView:backButton];
+        [backButton addTarget:self action:@selector(popToPreviousStation) forControlEvents:UIControlEventTouchUpInside];
+        self.navigationItem.leftBarButtonItem = barBackButtonItem;
+        self.navigationItem.hidesBackButton = YES;
+    }
+}
+
+-(void)popToPreviousStation{
+    AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
+    MBStationSearchViewController* vc = (MBStationSearchViewController*) app.viewController;
+    [vc goBackToPreviousStation];
 }
 
 - (void) loadView
@@ -392,6 +431,7 @@
         self.hafasTimetable.includeLongDistanceTrains = self.includeLongDistanceTrains;
         if(self.hafasTimetable.needsInitialRequest){
             self.hafasTimetable.needsInitialRequest = NO;
+            NSLog(@"load hafas %@",self.hafasStation.stationId);
             [[HafasRequestManager sharedManager] loadDeparturesForStopId:self.hafasStation.stationId
                                                                      timetable:self.hafasTimetable
                                                                 withCompletion:^(HafasTimetable *timetable) {
@@ -568,6 +608,34 @@
     if(self.showFernverkehr){
         [[MBTutorialManager singleton] displayTutorialIfNecessary:MBTutorialViewType_H2_Departure withOffset:0];
     }
+    
+}
+
+-(void)restoreATrainJourney{
+    AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
+    MBStationSearchViewController* vc = (MBStationSearchViewController*) app.viewController;
+    if(vc.trainJourneyToRestore){
+        NSLog(@"restore a train journey %@",vc.trainJourneyToRestore);
+        self.departure = vc.trainJourneyToRestore.isFromDeparture;
+        if(!self.departure){
+            [self updateFilterCellWithDepatureState];
+        }
+        Stop* stop = vc.trainJourneyToRestore.stop;
+        if(stop){
+            [self showJourneyForStop:stop showIrisOnFailure:false animated:false];
+        } else {
+            if(!self.hafasStation.stationId){
+                self.hafasStation = vc.trainJourneyToRestore.hafasStation;
+            }
+            self.showFernverkehr = false;
+            HafasDeparture* h = vc.trainJourneyToRestore.hafasDeparture;
+            if(h){
+                NSLog(@"hafas departure from %@, %@",h.stopid,h.name);
+                [self showJourneyForHafasDeparture:h animated:false];
+            }
+        }
+        vc.trainJourneyToRestore = nil;
+    }
 }
 
 - (void) viewDidAppear:(BOOL)animated
@@ -597,6 +665,8 @@
             self.searchresult = nil;
         }
     }
+
+    [self restoreATrainJourney];
 }
 
 - (void) viewDidLayoutSubviews
@@ -971,7 +1041,7 @@
                               [NSPredicate predicateWithBlock:^BOOL(Stop *evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
             Event *event = [evaluatedObject eventForDeparture:self.departure];
             
-            if (([platform isEqualToString:@"Alle"] || [event.actualPlatformNumberOnly isEqualToString:platform]) && ([transport isEqualToString:@"Alle"] || [evaluatedObject.transportCategory.transportCategoryType isEqualToString:transport])) {
+            if (([platform isEqualToString:@"Alle"] || [event.actualPlatformNumberOnly isEqualToString:platform] || [event.actualPlatform isEqualToString:platform]) && ([transport isEqualToString:@"Alle"] || [evaluatedObject.transportCategory.transportCategoryType isEqualToString:transport])) {
                 return YES;
             }
             return NO;
@@ -1087,7 +1157,7 @@
             if([event roundedDelay] >= 5){
                 tableCell.expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
-                tableCell.expectedTimeLabel.textColor = [UIColor db_76c030];
+                tableCell.expectedTimeLabel.textColor = [UIColor db_green];
             }
             //hide time when train is canceled
             tableCell.expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -1139,7 +1209,7 @@
                         return;
                     }
                     Stop *stop = item;
-                    [self showJourneyForStop:stop indexPath:indexPath];
+                    [self showJourneyForStop:stop];
                 }
             
         }
@@ -1178,47 +1248,78 @@
         [self.timetableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
     }
 }
-
 -(void)showJourneyForHafasDeparture:(HafasDeparture*)departure{
+    [self showJourneyForHafasDeparture:departure animated:true];
+}
+-(void)showJourneyForHafasDeparture:(HafasDeparture*)departure animated:(BOOL)animated{
     [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
     [[HafasRequestManager sharedManager] requestJourneyDetails:departure completion:^(HafasDeparture * dep, NSError * err) {
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-        Event* event = [Event new];
-        event.departure = true;
-        event.stations = departure.stopLocationTitles;
-        event.lineIdentifier = departure.name;
+        if(!dep){
+            [self showJourneyAlert];
+            return;
+        }
 
         MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
-        detailViewController.hafasJourney = true;
         detailViewController.departure = true;
+        NSString* stationEva = departure.stopExtId;
+        if(!stationEva){
+            stationEva = @"0";
+        }
+        MBStation* station = [[MBStation alloc] initWithId:@(stationEva.longLongValue) name:self.hafasStation.name evaIds:@[stationEva] location:nil];
+        detailViewController.hafasStationThatOpenedThisJourney = station;
+        detailViewController.originalHafasStation = self.hafasStation;
         detailViewController.station = self.station;
-        detailViewController.event = event;
+        detailViewController.hafasDeparture = departure;
         detailViewController.showJourneyFromCurrentStation = true;
-        [self.navigationController pushViewController:detailViewController animated:YES];
+        [self.navigationController pushViewController:detailViewController animated:animated];
     }];
 }
 
--(void)showJourneyForStop:(Stop *)stop indexPath:(NSIndexPath*)indexPath{
+-(void)showJourneyForStop:(Stop *)stop{
+    [self showJourneyForStop:stop showIrisOnFailure:true animated:true];
+}
+-(void)showJourneyForStop:(Stop *)stop showIrisOnFailure:(BOOL)showIrisOnFailure animated:(BOOL)animated{
     Event *event = [stop eventForDeparture:self.departure];
     [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
     [[MBTrainJourneyRequestManager sharedManager] loadJourneyForEvent:event completionBlock:^(MBTrainJourney * _Nullable journey) {
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+        if(!showIrisOnFailure && journey == nil){
+            [self showJourneyAlert];
+            return;
+        }
         MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
         detailViewController.departure = self.departure;
         detailViewController.station = self.station;
         detailViewController.event = event;
+        detailViewController.stop = stop;
         detailViewController.journey = journey; //journey may be nil, then journey will display IRIS data
         if(self.departure){
             detailViewController.showJourneyFromCurrentStation = true;
         }
         detailViewController.showJourneyMessageAndTrainLinks = true;
-        [self.navigationController pushViewController:detailViewController animated:YES];
+        [self.navigationController pushViewController:detailViewController animated:animated];
     }];
+}
+
+-(void)showJourneyAlert{
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Die Verbindung  wurde nicht geladen. Bitte prüfen Sie ihre Netzverbindung und versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
+    [self presentViewController:alert animated:true completion:nil];
 }
 
 -(void)handleSearchResult:(MBContentSearchResult*)search{
     self.searchresult = search;
     //the object is processed in viewDidAppear because we can be in all kind of states here and it's the only safe area where we can work with the contents of the (then displayed) tableview
+}
+
+-(void)updateFilterCellWithDepatureState{
+    MBTimeTableFilterViewCell *tableCell = [self.timetableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    if(self.departure){
+        [tableCell switchToDeparture];
+    } else {
+        [tableCell switchToArrival];
+    }
 }
 
 -(void)runSearchResult:(MBContentSearchResult*)search{
@@ -1236,12 +1337,7 @@
         [self filterByPlatformAndTransportType];
     }
     if(self.showFernverkehr){
-        MBTimeTableFilterViewCell *tableCell = [self.timetableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
-        if(search.departure){
-            [tableCell switchToDeparture];
-        } else {
-            [tableCell switchToArrival];
-        }
+        [self updateFilterCellWithDepatureState];
         NSInteger index = 0;
         BOOL found = NO;
         BOOL wagenreihungSearch = search.isWagenreihung;

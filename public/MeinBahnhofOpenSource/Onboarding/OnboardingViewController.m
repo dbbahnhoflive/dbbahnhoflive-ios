@@ -32,6 +32,8 @@
 @property(nonatomic,strong) UIImageView* checkImage;
 @property(nonatomic) NSInteger spacing;
 
+@property(nonatomic) CGSize imageSize;
+
 @end
 
 @implementation OnboardingViewController
@@ -56,6 +58,9 @@
 {
     [super viewDidLoad];
         
+    NSString* imgFile = [self filenameForPage:0 img:0];
+    self.imageSize = [UIImage imageNamed:imgFile].size;
+    
     self.view.accessibilityViewIsModal = YES;
     
     self.spacing = 20;
@@ -116,10 +121,7 @@
     [self.actionButton setBackgroundColor:[UIColor db_mainColor]];
     [self.actionButton.titleLabel setFont:[UIFont db_BoldEighteen]];
     [self.actionButton addTarget:self action:@selector(actionButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    self.actionButton.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.actionButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.actionButton.layer.shadowRadius = 1.5;
-    self.actionButton.layer.shadowOpacity = 1.0;
+    [self.actionButton configureDefaultShadow];
     
     self.checkImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"large_check"]];
 
@@ -210,6 +212,9 @@
         topHeight = 1242/3;//iphone6-8+
     } else if(screenHeight == 2436/3){
         topHeight = 1350/3;//iphoneX
+    } else if(screenHeight >= (self.view.frame.size.width/self.imageSize.width)*self.imageSize.height + 280) {
+        //one of the newer devices with a large screen: display the whole image
+        topHeight = (self.view.frame.size.width/self.imageSize.width)*self.imageSize.height;
     }
     //NSLog(@"topHeight %f",topHeight);
     UIEdgeInsets safeArea = self.view.safeAreaInsets;

@@ -36,10 +36,7 @@
         self.clipsToBounds = NO;
         self.backgroundColor = [UIColor whiteColor];
         self.layer.cornerRadius = 2;
-        self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-        self.layer.shadowRadius = 3.0;
-        self.layer.shadowOpacity = 1.0;
+        [self configureH1Shadow];
         
         self.headerLabel = [UILabel new];
         self.headerLabel.font = [UIFont db_BoldSeventeen];
@@ -88,7 +85,7 @@
         self.dayDropdownBtn.isAccessibilityElement = NO;
         [self.dayDropdownBtn addTarget:self action:@selector(daySelected:) forControlEvents:UIControlEventTouchUpInside];
         
-        [self.dayDropdownBtn setTitleColor:isToday ? [UIColor dbColorWithRGB:0x76C030] : UIColor.blackColor forState:UIControlStateNormal];
+        [self.dayDropdownBtn setTitleColor:isToday ? [UIColor db_green] : UIColor.blackColor forState:UIControlStateNormal];
         if(isToday){
             [self.dayDropdownBtn setTitle:MBStationOccupancyDayView.weekdayToday forState:UIControlStateNormal];
         } else {

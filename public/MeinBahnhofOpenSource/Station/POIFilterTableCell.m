@@ -6,6 +6,7 @@
 
 #import "POIFilterTableCell.h"
 #import "MBUIHelper.h"
+#import "DBSwitch.h"
 
 @interface POIFilterTableCell()
 
@@ -53,7 +54,7 @@
         self.categoryTitleLabel.font = [UIFont db_RegularSeventeen];
         self.categoryTitleLabel.textColor = [UIColor db_333333];
                 
-        self.selectIndicatorSwitch = [[UISwitch alloc] init];
+        self.selectIndicatorSwitch = [[DBSwitch alloc] init];
         [self.contentView addSubview:self.selectIndicatorSwitch];
         self.selectIndicatorSwitch.userInteractionEnabled = NO;//temporary until we can forward the event
         

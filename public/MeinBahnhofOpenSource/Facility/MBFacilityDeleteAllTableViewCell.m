@@ -33,10 +33,7 @@
     [self.trash addTarget:self action:@selector(deleteAll:) forControlEvents:UIControlEventTouchUpInside];
     self.trash.accessibilityLabel = @"Alle Einträge aus Merkliste löschen.";
     self.trash.backgroundColor = [UIColor whiteColor];
-    self.trash.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.trash.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.trash.layer.shadowRadius = 1.5;
-    self.trash.layer.shadowOpacity = 1.0;
+    [self.trash configureDefaultShadow];
     [backView addSubview:self.trash];
     
     UILabel *label = [UILabel new];

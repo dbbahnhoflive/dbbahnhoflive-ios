@@ -5,13 +5,14 @@
 
 
 #import <UIKit/UIKit.h>
+#import "DBSwitch.h"
 
 @interface MBSettingsTableViewCell : UITableViewCell
 
 @property(nonatomic,strong) UILabel* mainTitleLabel;
 @property(nonatomic,strong) UILabel* subTitleLabel;
 @property(nonatomic,strong) UIImageView* mainIcon;
-@property(nonatomic,strong) UISwitch* aSwitch;
+@property(nonatomic,strong) DBSwitch* aSwitch;
 @property(nonatomic) BOOL showDetails;
 
 @end

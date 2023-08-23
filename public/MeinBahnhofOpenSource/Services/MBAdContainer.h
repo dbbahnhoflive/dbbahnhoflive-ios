@@ -8,9 +8,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+//TODO: remove this class, it is no longer used
 typedef NS_ENUM(NSUInteger, MBAdContainerType) {
     MBAdContainerTypeEinkaufsbahnhof    = 0,
-    MBAdContainerTypePickPack           = 1
 };
 
 @interface MBAdContainer : NSObject

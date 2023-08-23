@@ -5,7 +5,6 @@
 
 
 #import <UIKit/UIKit.h>
-#import "NSString+MBString.h"
 
 @interface MBLabel : UILabel
 

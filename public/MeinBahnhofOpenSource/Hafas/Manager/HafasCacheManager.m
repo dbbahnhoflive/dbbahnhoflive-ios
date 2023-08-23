@@ -25,7 +25,7 @@
 
 @implementation HafasCacheManager
 
-+ (id)sharedManager
++ (HafasCacheManager*)sharedManager
 {
     static HafasCacheManager *sharedManager = nil;
     static dispatch_once_t onceToken;

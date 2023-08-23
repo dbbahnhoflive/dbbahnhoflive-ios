@@ -59,5 +59,8 @@ typedef enum
 -(void)resizeToFitSubviews;
 -(void)resizeHeight;
 
+// configure default shadow
+-(void)configureDefaultShadow;
+-(void)configureH1Shadow;
 @end
 

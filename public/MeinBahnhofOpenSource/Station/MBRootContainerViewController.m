@@ -137,13 +137,16 @@
 }
 
 #pragma mark MBStationTabBarViewControllerDelegate
-- (void)goBackToSearch {
+- (void)goBackToSearchAnimated:(BOOL)animated{
+    [self goBackToSearchAnimated:animated clearBackHistory:true];
+}
+- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory{
     [[TimetableManager sharedManager] resetTimetable];
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.navigationController popViewControllerAnimated:animated];
     AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
     if([app.navigationController.topViewController isKindOfClass:[MBStationSearchViewController class]]){
         MBStationSearchViewController* station = (MBStationSearchViewController*)app.navigationController.topViewController;
-        [station freeStation];
+        [station freeStationAndClearBackHistory:clearBackHistory];
     }
 }
 
@@ -182,11 +185,6 @@
     return UIBarPositionTopAttached;
 }
 
-- (void) didSelectChooseEntry:(id)entry;
-{
-    [[TimetableManager sharedManager] resetTimetable];
-    [self.navigationController popToRootViewControllerAnimated:NO];
-}
 
 - (void) loadView
 {
@@ -249,8 +247,11 @@
     // - RIS:StationEquipments (locker) (*)
     // - Parking (*)
     // - ParkingOccupancy (*)
-    // - EinkaufsbahnhofOverview (*) - only used for the isEinkaufsbahnhof-Flag
     // - News
+    
+    if(station.hasStaticAdHocBox){
+        station.newsList = [MBNews staticInfoData];
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSNumber* requestId = station.mbId;
@@ -288,10 +289,6 @@
         [self requestMapStationInfo:station forcedByUser:forcedByUser del:del];
 
         [self requestOccupancy:station forcedByUser:forcedByUser];
-        
-        if(station.hasStaticAdHocBox){
-            station.newsList = [MBNews staticInfoData];
-        }
         
         if(requestNewsAndCoupons){
             [[MBNewsRequestManager sharedInstance] requestNewsForStation:station.mbId forcedByUser:forcedByUser success:^(MBNewsResponse *response) {
@@ -370,13 +367,7 @@
                     [self.rootDelegate didLoadMapPOIs:YES];
                 });
             }
-            if(pois.count != 0){
-                if([self.rootDelegate respondsToSelector:@selector(didLoadEinkaufData:)] && del == self.rootDelegate){
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.rootDelegate didLoadEinkaufData:YES];
-                    });
-                }
-            }
+            
             [self changeOpenRequests:-1];
         } failureBlock:^(NSError *error) {
             // NSLog(@"map poi failed %@",error);
@@ -425,27 +416,9 @@
         } failureBlock:^(NSError * _Nullable error) {
         }];
         
-        [[FacilityStatusManager client] requestFacilityStatus:station.mbId success:^(NSArray *facilityStatusItems) {
+        [FacilityStatusManager.client requestFacilityStatus:station.mbId success:^(NSArray *facilityStatusItems) {
             
-            //sort items by their state but keep the server sorting for same state
-            NSMutableArray* disabledFacility = [NSMutableArray arrayWithCapacity:5];
-            NSMutableArray* unknownFacility = [NSMutableArray arrayWithCapacity:5];
-            NSMutableArray* activeFacility = [NSMutableArray arrayWithCapacity:facilityStatusItems.count];
-            for(FacilityStatus* f in facilityStatusItems){
-                if(f.state == INACTIVE){
-                    [disabledFacility addObject:f];
-                } else if(f.state == UNKNOWN){
-                    [disabledFacility addObject:f];
-                } else {
-                    [activeFacility addObject:f];
-                }
-            }
-            NSMutableArray* sortedList = [NSMutableArray arrayWithCapacity:facilityStatusItems.count];
-            [sortedList addObjectsFromArray:disabledFacility];
-            [sortedList addObjectsFromArray:unknownFacility];
-            [sortedList addObjectsFromArray:activeFacility];
-
-            station.facilityStatusPOIs = sortedList;
+            station.facilityStatusPOIs = facilityStatusItems;
             if([self.rootDelegate respondsToSelector:@selector(didLoadFacilityData:)] && del == self.rootDelegate){
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self.rootDelegate didLoadFacilityData:YES];
@@ -501,6 +474,11 @@
 }
 
 
+-(void)showFacilities{
+    //called from a push notification
+    [self selectStationTab];
+    [self.stationContainerViewController showFacilityViewAndReload:true];
+}
 
 - (void) showAlertForStationDownloadFailed
 {

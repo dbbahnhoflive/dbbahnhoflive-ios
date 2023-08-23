@@ -13,8 +13,6 @@
 #import "TimetableManager.h"
 #import "RIMapPoi.h"
 #import "MBPXRShopCategory.h"
-#import "MBEinkaufsbahnhofCategory.h"
-#import "MBEinkaufsbahnhofStore.h"
 #import "MBRootContainerViewController.h"
 #import "MBTimetableViewController.h"
 #import "MBOPNVInStationOverlayViewController.h"
@@ -52,6 +50,8 @@
 @property(nonatomic,strong) NSMutableArray<MBContentSearchResult*>* opnvSearchResults;
 @property(nonatomic,strong) NSMutableArray<MBContentSearchResult*>* platformSearchResults;
 
+#define SETTINGS_CONTENT_SEARCH_LAST_SEARCH_WORDS @"CONTENT_SEARCH_LAST_SEARCH_WORDS"
+#define SETTINGS_CONTENT_SEARCH_LAST_STATIONID @"CONTENT_SEARCH_LAST_STATIONID"
 
 @end
 
@@ -88,19 +88,19 @@
     self.searchTagOPNVResults = [NSMutableArray arrayWithCapacity:10];
     
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    self.previousSearches = [[def objectForKey:@"CONTENT_SEARCH_LAST_SEARCH_WORDS"] mutableCopy];
+    self.previousSearches = [[def objectForKey:SETTINGS_CONTENT_SEARCH_LAST_SEARCH_WORDS] mutableCopy];
     if(!self.previousSearches){
         self.previousSearches = [NSMutableArray arrayWithCapacity:20];
     }
     self.stationChanged = YES;
-    NSNumber* lastStationId = [def objectForKey:@"CONTENT_SEARCH_LAST_STATIONID"];
+    NSNumber* lastStationId = [def objectForKey:SETTINGS_CONTENT_SEARCH_LAST_STATIONID];
     if(lastStationId && [lastStationId isEqualToNumber:self.station.mbId]){
         self.stationChanged = NO;
     }
-    [def setObject:self.station.mbId forKey:@"CONTENT_SEARCH_LAST_STATIONID"];
+    [def setObject:self.station.mbId forKey:SETTINGS_CONTENT_SEARCH_LAST_STATIONID];
     
-    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(5, 0, 30, 30)];
-    [self.closeButton setImage:[UIImage db_imageNamed:@"MapFilterBack"] forState:UIControlStateNormal];
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(5, 0, 32, 32)];
+    [self.closeButton setImage:[UIImage db_imageNamed:@"ChevronBlackLeft"] forState:UIControlStateNormal];
     self.closeButton.accessibilityLabel = @"Suche schließen";
     [self.closeButton addTarget:self action:@selector(closeButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.closeButton];
@@ -170,16 +170,16 @@
 }
 
 -(void)prepareSearchTagsForStation{
-    if(self.station.riPoiCategories.count == 0 && self.station.einkaufsbahnhofCategories.count == 0){
+    if(self.station.riPoiCategories.count == 0){
         //no shops
-        [self.searchTags removeObjectForKey:@"Shoppen & Schlemmen"];
-        [self.searchTags removeObjectForKey:@"Geöffnet"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_SHOP_AND_EAT];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_SHOP_OPEN];
     }
     if(!self.station.stationDetails){
         //remove all "Bahnhofsausstattung"
         NSArray* keys = [[self.searchTags allKeys] mutableCopy];
         for(NSString* key in keys){
-            if([key hasPrefix:@"Bahnhofsausstattung"]){
+            if([key hasPrefix:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE]){
                 [self.searchTags removeObjectForKey:key];
             }
         }
@@ -190,104 +190,104 @@
     //      keys are always available and may display "not available" in the interface.
     if(self.station.facilityStatusPOIs.count == 0){
         //no elevators
-        [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Aufzüge"];
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Aufzüge"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_ELEVATOR];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR];
     }
     if(!self.station.stationDetails.hasDBInfo){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung DB Info"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_DBINFO];
         }
-        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_DBINFO];
     }
     if(!self.station.stationDetails.hasDBLounge){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung DB Lounge"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_LOUNGE];
         }
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services DB Lounge"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOUNGE];
     }
     if(!self.station.stationDetails.hasTravelCenter){
-        //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung DB Reisezentrum"];
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services DB Reisezentrum"];
+        //[self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TRAVELCENTER];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_TRAVELCENTER];
     }
     if(!self.station.stationDetails.hasBicycleParking){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Fahrradstellplatz"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_BIKEPARK];
         }
     }
     if(!self.station.stationDetails.hasCarRental){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Mietwagen"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_CARRENTAL];
         }
     }
     if(!self.station.stationDetails.hasParking){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Parkplätze"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_PARKING];
         }
     }
     if(!self.station.stationDetails.hasTravelNecessities){
-        //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung Reisebedarf"];
+        //[self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TRAVELNECESSITIES];
     }
     if(!self.station.stationDetails.hasTaxiRank){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Taxistand"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TAXI];
         }
     }
     if(!self.station.stationDetails.hasPublicFacilities){
-        //[self.searchTags removeObjectForKey:@"Bahnhofsausstattung WC"];
+        //[self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_WC];
     }
     if(!self.station.stationDetails.hasWiFi){
         if(displaySomeEntriesOnlyWhenAvailable){
-            [self.searchTags removeObjectForKey:@"Bahnhofsausstattung WLAN"];
+            [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_WIFI];
         }
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation WLAN"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_WIFI];
     }
     if(!self.station.hasSEVStations){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Ersatzverkehr"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
     }
     if(self.station.lockerList.count == 0){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Schließfächer"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_LOCKER];
     } else {
         //we have lockers, show only the Bahnhofsinformation link and remove the Ausstattung
-        [self.searchTags removeObjectForKey:@"Bahnhofsausstattung Schließfächer"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_LOCKER];
     }
     if(!self.station.stationDetails.hasDBInfo
        && !self.station.stationDetails.hasLocalServiceStaff
        && !self.station.stationDetails.hasRailwayMission
        && !self.station.stationDetails.hasTravelCenter
        && !self.station.stationDetails.hasDBLounge){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES];
     }
     if(!self.station.stationDetails.has3SZentrale){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services 3-S-Zentrale"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_3S];
     }
     if(!self.station.stationDetails.hasRailwayMission){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services Bahnhofsmission"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MISSION];
     }
     if(!self.station.stationDetails.hasLostAndFound){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services Fundservice"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOSTANDFOUND];
     }
     if(!self.station.stationDetails.hasLocalServiceStaff){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services Mobiler Service"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILE_SERVICE];
     }
     if(!self.station.stationDetails.hasMobilityService){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Info & Services Mobilitätsservice"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILITY_SERVICE];
     }
     if(self.station.parkingInfoItems.count == 0){
-        [self.searchTags removeObjectForKey:@"Bahnhofsinformation Parkplätze"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_PARKING];
     }
     if(self.station.nearestStationsForOPNV.count == 0){
-        [self.searchTags removeObjectForKey:@"ÖPNV Anschluss"];
-        [self.searchTags removeObjectForKey:@"Verkehrsmittel Ubahn"];
-        [self.searchTags removeObjectForKey:@"Verkehrsmittel S-Bahn"];
-        [self.searchTags removeObjectForKey:@"Verkehrsmittel Tram"];
-        [self.searchTags removeObjectForKey:@"Verkehrsmittel Bus"];
-        [self.searchTags removeObjectForKey:@"Verkehrsmittel Fähre"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_OPNV];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_TRAVELPRODUCT_U_TRAIN];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_TRAVELPRODUCT_S_TRAIN];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_TRAVELPRODUCT_TRAM];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_TRAVELPRODUCT_BUS];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_TRAVELPRODUCT_FERRY];
     } else {
         //remove only some?
         
     }
     if(!MBMapViewController.canDisplayMap){
-        [self.searchTags removeObjectForKey:@"Karte"];
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_MAP];
     }
 
     //finally, remove all with placeholders [...]
@@ -459,13 +459,6 @@
                 }
             }
         }
-        for(MBEinkaufsbahnhofCategory* cat in self.station.einkaufsbahnhofCategories){
-            for(MBEinkaufsbahnhofStore* v in cat.shops){
-                if(v.isOpen == POI_OPEN){
-                    [self.poiResults addObject:[MBContentSearchResult searchResultWithStore:v inCat:cat]];
-                }
-            }
-        }
     }
     
     
@@ -526,7 +519,7 @@
 }
 -(void)storePreviousSearches{
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    [def setObject:self.previousSearches forKey:@"CONTENT_SEARCH_LAST_SEARCH_WORDS"];
+    [def setObject:self.previousSearches forKey:SETTINGS_CONTENT_SEARCH_LAST_SEARCH_WORDS];
 }
 
 
@@ -566,29 +559,29 @@
         }
     }
     //don't link to Bahnhofsausstattung when the content is available in Bahnhofsinformation
-    if([tags containsObject:@"Bahnhofsinformation Aufzüge"]){
-        [tags removeObject:@"Bahnhofsausstattung Aufzüge"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_ELEVATOR];
     }
-    if([tags containsObject:@"Bahnhofsinformation Info & Services DB Lounge"]){
-        [tags removeObject:@"Bahnhofsausstattung DB Lounge"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOUNGE]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_LOUNGE];
     }
-    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO]){
-        [tags removeObject:@"Bahnhofsausstattung DB Info"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_DBINFO]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_DBINFO];
     }
-    if([tags containsObject:@"Bahnhofsinformation Info & Services DB Reisezentrum"]){
-        [tags removeObject:@"Bahnhofsausstattung DB Reisezentrum"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_TRAVELCENTER]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TRAVELCENTER];
     }
-    if([tags containsObject:@"Bahnhofsinformation Parkplätze"]){
-        [tags removeObject:@"Bahnhofsausstattung Parkplätze"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_PARKING]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_PARKING];
     }
     //link only to the details page if it exists:
-    if([tags containsObject:@"Bahnhofsinformation WLAN"]){
-        [tags removeObject:@"Bahnhofsausstattung WLAN"];
+    if([tags containsObject:CONTENT_SEARCH_KEY_STATIONINFO_WIFI]){
+        [tags removeObject:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_WIFI];
     }
 
 
     for(NSString* key in tags){
-        if([key isEqualToString:@"Wagenreihung"]){
+        if([key isEqualToString:CONTENT_SEARCH_KEY_TRAINORDER]){
             //do we have a departing train with train order?
             Timetable* timetable = [[TimetableManager sharedManager] timetable];
             BOOL found = NO;
@@ -685,36 +678,6 @@
         }
     }
 
-        
-    //stationinfo search
-    for(MBEinkaufsbahnhofCategory* cat in self.station.einkaufsbahnhofCategories){
-        
-        BOOL foundCat = YES;
-        for(NSString* searchWord in words){
-            if(![cat.name localizedCaseInsensitiveContainsString:searchWord]){
-                foundCat = NO;
-                break;
-            }
-        }
-        if(foundCat){
-            //NSLog(@"found all words in %@",stringForSearch);
-            [self.poiResults addObject:[MBContentSearchResult searchResultWithStore:nil inCat:cat]];
-        }
-        
-        for(MBEinkaufsbahnhofStore* v in cat.shops){
-            NSString* stringForSearch = [NSString stringWithFormat:@"%@ %@",cat.name,v.name];
-            BOOL found = YES;
-            for(NSString* searchWord in words){
-                if(![stringForSearch localizedCaseInsensitiveContainsString:searchWord]){
-                    found = NO;
-                    break;
-                }
-            }
-            if(found){
-                [self.poiResults addObject:[MBContentSearchResult searchResultWithStore:v inCat:cat]];
-            }
-        }
-    }
 }
 
 -(void)searchTrains:(NSArray<NSString*>*)words stations:(BOOL)searchStations platform:(NSString*)platformNumberString{

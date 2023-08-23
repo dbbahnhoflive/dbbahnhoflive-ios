@@ -7,6 +7,7 @@
 #import "MBParkingExpandableTableViewCell.h"
 #import "MBParkingInfoView.h"
 #import "MBUIHelper.h"
+#import "MBStatusImageView.h"
 
 @interface MBParkingExpandableTableViewCell()
 @property (nonatomic, strong) UIView *topView;
@@ -14,7 +15,7 @@
 @property (nonatomic, strong) UILabel *cellTitle;
 @property (nonatomic, strong) UIImageView *cellIcon;
 @property (nonatomic, strong) UILabel *opencloseLabel;
-@property (nonatomic, strong) UIImageView *opencloseImage;
+@property (nonatomic, strong) MBStatusImageView *opencloseImage;
 
 @property (nonatomic, strong) UIView *bottomView;//includes the text labels and the infoView
 @property (nonatomic, strong) NSMutableArray* labels;
@@ -38,10 +39,7 @@
     
     self.topView = [UIView new];
     self.topView.backgroundColor = [UIColor whiteColor];
-    self.topView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.topView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.topView.layer.shadowRadius = 1.5;
-    self.topView.layer.shadowOpacity = 1.0;
+    [self.topView configureDefaultShadow];
 
     [self.contentView addSubview:self.topView];
     
@@ -58,17 +56,14 @@
     self.opencloseLabel.font = [UIFont db_RegularFourteen];
     [self.topView addSubview:self.opencloseLabel];
     
-    self.opencloseImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_check"]];
-    [self.opencloseImage setSize:CGSizeMake(24, 24)];
+    self.opencloseImage = [[MBStatusImageView alloc] init];
+    [self.opencloseImage setStatusActive];
     [self.topView addSubview:self.opencloseImage];
     
     
     self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, 92, 0, 0)];
     self.bottomView.backgroundColor = [UIColor db_f3f5f7];
-    self.bottomView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.bottomView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.bottomView.layer.shadowRadius = 1.5;
-    self.bottomView.layer.shadowOpacity = 1.0;
+    [self.bottomView configureDefaultShadow];
 
     [self.contentView addSubview:self.bottomView];
     
@@ -90,19 +85,21 @@
     self.opencloseImage.hidden = YES;
 
     NSString *openInfoString = item.textForAllocation;
-    self.opencloseLabel.textColor = [UIColor db_76c030];
-    self.opencloseImage.image = [UIImage db_imageNamed:@"app_check"];
+    self.opencloseLabel.textColor = [UIColor db_green];
     if (item.isOutOfOrder) {
         openInfoString = @"Geschlossen";
         self.opencloseLabel.textColor = [UIColor db_mainColor];
-        self.opencloseImage.image = [UIImage db_imageNamed:@"app_kreuz"];
+        [self.opencloseImage setStatusInactive];
+    } else {
+        [self.opencloseImage setStatusActive];
     }
+    [self.opencloseImage setSize:CGSizeMake(24, 24)];
     self.opencloseLabel.text = openInfoString;
     if(openInfoString.length > 0){
         self.opencloseLabel.hidden = NO;
         self.opencloseImage.hidden = NO;
     }
-    
+
     
     // additional info in bottom view
     [self.labels removeAllObjects];

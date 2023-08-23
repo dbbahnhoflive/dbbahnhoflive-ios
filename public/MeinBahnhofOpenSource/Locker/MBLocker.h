@@ -7,20 +7,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef enum : NSUInteger {
-    LockerSizeUnknown,
-    LockerSizeSmall,
-    LockerSizeMedium,
-    LockerSizeLarge,
-    LockerSizeJumbo,
-} LockerSize;
+typedef NS_ENUM(NSUInteger, MBLockerSize) {
+    MBLockerSizeUnknown,
+    MBLockerSizeSmall,
+    MBLockerSizeMedium,
+    MBLockerSizeLarge,
+    MBLockerSizeJumbo,
+};
 
 @interface MBLocker : NSObject
 
 -(MBLocker*)initWithDict:(NSDictionary*)dict;
 
 @property(nonatomic,readonly) NSInteger amount;
-@property(nonatomic,readonly) LockerSize size;
+@property(nonatomic,readonly) MBLockerSize size;
 @property(nonatomic,readonly,nullable) NSString* paymentTypes;
 @property(nonatomic,readonly) NSInteger fee;
 @property(nonatomic,readonly,nullable) NSString* feePeriod;

@@ -71,10 +71,7 @@
     
     UIView *backView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.contentView.frame.size.width, DEFAULT_CONFIRM_AREA_HEIGHT)];
     backView.backgroundColor = [UIColor whiteColor];
-    backView.layer.shadowOffset = CGSizeMake(0.0, -2.0);
-    backView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    backView.layer.shadowRadius = 1.5;
-    backView.layer.shadowOpacity = 1.0;
+    [backView configureDefaultShadow];
     [self.pickerContainer addSubview:backView];
     self.buttonBackView = backView;
     

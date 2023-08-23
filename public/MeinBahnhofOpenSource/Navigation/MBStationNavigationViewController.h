@@ -9,6 +9,8 @@
 #import "MBStation.h"
 #import "MBContentSearchButton.h"
 
+@class MBStationViewController;
+
 #define STATION_NAVIGATION_PICTURE_HEIGHT 280
 
 @interface MBStationNavigationViewController : UINavigationController
@@ -24,6 +26,7 @@
 - (void)showBackgroundImage:(BOOL)showBackground;
 - (void)hideNavbar:(BOOL)hidden;
 -(void)removeSearchButton;
+-(void)showBackButtonForStationViewController:(MBStationViewController*)vc;
 
 @property(nonatomic,strong) UIColor* behindViewBackgroundColor;
 

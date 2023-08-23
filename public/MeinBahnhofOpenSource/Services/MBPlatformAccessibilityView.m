@@ -13,6 +13,7 @@
 #import "MBFacilityStatusViewController.h"
 #import "MBLinkButton.h"
 #import "MBUIHelper.h"
+#import "MBStatusImageView.h"
 
 @interface MBPlatformAccessibilityView()<MBTimetableFilterViewControllerDelegate>
 @property(nonatomic,strong) MBStation* station;
@@ -48,7 +49,7 @@
     //self.backgroundColor = UIColor.redColor;
     self.trackList = [MBPlatformAccessibility getPlatformList:self.station.platformAccessibility];
     
-    self.infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 32, self.frame.size.width-15-15-50, 20)];
+    self.infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 32, self.frame.size.width-50, 20)];
     self.infoLabel.font = UIFont.db_BoldSixteen;
     self.infoLabel.textColor = UIColor.db_333333;
     self.infoLabel.text = @"Ausstattung für Barrierefreiheit";
@@ -98,7 +99,7 @@
     self.configurableViewsY = CGRectGetMaxY(dividerLine.frame)+20;
     NSLog(@"configurableViewsY=%ld",(long)self.configurableViewsY);
     UILabel* hintLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, _configurableViewsY, self.frame.size.width, 20)];
-    hintLabel.font = [UIFont db_ItalicWithSize:16];
+    hintLabel.font = [UIFont db_ItalicSixteen];
     hintLabel.textColor = UIColor.db_333333;
     hintLabel.text = @"Bitte wählen Sie ein Gleis aus.";
     [self addSubview:hintLabel];
@@ -187,33 +188,76 @@
 }
 -(void)configureViewForPlatform:(MBPlatformAccessibility*)platform{
     self.platformLabel.text = [NSString stringWithFormat:@"Gleis %@",platform.name];
-    NSLog(@"display: %@",platform.availableTypesDisplayStrings);
     
     [self.platformViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [self.platformViews removeAllObjects];
 
     NSInteger y = self.configurableViewsY;
     NSInteger index = 0;
-    NSArray* list = platform.availableTypesDisplayStrings;
-    for(NSString* entry in list){
+    NSArray<MBPlatformAccessibilityFeature*>* featureList = platform.availableFeatures;
+    for(MBPlatformAccessibilityFeature* feature in featureList){
         index++;
         UILabel* hintLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, y, self.frame.size.width-2*15, 20)];
+        hintLabel.isAccessibilityElement = false;
         hintLabel.numberOfLines = 0;
         hintLabel.font = UIFont.db_RegularSixteen;
         hintLabel.textColor = UIColor.db_333333;
-        hintLabel.text = entry;
+        hintLabel.text = feature.displayText;
         hintLabel.size = [hintLabel sizeThatFits:CGSizeMake(hintLabel.frame.size.width, 60)];
         
-        NSString* voText = entry;
-        if([entry containsString:@">="]){
+        NSString* voText = hintLabel.text;
+        if([voText containsString:@">="]){
             voText = [voText stringByReplacingOccurrencesOfString:@">=" withString:@"größer gleich"];
         }
-        hintLabel.accessibilityLabel = voText;
         
         [self addSubview:hintLabel];
         [self.platformViews addObject:hintLabel];
-        y += hintLabel.frame.size.height+20;
-        if(index < list.count){
+        
+        MBStatusImageView *statusImageView = [MBStatusImageView new];
+        statusImageView.isAccessibilityElement = false;
+        [self addSubview:statusImageView];
+        [self.platformViews addObject:statusImageView];
+        
+        UILabel* statusLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width-2*15, 20)];
+        statusLabel.isAccessibilityElement = false;
+        statusLabel.numberOfLines = 0;
+        statusLabel.font = UIFont.db_RegularSixteen;
+        [self addSubview:statusLabel];
+        [self.platformViews addObject:statusLabel];
+
+        switch(feature.accType){
+            case MBPlatformAccessibilityType_AVAILABLE:
+                [statusImageView setStatusActive];
+                statusLabel.text = @"vorhanden";
+                statusLabel.textColor = [UIColor db_green];
+                break;
+            case MBPlatformAccessibilityType_NOT_AVAILABLE:
+                [statusImageView setStatusInactive];
+                statusLabel.text = @"nicht vorhanden";
+                statusLabel.textColor = [UIColor db_mainColor];
+                break;
+            default:
+                [statusImageView setStatusUnknown];
+                statusLabel.text = @"unbekannt";
+                statusLabel.textColor = [UIColor db_787d87];
+                break;
+        }
+        voText = [voText stringByAppendingFormat:@": %@",statusLabel.text];
+        UIView* voView = [[UIView alloc] initWithFrame:CGRectMake(0, y, self.frame.size.width, 55)];
+        voView.isAccessibilityElement = true;
+        voView.accessibilityLabel = voText;
+        [self addSubview:voView];
+        [self.platformViews addObject:voView];
+
+        [statusLabel sizeToFit];
+        [statusImageView setGravityLeft:hintLabel.frame.origin.x];
+        [statusImageView setBelow:hintLabel withPadding:4];
+        [statusLabel setGravityLeft:CGRectGetMaxX(statusImageView.frame)+6];
+        [statusLabel setGravityTop:statusImageView.frame.origin.y+2];
+        
+        y += 60;
+
+        if(index < featureList.count){
             UIView* line = [[UIView alloc] initWithFrame:CGRectMake(7, y, self.frame.size.width-2*7, 1)];
             line.backgroundColor = [UIColor db_light_lineColor];
             [self addSubview:line];

@@ -101,7 +101,7 @@
 
 - (NSString*) originalPlatform
 {
-    return _originalPlatform.length > 0 ? _originalPlatform : @"k.A.";
+    return _originalPlatform.length > 0 ? _originalPlatform : PLATFORM_STRING_MISSING;
 }
 
 - (NSString*) changedPlatform
@@ -345,5 +345,39 @@
 
 -(NSArray<NSString*>*)stationListWithCurrentStation:(NSString*)currentStation{
     return self.departure ? [@[currentStation] arrayByAddingObjectsFromArray:self.actualStationsArray] : [self.actualStationsArray arrayByAddingObject:currentStation];
+}
+
+
+-(NSString*)voiceOverString{
+    return [Event voiceOverForEvent:self];
+}
++(NSString*)voiceOverForEvent:(Event*)event{
+    NSString* train = [event.stop formattedTransportType:event.lineIdentifier];
+    if([train containsString:@"ICE"]){
+        train = [train stringByReplacingOccurrencesOfString:@"ICE" withString:@"I C E"];
+    } else if([train hasPrefix:@"STR"]){
+        train = [train stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
+    }
+    NSString* gleis = [NSString stringWithFormat:@"Gleis %@",event.actualPlatform];
+    NSString* msg = event.composedIrisMessage;
+    if(!msg){
+        msg = @"";
+    }
+    NSString* trainOrder = @"";
+    if([Stop stopShouldHaveTrainRecord:event.stop]){
+        trainOrder = @"Informationen zur Wagenreihung verfügbar.";
+    }
+    NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@ Uhr, %@, %@; %@. %@",
+                train,
+                event.departure ? @"nach" : @"von",
+                event.actualStation,
+                event.formattedTime,
+                ([event.formattedTime isEqualToString:event.formattedExpectedTime] ? @"" : [NSString stringWithFormat:@"Erwartet %@ Uhr",event.formattedExpectedTime]),
+                gleis,
+                msg,
+                trainOrder
+            ];
+    //NSLog(@"voiceover: %@",res);
+    return res;
 }
 @end

@@ -8,8 +8,6 @@
 
 #import "MBLinkButton.h"
 
-#import "SharedMobilityMappable.h"
-
 #import "FacilityStatus.h"
 #import "MBParkingInfo.h"
 
@@ -18,6 +16,7 @@
 
 #import "RIMapPoi.h"
 #import "RIMapSEV.h"
+#import "MBMarker.h"
 
 #import "TimetableManager.h"
 #import "HafasRequestManager.h"
@@ -25,6 +24,7 @@
 #import "MBMapDepartureRequestManager.h"
 #import "MBButtonWithData.h"
 #import "MBLargeButton.h"
+#import "DBSwitch.h"
 #import "MBTimetableViewController.h"
 #import "MBRootContainerViewController.h"
 #import "MBContentSearchResult.h"
@@ -53,7 +53,6 @@
 @property (nonatomic,strong) UIView* moveableContentView;
 @property (nonatomic,strong) UIView* gradientView;
 
-@property (nonatomic, strong) MobilityMappable *mobilityMappable;
 @property (nonatomic, strong) FacilityStatus *facilityStatusItem;
 @property (nonatomic, strong) MBParkingInfo* parkingStatusItem;
 
@@ -88,7 +87,7 @@
     
     flyout.poi = marker;
     flyout.poiLocation = [[CLLocation alloc] initWithLatitude:flyout.poi.position.latitude longitude:flyout.poi.position.longitude];
-    
+    flyout.accessibilityViewIsModal = true;
     [flyout setupForMarker];
     
     return flyout;
@@ -98,7 +97,7 @@
     // NSLog(@"tap on %@",self.poi.userData);    
     if([self.delegate respondsToSelector:@selector(showTimetableForStationId:stationName:evas:location:opnvStation:isOPNV:)]) {
         
-        BOOL isOPNV = self.poi.markerType == OEPNV_SELECTABLE;
+        BOOL isOPNV = self.poi.markerType == MBMarkerType_OEPNV_SELECTABLE;
         
         if (!isOPNV && nil != [self.poi.userData valueForKey:@"id"]) {
             [self.delegate showTimetableForStationId:[self.poi.userData valueForKey:@"id"] stationName:[self.poi.userData valueForKey:@"name"] evas:[self.poi.userData valueForKey:@"eva_ids"] location:[self.poi.userData valueForKey:@"location"] opnvStation:nil isOPNV:NO];
@@ -199,7 +198,7 @@
 }
 
 - (void) setupAbfahrtsTafel{
-    if(self.poi.markerType != STATION_SELECTABLE && self.poi.markerType != OEPNV_SELECTABLE){
+    if(self.poi.markerType != MBMarkerType_STATION_SELECTABLE && self.poi.markerType != MBMarkerType_OEPNV_SELECTABLE){
         return;
     }
     if (nil == self.tapGestureForTimetable) {
@@ -224,13 +223,13 @@
 -(void)updateDepartures{
     NSArray *eva_ids = [self.poi.userData objectForKey:@"eva_ids"];
     NSLog(@"updateDepartures: %lu, %@",(unsigned long)self.poi.markerType,eva_ids);
-    if (self.poi.markerType == STATION_SELECTABLE && nil != eva_ids && eva_ids.count > 0) {
+    if (self.poi.markerType == MBMarkerType_STATION_SELECTABLE && nil != eva_ids && eva_ids.count > 0) {
         [self.spinner startAnimating];
         if (nil == self.localTimeTableManager) {
             self.localTimeTableManager = [[TimetableManager alloc] init];
         }
         [self.localTimeTableManager reloadTimetableWithEvaIds:eva_ids];
-    } else if (self.poi.markerType == OEPNV_SELECTABLE && ((nil != eva_ids && eva_ids.count > 0))) {
+    } else if (self.poi.markerType == MBMarkerType_OEPNV_SELECTABLE && ((nil != eva_ids && eva_ids.count > 0))) {
         [self.spinner startAnimating];
         // may be Hafas
         if (nil == self.localHafasManager) {
@@ -254,7 +253,7 @@
 }
 
 -(UIColor*)colorGreen{
-    return [UIColor db_76c030];
+    return [UIColor db_green];
 }
 -(UIColor*)colorRed{
     return [UIColor db_mainColor];
@@ -271,7 +270,7 @@
     int y = 10;
     
     switch(poi.markerType) {
-        case SEV:
+        case MBMarkerType_SEV:
         {
             RIMapSEV* sev = (RIMapSEV*)_payload;
             self.titleLabel.text = @"Ersatzverkehr";
@@ -281,7 +280,7 @@
             y = [self addStatusLineWithIcon:nil text:@"Eine Wegbeschreibung finden Sie unter Bahnhofsinformationen" color:UIColor.blackColor font:[UIFont db_RegularFourteen] externalLink:nil internalLink:@selector(internalLink:) orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
             break;
         }
-        case RIMAPPOI:
+        case MBMarkerType_RIMAPPOI:
         {
             RIMapPoi* riMapPoi = poi.riMapPoi;
             self.titleLabel.text = riMapPoi.title;
@@ -322,49 +321,32 @@
             }
             break;
         }
-        case FACILITY:
+        case MBMarkerType_FACILITY:
         {
             FacilityStatus* status = (FacilityStatus*)_payload;
             self.facilityStatusItem = status;
             self.titleLabel.text = status.title;
             self.headerIcon.image = [UIImage db_imageNamed:@"rimap_aufzug_grau"];//[status iconForState];
-            if(status.state == ACTIVE){
+            if(status.state == FacilityStateActive){
                 y = [self addStatusLineWithIcon:@"app_check" text:@"In Betrieb" color:[self colorGreen] externalLink:nil orSwitch:nil atY:y];
-            } else if(status.state == UNKNOWN){
+            } else if(status.state == FacilityStateUnknown){
                 y = [self addStatusLineWithIcon:@"app_unbekannt" text:@"Status unbekannt" color:[self colorGray] externalLink:nil orSwitch:nil atY:y];
             } else {
                 y = [self addStatusLineWithIcon:@"app_kreuz" text:@"Nicht in Betrieb" color:[self colorRed] externalLink:nil orSwitch:nil atY:y];
             }
             y = [self addStatusLineWithIcon:@"app_achtung" text:status.shortDescription color:[self colorGray] externalLink:nil orSwitch:nil atY:y];
+            /*
+            UISwitch* favSwitch = [[DBSwitch alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
+            favSwitch.on = [FacilityStatusManager.client isFavoriteFacility:self.facilityStatusItem.equipmentNumberString];
+            [favSwitch addTarget:self action:@selector(favFacilitySwitchChanged:) forControlEvents:UIControlEventValueChanged];
             
-            UISwitch* pushSwitch = [[UISwitch alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
-            pushSwitch.on = [[FacilityStatusManager client] isPushActiveForFacility:self.facilityStatusItem.equipmentNumber.description];
-            [pushSwitch addTarget:self action:@selector(pushSwitchChanged:) forControlEvents:UIControlEventValueChanged];
-            
-            y = [self addStatusLineWithIcon:nil text:@"Aufzug der Merkliste hinzugefügt" color:[self colorBlack] externalLink:nil orSwitch:pushSwitch atY:y];
+            y = [self addStatusLineWithIcon:nil text:@"Aufzug der Merkliste hinzugefügt" color:[self colorBlack] externalLink:nil orSwitch:favSwitch atY:y];*/
+            y += 5;
+            y = [self addStatusLineWithIcon:nil text:@"Übersicht der Aufzüge und Merkliste" color:UIColor.blackColor font:[UIFont db_RegularFourteen] externalLink:nil internalLink:@selector(internalLink:) orSwitch:nil atY:y inView:self.contentScrollView withExtraSpaceRight:0];
+            y -= 5;
             break;
         }
-        case MOBILITY:
-        {
-            self.mobilityMappable = (MobilityMappable*) _payload;
-            self.titleLabel.text = self.mobilityMappable.translatedTypeName;
-            self.headerIcon.image = [self.mobilityMappable pinForProvider];
-            SEL selector = nil;
-            if(self.mobilityMappable.appStoreUrlForProvider){
-                selector = @selector(openAppForProvider:);
-            }
-            
-            if (![self.mobilityMappable isBikeOffer]) {
-                y = [self addStatusLineWithIcon:@"app_unbekannt" text:[NSString stringWithFormat:@"%@", self.mobilityMappable.name] color:[self colorGray] externalLink:nil orSwitch:nil atY:y];
-                y = [self addStatusLineWithIcon:@"app_unbekannt" text:[NSString stringWithFormat:@"Tank: %@", [self.mobilityMappable fuelStatus]] color:[self colorGray] externalLink:nil orSwitch:nil atY:y];
-                y = [self addStatusLineWithIcon:@"app_unbekannt" text:[NSString stringWithFormat:@"Getriebe: %@", [self.mobilityMappable gearBox]] color:[self colorGray] externalLink:nil orSwitch:nil atY:y];
-                y = [self addStatusLineWithIcon:nil text:[NSString stringWithFormat:@"Standort: %@", [self.mobilityMappable.address stringByReplacingOccurrencesOfString:@"\U0000fffd" withString:@"ß"]] color:[self colorBlack] externalLink:selector orSwitch:nil atY:y];
-            } else {
-                y = [self addStatusLineWithIcon:nil text:[NSString stringWithFormat:@"Standort: %@", self.mobilityMappable.name] color:[self colorBlack] externalLink:selector orSwitch:nil atY:y];
-            }
-            break;
-        }
-        case PARKING:
+        case MBMarkerType_PARKING:
         {
             self.parkingStatusItem = (MBParkingInfo*) _payload;
             self.titleLabel.text = self.parkingStatusItem.name;
@@ -372,15 +354,15 @@
             [self setupParkingLayout:self.parkingStatusItem];
             break;
         }
-        case SERVICESTORE:
+        case MBMarkerType_SERVICESTORE:
         {
             
             break;
         }
-        case STATION:
+        case MBMarkerType_STATION:
             break;//this is not selectable!
-        case OEPNV_SELECTABLE:
-        case STATION_SELECTABLE:
+        case MBMarkerType_OEPNV_SELECTABLE:
+        case MBMarkerType_STATION_SELECTABLE:
         {
             CGFloat originTop = self.titleLabel.frame.origin.y + self.titleLabel.frame.size.height + 16.0;
             CGFloat originLeft = 16.0;
@@ -482,8 +464,8 @@
             
             break;
         }
-        case USER:
-        case VENUE:
+        case MBMarkerType_USER:
+        case MBMarkerType_VENUE:
             //should never be called
             break;
     }
@@ -503,11 +485,13 @@
 -(void)internalLink:(id)sender{
     NSString* searchString = nil;
     if(self.poi.riMapPoi.isDBInfoPOI){
-        searchString = CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO;
+        searchString = CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_DBINFO;
     } else if([self.payload isKindOfClass:RIMapSEV.class]){
         searchString = CONTENT_SEARCH_KEY_STATIONINFO_SEV;
     } else if(self.poi.riMapPoi.isLocker){
         searchString = CONTENT_SEARCH_KEY_STATIONINFO_LOCKER;
+    } else if([self.payload isKindOfClass:FacilityStatus.class]){
+        searchString = CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR;
     }
     if(searchString){
         [self.viewController dismissViewControllerAnimated:YES completion:^{
@@ -678,7 +662,7 @@
         if([event roundedDelay] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_76c030];
+            expectedTimeLabel.textColor = [UIColor db_green];
         }
         [expectedTimeLabel sizeToFit];
         [self.moveableContentView addSubview:expectedTimeLabel];
@@ -841,17 +825,15 @@
 
 
 
-- (void) pushSwitchChanged:(UISwitch*)pushSwitch
+- (void)favFacilitySwitchChanged:(UISwitch*)favSwitch
 {
-    if(pushSwitch.on){
-        
-        
+    if(favSwitch.on){
         AppDelegate* del = (AppDelegate*)[[UIApplication sharedApplication] delegate];
         MBStation* station = del.selectedStation;
         
-        [[FacilityStatusManager client] enablePushForFacility:self.facilityStatusItem.equipmentNumber.description stationNumber:[station.mbId description] stationName:station.title];
+        [FacilityStatusManager.client addToFavorites:self.facilityStatusItem.equipmentNumberString stationNumber:[station.mbId description] stationName:station.title];
     } else {
-        [[FacilityStatusManager client] removeFromFavorites:self.facilityStatusItem.equipmentNumber.description];
+        [FacilityStatusManager.client removeFromFavorites:self.facilityStatusItem.equipmentNumberString];
     }
 }
 
@@ -932,7 +914,7 @@
         if([departure delayInMinutes] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_76c030];
+            expectedTimeLabel.textColor = [UIColor db_green];
         }
         
         UILabel *lineLabel = [abfahrtDict objectForKey:@"lineLabel"];
@@ -1012,7 +994,7 @@
                     if(stop.departureEvent.roundedDelay >= 5){
                         expectedTimeLabel.textColor = [UIColor db_mainColor];
                     } else {
-                        expectedTimeLabel.textColor = [UIColor db_76c030];
+                        expectedTimeLabel.textColor = [UIColor db_green];
                     }
                     //hide time when train is canceled
                     expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -1094,7 +1076,7 @@
         [[NSNotificationCenter defaultCenter] removeObserver:self name:NOTIF_TIMETABLE_UPDATE object:nil];
         [self.localTimeTableManager resetTimetable];
     } else {
-        if(self.poi.markerType == STATION_SELECTABLE){
+        if(self.poi.markerType == MBMarkerType_STATION_SELECTABLE){
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(didReceiveTimetableUpdate:)
                                                          name:NOTIF_TIMETABLE_UPDATE
@@ -1119,32 +1101,6 @@
 {
 }
 
-
-# pragma Mobility Actions
-
-- (void) openAppForProvider:(id)sender
-{
-    if (!self.mobilityMappable) {
-        return;
-    }
-    
-    NSURL *urlForProvider = [self.mobilityMappable urlScheme];
-    
-    BOOL canOpenApp = [MBUrlOpening canOpenURL:urlForProvider];
-    if (canOpenApp) {
-        [MBUrlOpening openURL:urlForProvider];
-    } else {
-        // show dialog and guide to the App Store
-        
-        UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"App nicht installiert" message:@"App jetzt im App Store herunterladen?" preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Zum App Store" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            NSString *storeUrl = self.mobilityMappable.appStoreUrlForProvider;
-            [MBUrlOpening openURL:[NSURL URLWithString:storeUrl]];
-        }]];
-        [alert addAction:[UIAlertAction actionWithTitle:@"Nein, danke" style:UIAlertActionStyleCancel handler:nil]];
-        [self.viewController presentViewController:alert animated:YES completion:nil];
-    }
-}
 
 
 

@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSString* journeyID;
 @property(nonatomic) BOOL journeyCanceled;
 -(NSArray<MBTrainJourneyStop*>*)journeyStops;
-
+-(BOOL)isSEVJourney;
 @property(nonatomic) BOOL dateMismatch;
 
 @end

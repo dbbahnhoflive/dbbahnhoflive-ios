@@ -20,6 +20,9 @@
 
 +(AppDelegate*)appDelegate;
 
+-(BOOL)hasEnabledPushServices;
+-(NSString*)previousAppVersion;
+
 //Tracking
 -(BOOL)needsInitialPrivacyScreen;
 -(void)userFeedbackOnPrivacyScreen:(BOOL)enabledTracking;

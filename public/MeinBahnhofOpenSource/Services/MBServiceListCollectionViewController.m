@@ -24,7 +24,6 @@
 
 
 #import "MBStaticStationInfo.h"
-#import "MBEinkaufsbahnhofCategory.h"
 #import "MBContentSearchResult.h"
 #import "MBUrlOpening.h"
 #import "MBUIHelper.h"
@@ -118,16 +117,10 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
 -(void)handleSearchResult{
     if(self.searchResult){
         if(self.searchResult.isShopSearch){
-            if(self.searchResult.isPickpackSearch){
-                [self pushServiceViewForType:kServiceType_PickPack];
-                self.searchResult = nil;
-                return;
-            }
             
             if(self.searchResult.poiCat
-               || self.searchResult.storeCat
                || self.searchResult.couponItem){
-                id cat = (self.searchResult.poiCat ? self.searchResult.poiCat : self.searchResult.storeCat);
+                id cat = (self.searchResult.poiCat ? self.searchResult.poiCat : nil);
                 if(self.searchResult.couponItem){
                     MBCouponCategory* cCat = [MBCouponCategory new];
                     cCat.items = self.station.couponsList;
@@ -211,26 +204,12 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     }
     
     self.pxrCategories = _station.riPoiCategories;
-    switch(_serviceType){
-        case MBServiceCollectionTypeInfo:
-            self.services = [self prepareServices];
-            break;
-        case MBServiceCollectionTypeShopping:
-            self.services = _station.einkaufsbahnhofCategories;
-            break;
-        
-    }
-    
-    //add additional items in shop list
-    if (_serviceType == MBServiceCollectionTypeShopping){
-        BOOL isPxrSource = YES;
+    if(_serviceType == MBServiceCollectionTypeInfo){
+        self.services = [self prepareServices];
+    } else if (_serviceType == MBServiceCollectionTypeShopping){
         NSArray* source = self.pxrCategories;
-        if(self.pxrCategories.count == 0){
-            isPxrSource = NO;
-            source = self.services;
-        }
         if(!source){
-            //special case: we have a station without shops, BUT probably a pickpack
+            //special case: we have a station without shops
             source = @[];
         }
         NSMutableArray* sourceMutable = [source mutableCopy];
@@ -241,41 +220,14 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
             couponContainer.items = self.station.couponsList;
             [sourceMutable addObject:couponContainer];
         }
-        
-        
-        if (self.station.hasPickPack) {
-            //add adverting pickpack kachel
-            MBAdContainer* adContainer = [MBAdContainer new];
-            adContainer.type = MBAdContainerTypePickPack;
-            adContainer.voiceOverText = @"pick pack";
-            adContainer.imageName = @"pickpack";
-            adContainer.trackingAction = @[@"h3",@"shops",@"tap",@"pickpack"];
-            adContainer.isSquare = YES;
-            [sourceMutable addObject:adContainer];
-        }
 
-        if (self.station.isEinkaufsbahnhof) {
-            //add adverting MEK kachel
-            MBAdContainer* adContainer = [MBAdContainer new];
-            adContainer.voiceOverText = @"Von früh bis spät an 365 Tagen im Jahr einkaufen. Mein Einkaufsbahnhof.";
-            adContainer.type = MBAdContainerTypeEinkaufsbahnhof;
-            adContainer.url = [NSURL URLWithString:@"https://www.einkaufsbahnhof.de/"];
-            adContainer.trackingAction = @[@"h3",@"shops",@"tap",@"mek-teaser"];
-            adContainer.isSquare = YES;
-            [sourceMutable addObject:adContainer];
-        }
-        
         //do we need a larger last kachel?
         MBAdContainer* lastOne = sourceMutable.lastObject;
         if([lastOne isKindOfClass:MBAdContainer.class] && (sourceMutable.count % 2) != 0){
             lastOne.isSquare = NO;
         }
         
-        if(isPxrSource){
-            self.pxrCategories = sourceMutable;
-        } else {
-            self.services = sourceMutable;
-        }
+        self.pxrCategories = sourceMutable;
     }
     
     [self.collectionView reloadData];
@@ -310,12 +262,8 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     }
     
     if(self.openChatBotScreen || self.openServiceNumberScreen){
-        BOOL isChat = self.openChatBotScreen;
         NSString* serviceName = kServiceType_Chatbot;
-        if(!isChat){
-            //pickpack
-            serviceName = kServiceType_PickPack;
-        }
+        
         BOOL displayAsSingleScreen = NO;
         if(displayAsSingleScreen){
             MBService* service = [MBStaticStationInfo serviceForType:serviceName withStation:_station];
@@ -325,15 +273,12 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
             //we simulate a search to reuse the exiting code for displaying a service item
             if(self.openChatBotScreen){
                 self.searchResult = [MBContentSearchResult searchResultForChatbot];
-            } else if(self.openPickPackScreen){
-                self.searchResult = [MBContentSearchResult searchResultForPickpack];
             } else if(self.openServiceNumberScreen) {
                 self.searchResult = [MBContentSearchResult searchResultForServiceNumbers];
             }
         }
         self.openServiceNumberScreen = NO;
         self.openChatBotScreen = NO;
-        self.openPickPackScreen = NO;
     }
     [self handleSearchResult];
 }
@@ -560,7 +505,10 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
 
 #pragma mark UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-    CGFloat itemWidth = floor((collectionView.frame.size.width - collectionView.contentInset.left - collectionView.contentInset.right - 8.0) / 2.0);
+    CGFloat itemWidth = floor((collectionView.frame.size.width - collectionView.contentInset.left - collectionView.contentInset.right - 8.0) / (ISIPAD ? 3.0 : 2.0));
+    if(ISIPAD){
+        itemWidth -= 8;
+    }
     CGFloat itemHeight = floor(itemWidth * 1.14);
     CGSize itemSize = CGSizeMake(itemWidth, itemHeight);
     
@@ -589,7 +537,6 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         case MBServiceCollectionTypeInfo:
             return self.services;
         case MBServiceCollectionTypeShopping:
-            //could be einkaufsbahnhof or pxr
             if(self.pxrCategories.count > 0){
                 //pxr is prefered
                 return self.pxrCategories;
@@ -615,34 +562,19 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
     kachel.needsLineAboveText = YES;
 
     id service = [self serviceForIndexPath:indexPath];
-    if([service isKindOfClass:[MBEinkaufsbahnhofCategory class]]) {
-        kachel.title = [(MBEinkaufsbahnhofCategory *)service name];
-        cell.icon = [(MBEinkaufsbahnhofCategory *)service icon];
-    } else if([service isKindOfClass:[MBMenuItem class]]) {
+    if([service isKindOfClass:[MBMenuItem class]]) {
         kachel.title = [(MBMenuItem *)service title];
         cell.icon = [(MBMenuItem *)service iconForType];
     } else if([service isKindOfClass:[MBPXRShopCategory class]]){
         kachel.title = [(MBPXRShopCategory *)service title];
-        cell.icon = [MBEinkaufsbahnhofCategory menuIconForCategoryTitle:kachel.title];
+        cell.icon = [MBPXRShopCategory menuIconForCategoryTitle:kachel.title];
     } else if([service isKindOfClass:MBAdContainer.class]){
         MBAdContainer* adContainer = (MBAdContainer*)service;
         kachel.title = @"";
         kachel.titleForVoiceOver = adContainer.voiceOverText;
         kachel.needsLineAboveText = NO;
         kachel.showOnlyImage = YES;
-        if(adContainer.type == MBAdContainerTypeEinkaufsbahnhof){
-            if(adContainer.isSquare){
-                if(self.collectionView.frame.size.width > 400){
-                    adContainer.imageName = @"einkaufsbahnhof_banner_size_square_large";
-                } else {
-                    adContainer.imageName = @"einkaufsbahnhof_banner_size_square";
-                }
-            } else {
-                adContainer.imageName = @"einkaufsbahnhof_banner_size_oblong";
-            }
-        } else {
-            //don't change imageName, is preconfigured
-        }
+        
         cell.icon = [UIImage db_imageNamed:adContainer.imageName];
     } else if([service isKindOfClass:MBCouponCategory.class]){
         MBCouponCategory* couponCat = (MBCouponCategory*)service;
@@ -693,11 +625,6 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 }
             }
         }
-    } else if([service isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
-        MBEinkaufsbahnhofCategory* category = (MBEinkaufsbahnhofCategory*)service;
-        MBServiceListTableViewController* serviceList = [[MBServiceListTableViewController alloc] initWithItem:category station:self.station];
-        trackingTitle = serviceList.trackingTitle;
-        vc = serviceList;
     } else if([service isKindOfClass:[MBPXRShopCategory class]]){
         MBServiceListTableViewController* serviceList = [[MBServiceListTableViewController alloc] initWithItem:service station:self.station];
         trackingTitle = serviceList.trackingTitle;
@@ -707,13 +634,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         if(adContainer.trackingAction){
             [MBTrackingManager trackActionsWithStationInfo:adContainer.trackingAction];
         }
-        if(adContainer.type == MBAdContainerTypePickPack){
-            MBService* service = [MBStaticStationInfo serviceForType:kServiceType_PickPack withStation:_station];
-            UIViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
-            [self.navigationController pushViewController:vc animated:YES];
-        } else {
-            [MBUrlOpening openURL:adContainer.url];
-        }
+        [MBUrlOpening openURL:adContainer.url];
         return;
     } else if([service isKindOfClass:MBCouponCategory.class]){
         MBCouponCategory* couponCat = (MBCouponCategory*)service;

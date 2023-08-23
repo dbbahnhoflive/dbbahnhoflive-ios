@@ -40,6 +40,5 @@
 @property (nonatomic, strong) NSString *currentStation;
 
 @property (nonatomic, strong) NSString* stopId;
-+(NSString*)voiceOverForEvent:(Event*)event;
 
 @end

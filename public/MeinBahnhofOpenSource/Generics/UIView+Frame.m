@@ -5,6 +5,7 @@
 
 
 #import "UIView+Frame.h"
+#import "UIColor+DBColor.h"
 
 @implementation UIView (Frame)
 
@@ -278,6 +279,18 @@
     }
     // leave width as original
     [self setFrame:CGRectMake(self.frame.origin.x, self.frame.origin.y, self.frame.size.width, h)];
+}
+
+
+-(void)configureDefaultShadow{
+    self.layer.shadowOffset = CGSizeMake(1.0, 2.0);
+    self.layer.shadowColor = [[UIColor db_dadada] CGColor];
+    self.layer.shadowRadius = 1.5;
+    self.layer.shadowOpacity = 1.0;
+}
+
+-(void)configureH1Shadow{
+    [self configureDefaultShadow];
 }
 
 @end

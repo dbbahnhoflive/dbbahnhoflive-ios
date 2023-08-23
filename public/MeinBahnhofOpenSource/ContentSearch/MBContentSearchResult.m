@@ -16,7 +16,6 @@
 
 //used for linking into the detail page
 @property(nonatomic) BOOL isChatBotSearch;
-@property(nonatomic) BOOL isPickpackSearch;
 @property(nonatomic) BOOL isServiceNumberSearch;
 
 @end
@@ -40,10 +39,7 @@
         return [self.poi iconNameForFlyout:YES];
     }
     if(self.poiCat){
-        return [MBEinkaufsbahnhofCategory categoryNameForCatTitle:self.poiCat.title];
-    }
-    if(self.store || self.storeCat){
-        return self.storeCat.iconFilename;
+        return [MBPXRShopCategory categoryNameForCatTitle:self.poiCat.title];
     }
     if(self.opnvLineIdentifier){
         switch(self.opnvCat){
@@ -63,48 +59,48 @@
     }
     
     if(self.keywordString.length > 0){
-        NSDictionary* iconMap = @{ @"Bahnhofsausstattung Stufenfreier Zugang" : @"bahnhofsausstattung_stufenfreier_zugang",
-                                   @"Bahnhofsausstattung WC": @"bahnhofsausstattung_wc",
-                                   @"Bahnhofsausstattung DB Lounge": @"bahnhofsausstattung_lounge",
-                                   @"Bahnhofsausstattung Schließfächer": @"bahnhofsausstattung_schließfaecher",
-                                   @"Bahnhofsausstattung DB Info": @"bahnhofsausstattung_db_info",
-                                   @"Bahnhofsausstattung DB Reisezentrum": @"bahnhofsausstattung_db_reisezentrum",
-                                   @"Bahnhofsausstattung Reisebedarf": @"bahnhofsausstattung_reisebedarf",
-                                   @"Bahnhofsausstattung Parkplätze": @"bahnhofsausstattung_parkplatz",
-                                   @"Bahnhofsausstattung Fahrradstellplatz": @"bahnhofsausstattung_fahrradstellplatz",
-                                   @"Bahnhofsausstattung Taxistand": @"bahnhofsausstattung_taxi",
-                                   @"Bahnhofsausstattung Mietwagen": @"bahnhofsausstattung_mietwagen",
-                                   @"Bahnhofsausstattung WLAN": @"rimap_wlan_grau",
-                                   @"Karte": @"app_karte_dunkelgrau",
-                                   @"Einstellungen": @"app_einstellung",
-                                   @"Feedback": @"app_dialog",
-                                   @"Shoppen & Schlemmen":@"app_shop",
-                                   @"Geöffnet":@"app_shop",
-                                   CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO:@"app_information",
-                                   @"Bahnhofsinformation Info & Services Mobiler Service":@"app_mobiler_service",
-                                   @"Bahnhofsinformation Info & Services Bahnhofsmission": @"rimap_bahnhofsmission_grau",
-                                   @"Bahnhofsinformation Info & Services DB Reisezentrum": @"bahnhofsausstattung_db_reisezentrum",
-                                   @"Bahnhofsinformation Info & Services DB Lounge": @"app_db_lounge",
-                                   @"Bahnhofsinformation Info & Services Mobilitätsservice": @"app_mobilitaetservice",
-                                   @"Bahnhofsinformation Info & Services 3-S-Zentrale": @"app_3s",
-                                   @"Bahnhofsinformation Info & Services Fundservice": @"app_fundservice",
-                                   @"Bahnhofsinformation WLAN": @"rimap_wlan_grau",
-                                   @"Bahnhofsinformation Zugang & Wege": @"IconBarrierFree",
-                                   @"Bahnhofsinformation Barrierefreiheit": @"IconBarrierFree",
-                                   @"Bahnhofsinformation Aufzüge": @"app_aufzug",
-                                   @"Bahnhofsinformation Parkplätze": @"rimap_parkplatz_grau",
-                                   @"Bahnhofsinformation Ersatzverkehr": @"sev_bus",
-                                   @"Bahnhofsinformation Schließfächer": @"rimap_schliessfach_grau",
+        NSDictionary* iconMap = @{
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_LOUNGE: @"bahnhofsausstattung_lounge",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_LOCKER: @"bahnhofsausstattung_schließfaecher",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_DBINFO: @"bahnhofsausstattung_db_info",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TRAVELCENTER: @"bahnhofsausstattung_db_reisezentrum",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_WIFI: @"rimap_wlan_grau",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_PARKING: @"bahnhofsausstattung_parkplatz",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TRAVELNECESSITIES: @"bahnhofsausstattung_reisebedarf",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_WC: @"bahnhofsausstattung_wc",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_BIKEPARK: @"bahnhofsausstattung_fahrradstellplatz",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_TAXI: @"bahnhofsausstattung_taxi",
+                                   CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE_CARRENTAL: @"bahnhofsausstattung_mietwagen",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MISSION: @"rimap_bahnhofsmission_grau",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_TRAVELCENTER: @"bahnhofsausstattung_db_reisezentrum",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOUNGE: @"app_db_lounge",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_3S: @"app_3s",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOSTANDFOUND: @"app_fundservice",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILE_SERVICE:@"app_mobiler_service",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_DBINFO:@"app_information",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILITY_SERVICE: @"app_mobilitaetservice",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_WIFI: @"rimap_wlan_grau",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_ACCESSIBILITY: @"IconBarrierFree",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR: @"app_aufzug",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_PARKING: @"rimap_parkplatz_grau",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SEV: @"sev_bus",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_LOCKER: @"rimap_schliessfach_grau",
+                                   CONTENT_SEARCH_KEY_MAP: @"app_karte_dunkelgrau",
+                                   CONTENT_SEARCH_KEY_SETTINGS: @"app_einstellung",
+                                   CONTENT_SEARCH_KEY_FEEDBACK: @"app_dialog",
+                                   CONTENT_SEARCH_KEY_SHOP_AND_EAT: @"app_shop",
+                                   CONTENT_SEARCH_KEY_SHOP_OPEN: @"app_shop",
+
                                    };
 
         if([iconMap objectForKey:self.keywordString]){
             return [iconMap objectForKey:self.keywordString];
         }
         
-        if([self.keywordString hasPrefix:@"Bahnhofsausstattung"]){
+        if([self.keywordString hasPrefix:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE]){
             return @"app_bahnhofinfo";
         }
-        if([self.keywordString hasPrefix:@"Bahnhofsinformation"]){
+        if([self.keywordString hasPrefix:CONTENT_SEARCH_KEY_STATIONINFO]){
             if([self isStationInfoPhoneSearch]){
                 return @"app_service_rufnummern";
             }
@@ -122,7 +118,7 @@
             }
             return @"app_info";
         }
-        if([self.keywordString hasPrefix:@"Abfahrt"] || [self.keywordString hasPrefix:@"Ankunft"] || [self.keywordString hasPrefix:@"Wagenreihung"] || [self.keywordString hasPrefix:@"Verkehrsmittel"] || [self.keywordString hasPrefix:@"ÖPNV Anschluss"]){
+        if([self.keywordString hasPrefix:@"Abfahrt"] || [self.keywordString hasPrefix:@"Ankunft"] || [self.keywordString hasPrefix:CONTENT_SEARCH_KEY_TRAINORDER] || [self.keywordString hasPrefix:CONTENT_SEARCH_KEY_TRAVELPRODUCT] || [self isOPNVOverviewSearch]){
             return @"app_abfahrt_ankunft";
         }
     }
@@ -133,23 +129,16 @@
     MBContentSearchResult* res = [MBContentSearchResult new];
     res.searchText = @"Chatbot";
     res.displayTitle = @"Chatbot";
-    res.keywordString = @"Bahnhofsinformation Info & Services Chatbot";
+    res.keywordString = CONTENT_SEARCH_KEY_STATIONFINO_SERVICES_CHATBOT;
     res.isChatBotSearch = YES;
     return res;
 }
-+(MBContentSearchResult *)searchResultForPickpack{
-    MBContentSearchResult* res = [MBContentSearchResult new];
-    res.searchText = @"pickpack";
-    res.displayTitle = @"pickpack";
-    res.keywordString = @"Shoppen & Schlemmen";
-    res.isPickpackSearch = YES;
-    return res;
-}
+
 +(MBContentSearchResult *)searchResultForServiceNumbers{
     MBContentSearchResult* res = [MBContentSearchResult new];
     res.searchText = @"Rufnummern";
     res.displayTitle = @"Rufnummern";
-    res.keywordString = @"Bahnhofsinformation Info & Services";
+    res.keywordString = CONTENT_SEARCH_KEY_STATIONINFO_SERVICES;
     res.isServiceNumberSearch = YES;
     return res;
 }
@@ -181,19 +170,24 @@
     MBContentSearchResult* res = [MBContentSearchResult new];
     res.keywordString = key;
     //display only the last part of some keys
-    if([key hasPrefix:@"Bahnhofsausstattung "]){
-        res.displayTitle = [key substringFromIndex:@"Bahnhofsausstattung ".length];
-    } else if([key hasPrefix:@"Bahnhofsinformation Info & Services "]){
-        res.displayTitle = [key substringFromIndex:@"Bahnhofsinformation Info & Services ".length];
-    } else if([key hasPrefix:@"Bahnhofsinformation "]){
-        res.displayTitle = [key substringFromIndex:@"Bahnhofsinformation ".length];
+    
+    NSString* infoServicesWithSpace = [CONTENT_SEARCH_KEY_STATIONINFO_SERVICES stringByAppendingString:@" "];
+    NSString* infrastructureWithSpace = [CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE stringByAppendingString:@" "];
+    NSString* infoWithSpace = [CONTENT_SEARCH_KEY_STATIONINFO stringByAppendingString:@" "];
+    
+    if([key hasPrefix:infrastructureWithSpace]){
+        res.displayTitle = [key substringFromIndex:infrastructureWithSpace.length];
+    } else if([key hasPrefix:infoServicesWithSpace]){
+        res.displayTitle = [key substringFromIndex:infoServicesWithSpace.length];
+    } else if([key hasPrefix:infoWithSpace]){
+        res.displayTitle = [key substringFromIndex:infoWithSpace.length];
     } else {
         res.displayTitle = key;
     }
     
-    if([key isEqualToString:@"Abfahrtstafel"] || [key isEqualToString:@"Wagenreihung"]){
+    if([key isEqualToString:CONTENT_SEARCH_KEY_DEPARTURES] || [res isWagenreihung]){
         res.departure = YES;
-    } else if([key isEqualToString:@"Ankunftstafel"]){
+    } else if([key isEqualToString:CONTENT_SEARCH_KEY_ARRIVALS]){
         res.departure = NO;
     }
     
@@ -206,16 +200,6 @@
     res.displayTitle = poi.title;
     if(!poi){
         res.displayTitle = cat.title;
-    }
-    return res;
-}
-+(MBContentSearchResult *)searchResultWithStore:(MBEinkaufsbahnhofStore *)store inCat:(nonnull MBEinkaufsbahnhofCategory *)cat{
-    MBContentSearchResult* res = [MBContentSearchResult new];
-    res.store = store;
-    res.storeCat = cat;
-    res.displayTitle = store.name;
-    if(!store){
-        res.displayTitle = cat.name;
     }
     return res;
 }
@@ -247,7 +231,7 @@
 }
 
 -(BOOL)isTimetableSearch{
-    return self.stop != nil || [self.keywordString isEqualToString:@"Abfahrtstafel"] || [self.keywordString isEqualToString:@"Ankunftstafel"] || [self isWagenreihung] || [self isPlatformSearch] || [self isOPNVSearch];
+    return self.stop != nil || [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_DEPARTURES] || [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_ARRIVALS] || [self isWagenreihung] || [self isPlatformSearch] || [self isOPNVSearch];
 }
 -(BOOL)isPlatformSearch{
     return self.platformSearch != nil;
@@ -258,15 +242,15 @@
 
 -(HAFASProductCategory)hafasProductForKeyword{
     if(self.keywordString){
-        if([self.keywordString isEqualToString:@"Verkehrsmittel Ubahn"]){
+        if([self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAVELPRODUCT_U_TRAIN]){
             return HAFASProductCategoryU;
-        } else if([self.keywordString isEqualToString:@"Verkehrsmittel S-Bahn"]){
+        } else if([self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAVELPRODUCT_S_TRAIN]){
             return HAFASProductCategoryS;
-        } else if([self.keywordString isEqualToString:@"Verkehrsmittel Tram"]){
+        } else if([self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAVELPRODUCT_TRAM]){
             return HAFASProductCategoryTRAM;
-        } else if([self.keywordString isEqualToString:@"Verkehrsmittel Bus"]){
+        } else if([self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAVELPRODUCT_BUS]){
             return HAFASProductCategoryBUS;
-        } else if([self.keywordString isEqualToString:@"Verkehrsmittel Fähre"]){
+        } else if([self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAVELPRODUCT_FERRY]){
             return HAFASProductCategorySHIP;
         }
     }
@@ -274,49 +258,46 @@
 }
 
 -(BOOL)isWagenreihung{
-    return [self.keywordString isEqualToString:@"Wagenreihung"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_TRAINORDER];
 }
 -(BOOL)isShopSearch{
-    if(self.isPickpackSearch){
-        return YES;
-    }
     if(self.couponItem){
         return YES;
     }
-    return self.poi != nil || self.store != nil || self.poiCat != nil || self.storeCat != nil || [self.keywordString isEqualToString:@"Shoppen & Schlemmen"];
+    return self.poi != nil || self.poiCat != nil || [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_SHOP_AND_EAT];
 }
 -(BOOL)isMapSearch{
-    return [self.keywordString isEqualToString:@"Karte"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_MAP];
 }
 -(BOOL)isSettingSearch{
-    return [self.keywordString isEqualToString:@"Einstellungen"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_SETTINGS];
 }
 -(BOOL)isFeedbackSearch{
-    return [self.keywordString isEqualToString:@"Feedback"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_FEEDBACK];
 }
 -(BOOL)isOPNVOverviewSearch{
-    return [self.keywordString isEqualToString:@"ÖPNV Anschluss"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_OPNV];
 }
 -(BOOL)isStationFeatureSearch{
-    return [self.keywordString hasPrefix:@"Bahnhofsausstattung"];
+    return [self.keywordString hasPrefix:CONTENT_SEARCH_KEY_STATION_INFRASTRUCTURE];
 }
 -(BOOL)isStationInfoSearch{
-    return [self.keywordString hasPrefix:@"Bahnhofsinformation"];
+    return [self.keywordString hasPrefix:CONTENT_SEARCH_KEY_STATIONINFO];
 }
 -(BOOL)isLocalServiceDBInfo{
-    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_INFOSERVICE_DBINFO];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_DBINFO];
 }
 -(BOOL)isLocalServiceMobileService{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services Mobiler Service"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILE_SERVICE];
 }
 -(BOOL)isLocalMission{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services Bahnhofsmission"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MISSION];
 }
 -(BOOL)isLocalTravelCenter{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services DB Reisezentrum"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_TRAVELCENTER];
 }
 -(BOOL)isLocalLounge{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services DB Lounge"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOUNGE];
 }
 -(BOOL)isStationInfoLocalServicesSearch{
     return [self isLocalServiceDBInfo]
@@ -334,35 +315,35 @@
     || self.isServiceNumberSearch;
 }
 -(BOOL)isStationInfoPhoneMobility{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services Mobilitätsservice"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILITY_SERVICE];
 }
 -(BOOL)isStationInfoPhone3S{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services 3-S-Zentrale"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_3S];
 }
 -(BOOL)isStationInfoPhoneLostservice{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Info & Services Fundservice"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOSTANDFOUND];
 }
 -(BOOL)isParkingSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Parkplätze"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_PARKING];
 }
 -(BOOL)isSteplessAccessSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Barrierefreiheit"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_ACCESSIBILITY];
 }
 -(BOOL)isWifiSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation WLAN"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_WIFI];
 }
 -(BOOL)isSEVSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Ersatzverkehr"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
 }
 -(BOOL)isLockerSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Schließfächer"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_LOCKER];
 }
 
 -(BOOL)isElevatorSearch{
-    return [self.keywordString isEqualToString:@"Bahnhofsinformation Aufzüge"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR];
 }
 -(BOOL)isShopOpenSearch{
-    return [self.keywordString isEqualToString:@"Geöffnet"];
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_SHOP_OPEN];
 }
 
 -(NSComparisonResult)compare:(MBContentSearchResult *)other{

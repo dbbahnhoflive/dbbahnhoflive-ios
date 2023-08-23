@@ -20,4 +20,5 @@
 + (instancetype) buttonWithRedLink;
 + (instancetype) boldButtonWithRedLink;
 + (instancetype) boldButtonWithRedExternalLink;
++ (instancetype) boldButtonWithSmallRedExternalLink;
 @end

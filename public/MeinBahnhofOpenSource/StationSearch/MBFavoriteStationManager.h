@@ -9,7 +9,7 @@
 
 @interface MBFavoriteStationManager : NSObject
 
-+ (id)client;
++ (MBFavoriteStationManager*)client;
 
 -(void)addStation:(MBStationFromSearch*)dict;
 -(void)removeStation:(MBStationFromSearch*)dict;

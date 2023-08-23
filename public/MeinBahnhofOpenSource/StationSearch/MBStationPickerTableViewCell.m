@@ -13,14 +13,14 @@
 #import "TimetableManager.h"
 #import "MBTimeTableViewCell.h"
 #import "MBUIHelper.h"
+#import "MBFavoriteButton.h"
 
 @interface MBStationPickerTableViewCell ()
 
 @property(nonatomic,strong) UIView* whiteBackground;
 @property(nonatomic,strong) UIView* departureContainer;
 @property(nonatomic,strong) UIImageView* stationTypeImageView;
-@property(nonatomic,strong) UIButton* favButton;
-@property(nonatomic,strong) UIImageView* favBtnImgView;
+@property(nonatomic,strong) MBFavoriteButton* favButton;
 @property (nonatomic, strong) UILabel *stationTitleLabel;
 
 @property (nonatomic,strong) UIImageView* stationDistanceIcon;
@@ -184,17 +184,9 @@
     [self.stationTitleLabel setTextColor:[UIColor db_333333]];
     self.stationTitleLabel.accessibilityTraits = UIAccessibilityTraitStaticText|UIAccessibilityTraitButton;
     
-    UIImage* favBtnImg = [[UIImage db_imageNamed:@"app_favorit_default"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    self.favBtnImgView = [[UIImageView alloc] initWithImage:favBtnImg];
-    
-    self.favButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.favButton.accessibilityIdentifier = @"FavButton";
+    self.favButton = [MBFavoriteButton new];
     [self.favButton addTarget:self action:@selector(favBtnPressed:) forControlEvents:UIControlEventTouchUpInside];
-    [self.favButton addSubview:self.favBtnImgView];
-    [self.favButton setTintColor:[UIColor whiteColor]];
-    [self.favButton setSize:CGSizeMake(40, 40)];
     [self.contentView addSubview:self.favButton];
-    [self.favBtnImgView centerViewInSuperView];
 
     [self.contentView addSubview:self.stationTitleLabel];
     
@@ -263,18 +255,27 @@
         return;
     if([[MBFavoriteStationManager client] isFavorite:self.station]){
         [[MBFavoriteStationManager client] removeStation:self.station];
-        self.favBtnImgView.tintColor = [UIColor dbColorWithRGB:0xD7DCE1];
-        self.favButton.accessibilityLabel = @"Favorit: inaktiv";
-        self.favButton.accessibilityHint = @"Zum Hinzufügen zu Favoriten doppeltippen";
+        [self updateFavButtonStatus:false];
         [self.delegate stationPickerCell:self changedFavStatus:NO];
     } else {
         [[MBFavoriteStationManager client] addStation:self.station];
-        self.favBtnImgView.tintColor = [UIColor db_mainColor];
-        self.favButton.accessibilityLabel = @"Favorit: aktiv";
-        self.favButton.accessibilityHint = @"Zum Entfernen aus Favoriten doppeltippen";
+        [self updateFavButtonStatus:true];
         [self.delegate stationPickerCell:self changedFavStatus:YES];
     }
 }
+
+-(void)updateFavButtonStatus:(BOOL)isFavorite{
+    if(isFavorite){
+        self.favButton.isFavorite = true;
+        self.favButton.accessibilityLabel = @"Favorit: aktiv";
+        self.favButton.accessibilityHint = @"Zum Entfernen aus Favoriten doppeltippen";
+    } else {
+        self.favButton.isFavorite = false;
+        self.favButton.accessibilityLabel = @"Favorit: inaktiv";
+        self.favButton.accessibilityHint = @"Zum Hinzufügen zu Favoriten doppeltippen";
+    }
+}
+
 -(void)setStation:(MBStationFromSearch*)station{
     _station = station;
     self.stationTitleLabel.text = station.title;
@@ -291,13 +292,9 @@
     [self.stationDistanceLabel sizeToFit];
     BOOL isOEPNV = station.isOPNVStation;
     if([[MBFavoriteStationManager client] isFavorite:station]){
-        self.favBtnImgView.tintColor = [UIColor db_mainColor];
-        self.favButton.accessibilityLabel = @"Favorit: aktiv";
-        self.favButton.accessibilityHint = @"Zum Entfernen aus Favoriten doppeltippen";
+        [self updateFavButtonStatus:true];
     } else {
-        self.favBtnImgView.tintColor = [UIColor dbColorWithRGB:0xD7DCE1];
-        self.favButton.accessibilityLabel = @"Favorit: inaktiv";
-        self.favButton.accessibilityHint = @"Zum Hinzufügen zu Favoriten doppeltippen";
+        [self updateFavButtonStatus:false];
     }
     self.stationTypeImage = [UIImage db_imageNamed:(isOEPNV ? @"app_haltestelle" : @"DBMapPin")];
     [self setNeedsLayout];
@@ -430,7 +427,7 @@
         if([departure delayInMinutes] >= 5){
             expectedTimeLabel.textColor = [UIColor db_mainColor];
         } else {
-            expectedTimeLabel.textColor = [UIColor db_76c030];
+            expectedTimeLabel.textColor = [UIColor db_green];
         }
         [expectedTimeLabel sizeToFit];
         expectedTimeLabel.hidden = NO;
@@ -509,7 +506,7 @@
             if(stop.departureEvent.roundedDelay >= 5){
                 expectedTimeLabel.textColor = [UIColor db_mainColor];
             } else {
-                expectedTimeLabel.textColor = [UIColor db_76c030];
+                expectedTimeLabel.textColor = [UIColor db_green];
             }
             [expectedTimeLabel setBelow:timeLabel withPadding:8.0];
             expectedTimeLabel.hidden = event.eventIsCanceled;
@@ -561,8 +558,7 @@
             index += 1;
             //empty label with voiceover text
             UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-            accLabel.accessibilityLabel = [MBTimeTableViewCell voiceOverForEvent:event];
-            //accLabel.backgroundColor = [UIColor colorWithRed:1 green:0 blue:0 alpha:0.3];
+            accLabel.accessibilityLabel = [event voiceOverString];
             [accLabel setGravityLeft:timeLabel.frame.origin.x];
             [accLabel setGravityTop:timeLabel.frame.origin.y];
             [accLabel setSize:CGSizeMake(self.size.width-2*timeLabel.frame.origin.x, 45)];

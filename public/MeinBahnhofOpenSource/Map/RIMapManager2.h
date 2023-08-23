@@ -6,7 +6,6 @@
 #import <Foundation/Foundation.h>
 #import <AFNetworking/AFNetworking.h>
 #import "RIMapPoi.h"
-@class RIMapMetaData;
 @class LevelplanWrapper;
 
 

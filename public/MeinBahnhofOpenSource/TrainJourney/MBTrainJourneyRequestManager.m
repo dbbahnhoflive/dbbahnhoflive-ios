@@ -215,7 +215,7 @@
         if([eventType isEqualToString:targetType]){
             NSDictionary* station = [eventDict db_dictForKey:@"station"];
             NSString* evaNumber = [station db_stringForKey:@"evaNumber"];
-            if([evaNumber isEqualToString:targetEva]){
+            if(evaNumber.longLongValue == targetEva.longLongValue){//some evas have a "0" at the beginning
                 return [eventDict db_stringForKey:@"timeSchedule"];
             }
         }

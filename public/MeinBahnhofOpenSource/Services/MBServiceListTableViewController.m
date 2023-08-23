@@ -7,10 +7,9 @@
 #import "MBServiceListTableViewController.h"
 #import "MBMenuItem.h"
 
-#import "MBEinkaufsbahnhofCategory.h"
-#import "MBEinkaufsbahnhofStore.h"
 #import "MBService.h"
 #import "MBServiceCell.h"
+#import "MBShopPoiTableViewCell.h"
 #import "MBDetailViewDelegate.h"
 #import "MBUIViewController.h"
 #import "MBStationNavigationViewController.h"
@@ -28,7 +27,6 @@
 
 
 typedef NS_ENUM(NSUInteger, MBServiceType)  {
-    MBServiceType_Shop_Einkaufsbahnhof,
     MBServiceType_Shop_Pxr,
     MBServiceType_Info,
     MBServiceType_Coupons,
@@ -51,11 +49,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
     self = [super initWithStyle:UITableViewStylePlain];
     self.item = item;
     self.station = station;
-    if([item isKindOfClass:[MBEinkaufsbahnhofCategory class]]){
-        self.type = MBServiceType_Shop_Einkaufsbahnhof;
-        self.subItems = [(MBEinkaufsbahnhofCategory*)item shops];
-        self.trackingTitle = [(MBEinkaufsbahnhofCategory*)item name];
-    } else if([item isKindOfClass:[MBMenuItem class]]) {
+    if([item isKindOfClass:[MBMenuItem class]]) {
         self.type = MBServiceType_Info;
         NSArray *subItems = [(MBMenuItem *)item services];
         self.subItems = [subItems sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
@@ -138,16 +132,13 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
                 self.title = ((MBPXRShopCategory*)self.item).title;
                 break;
             }
-            case MBServiceType_Shop_Einkaufsbahnhof: {
-                self.title = ((MBEinkaufsbahnhofCategory*)self.item).name;
-                break;
-            }
             case MBServiceType_Coupons: {
                 self.title = ((MBCouponCategory*)self.item).title;
                 break;
             }
     }
-    [self.tableView registerClass:[MBServiceCell class] forCellReuseIdentifier:@"Cell"];
+    [self.tableView registerClass:[MBServiceCell class] forCellReuseIdentifier:@"ServiceCell"];
+    [self.tableView registerClass:[MBShopPoiTableViewCell class] forCellReuseIdentifier:@"PoiCell"];
     [self.tableView registerClass:[MBCouponTableViewCell class] forCellReuseIdentifier:@"CouponCell"];
 
     
@@ -189,9 +180,6 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             searchItem = self.searchResult.couponItem;
         } else {
             searchItem = self.searchResult.poi;
-            if(!searchItem){
-                searchItem = self.searchResult.store;
-            }
         }
     } else {
         //must be info search
@@ -236,18 +224,21 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         couponCell.newsItem = news;
         cell = couponCell;
     } else {
-        MBServiceCell* serviceCell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-        [serviceCell setItem:[self.subItems objectAtIndex:indexPath.row] andCategory:self.item];
-        serviceCell.delegate = self;
-        if ([serviceCell.item isKindOfClass:[MBEinkaufsbahnhofStore class]]) {
-            serviceCell.shopDetailView = [[MBShopDetailCellView alloc] initWithStore:serviceCell.item];
-        } else if([serviceCell.item isKindOfClass:[RIMapPoi class]]){
-            serviceCell.shopDetailView = [[MBShopDetailCellView alloc] initWithPXR:serviceCell.item];
-        } else if([serviceCell.item isKindOfClass:[MBService class]]) {
-            serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:serviceCell.item station:self.station viewController:self fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-                serviceCell.staticServiceView.delegate = self;
+        id item = [self.subItems objectAtIndex:indexPath.row];
+        if([item isKindOfClass:RIMapPoi.class]){
+            MBShopPoiTableViewCell* serviceCell = [tableView dequeueReusableCellWithIdentifier:@"PoiCell" forIndexPath:indexPath];
+            [serviceCell setPoiItem:item];
+            serviceCell.shopDetailView = [[MBShopDetailCellView alloc] initWithPXR:item];
+            serviceCell.delegate = self;
+            cell = serviceCell;
+        } else if([item isKindOfClass:[MBService class]]) {
+            MBServiceCell* serviceCell = [tableView dequeueReusableCellWithIdentifier:@"ServiceCell" forIndexPath:indexPath];
+            [serviceCell setServiceItem:item];
+            serviceCell.staticServiceView = [[MBStaticServiceView alloc] initWithService:item station:self.station viewController:self fullscreenLayout:NO andFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+            serviceCell.staticServiceView.delegate = self;
+            serviceCell.delegate = self;
+            cell = serviceCell;
         }
-        cell = serviceCell;
     }
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     cell.expanded = self.selectedRow.row == indexPath.row;
@@ -277,20 +268,23 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         tableCell.expanded = YES;
         if([tableCell isKindOfClass:MBServiceCell.class]){
             MBServiceCell* serviceCell = (MBServiceCell*) tableCell;
-            if ([serviceCell.item isKindOfClass:[MBEinkaufsbahnhofStore class]] || [serviceCell.item isKindOfClass:[RIMapPoi class]]) {
-                CGFloat bottomHeight = ceil(serviceCell.shopDetailView.superview.frame.size.height + 4.0);
-                CGFloat addonHeight = 0;
-                if(serviceCell.contactAddonView.subviews.count > 0){
-                    addonHeight = ceil(serviceCell.contactAddonView.frame.size.height + 4.0);
-                }
-                self.additionalHeightForExpandedCell = bottomHeight + addonHeight;
-            } else if([serviceCell.item isKindOfClass:[MBService class]]) {
+            if(serviceCell.serviceItem) {
                 if (self.type == MBServiceType_Info) {
                     [[MBTutorialManager singleton] markTutorialAsObsolete:MBTutorialViewType_D1_ServiceStores_Details];
                 }
                 if (nil != serviceCell.staticServiceView) {
                     self.additionalHeightForExpandedCell = ceil(serviceCell.staticServiceView.superview.frame.size.height + 4.0);
                 }
+            }
+        } else if([tableCell isKindOfClass:MBShopPoiTableViewCell.class]){
+            MBShopPoiTableViewCell* serviceCell = (MBShopPoiTableViewCell*) tableCell;
+            if (serviceCell.poiItem) {
+                CGFloat bottomHeight = ceil(serviceCell.shopDetailView.superview.frame.size.height + 4.0);
+                CGFloat addonHeight = 0;
+                if(serviceCell.contactAddonView.subviews.count > 0){
+                    addonHeight = ceil(serviceCell.contactAddonView.frame.size.height + 4.0);
+                }
+                self.additionalHeightForExpandedCell = bottomHeight + addonHeight;
             }
         } else if([tableCell isKindOfClass:MBCouponTableViewCell.class]){
             MBCouponTableViewCell* couponCell = (MBCouponTableViewCell*) tableCell;
@@ -336,11 +330,7 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             MBPXRShopCategory* cat = (MBPXRShopCategory*)self.item;
             return [RIMapPoi mapShopCategoryToFilterPresets:cat.title];
         }
-        case MBServiceType_Shop_Einkaufsbahnhof:{
-            //we have no POIs on the map, so there is no need to filter anything but we do it anyway to be consistent
-            MBEinkaufsbahnhofCategory* ven = (MBEinkaufsbahnhofCategory*)self.item;
-            return [RIMapPoi mapShopCategoryToFilterPresets:ven.name];
-        }
+        
         case MBServiceType_Info:{
             if(self.selectedRow.row >= 0){
                 id item = [self.subItems objectAtIndex:self.selectedRow.row];

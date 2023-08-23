@@ -203,7 +203,6 @@ static NSDateFormatter *formatter = nil;
     NSArray *changedStations = [[changedStationsString gtm_stringByUnescapingFromHTML] componentsSeparatedByString:DB_STATION_LIST_DELIMITER];
     NSDate *date = [[TimetableParser cachedDateFormatter] dateFromString:timestampString];
     NSDate *delayDate = [[TimetableParser cachedDateFormatter] dateFromString:delayTimestampString];
-    NSString *station = nil;
     
     Event *event = [[Event alloc] init];
     if ([hidden isEqualToString:@"1"]) {
@@ -216,7 +215,6 @@ static NSDateFormatter *formatter = nil;
     [event setChangedStatus:changedStatus];
     [event setOriginalPlatform: platformString];
     [event setChangedPlatform:changedPlatformString];
-    [event setStation:station];
     [event setStations:stations];
     [event setChangedStations:changedStations];
     [event setMessages:messages];

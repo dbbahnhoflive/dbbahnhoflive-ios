@@ -16,7 +16,7 @@
 
 @interface HafasCacheManager : NSObject
 
-+ (instancetype)sharedManager;
++ (HafasCacheManager*)sharedManager;
 
 -(NSDictionary*)cachedDepartureRequest:(NSString*)cacheUrl;
 -(void)storeDepartureRequest:(NSDictionary*)dict url:(NSString*)url;

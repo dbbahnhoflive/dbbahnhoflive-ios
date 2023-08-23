@@ -35,6 +35,7 @@ static NSDateFormatter* dateTimeFormatter = nil;
              @"direction": @"direction",
              @"journeyDetailRef": @"JourneyDetailRef",
              @"stopid": @"stopid",
+             @"stopExtId": @"stopExtId",
              @"product": @"Product"
              };
 }

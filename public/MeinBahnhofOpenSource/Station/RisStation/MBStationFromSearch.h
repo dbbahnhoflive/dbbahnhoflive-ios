@@ -20,7 +20,10 @@
 
 @property(nonatomic) BOOL isOPNVStation;
 @property(nonatomic) BOOL isFreshStationFromSearch;
+@property(nonatomic) BOOL isInternalLink;
 
+//true when the app returns with back to a previous station
+@property(nonatomic) BOOL isGoingBack;
 
 -(instancetype)initWithDict:(NSDictionary*)dict;
 -(instancetype)initWithHafasStation:(MBOPNVStation*)hafasStation;

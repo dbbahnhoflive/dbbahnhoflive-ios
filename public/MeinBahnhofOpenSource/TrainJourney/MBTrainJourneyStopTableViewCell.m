@@ -239,7 +239,7 @@
 }
 
 -(void)configureDeltaStringPlaned:(NSDate*)planed actual:(NSDate*)actual label:(UILabel*)label{
-    label.textColor = UIColor.db_76c030;
+    label.textColor = UIColor.db_green;
     NSInteger delta = (actual.timeIntervalSinceReferenceDate-planed.timeIntervalSinceReferenceDate)/60;
     //delta = 100;
     if(delta != 0){
@@ -337,7 +337,11 @@
     self.arrivalNewLabel.font = font;
     self.departureNewLabel.font = font;
     self.platformLabel.font = UIFont.db_RegularFourteen;
-    
+    if(isCurrentStation){
+        self.accessibilityHint = nil;
+    } else {
+        self.accessibilityHint = @"Zum Öffnen des Bahnhofs doppeltippen.";
+    }
 }
 
 @end

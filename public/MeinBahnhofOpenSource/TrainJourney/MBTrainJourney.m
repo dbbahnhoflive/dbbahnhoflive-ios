@@ -24,6 +24,15 @@
     return self;
 }
 
+-(BOOL)isSEVJourney{
+    NSArray* events = [self.dict db_arrayForKey:@"events"];
+    NSDictionary* event = events.firstObject;
+    NSDictionary* transport = [event db_dictForKey:@"transport"];
+    NSDictionary* replacementTransport = [transport db_dictForKey:@"replacementTransport"];
+    NSString* realType = [replacementTransport db_stringForKey:@"realType"];
+    return [realType isEqualToString:@"BUS"];
+}
+
 -(NSArray<MBTrainJourneyStop *> *)journeyStops{
     if(!self.eventCache){
         NSArray* serverSegments = [self.dict db_arrayForKey:@"events"];

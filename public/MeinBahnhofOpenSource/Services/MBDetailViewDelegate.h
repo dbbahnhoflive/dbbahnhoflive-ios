@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-@class Venue;
-
 @protocol MBDetailViewDelegate <NSObject>
 
 @optional

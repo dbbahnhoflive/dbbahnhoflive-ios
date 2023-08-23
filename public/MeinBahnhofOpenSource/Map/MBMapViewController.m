@@ -7,11 +7,10 @@
 #import "MBMapViewController.h"
 #import "MBMapView.h"
 #import "RIMapPoi.h"
-#import "SharedMobilityAPI.h"
 #import "MBMapLevelPicker.h"
+#import "MBMarker.h"
 
 #import "MBMapPoiDetailScrollView.h"
-#import "SharedMobilityMappable.h"
 #import "MBPoiFilterView.h"
 #import "RIMapFilterCategory.h"
 #import "MBUrlOpening.h"
@@ -77,7 +76,6 @@
     self.allFilterItems= [RIMapPoi createFilterItems];
     
     self.mapView = [[MBMapView alloc] initMapViewWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    [self.mapView setMapType:OSM];
     [self.view addSubview:self.mapView];
     self.mapView.delegate = self;
     
@@ -96,7 +94,6 @@
 
     //code moved here from MBMapView
     self.levelPicker = [[MBMapLevelPicker alloc] initWithLevels:@[]];
-    self.levelPicker.hidden = YES;
     self.levelPicker.delegate = self;
     
     self.pinToUserButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -193,7 +190,6 @@
         [(MBStationNavigationViewController *)self.navigationController hideNavbar:YES];
     }
     
-    [self updateMobilityMarker];
 }
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
@@ -226,7 +222,8 @@
 }
 
 -(void)hideFilter{
-    self.filterToggleButton.hidden = YES;
+    [self.filterToggleButton removeFromSuperview];
+    self.filterToggleButton = nil;
     [self.view setNeedsLayout];
 }
 
@@ -371,17 +368,10 @@
 }
 
 
--(void)updateVisibilityStatusForUI{
-    BOOL mapHasNoLevelsAssigned = self.station.levels.count == 0;
-    self.levelPicker.hidden = mapHasNoLevelsAssigned || !self.mapView.filterMarkerByLevel;
-    
-}
 
 -(void)viewDidLayoutSubviews{
     [super viewDidLayoutSubviews];
  
-    [self updateVisibilityStatusForUI];
-
     self.mapView.frame = CGRectMake(0, 0, self.view.sizeWidth, self.view.sizeHeight);
     
     NSInteger spaceRight = ceilf(self.view.frame.size.width*0.02666)-10;//-10 because the images contain shadows
@@ -394,7 +384,7 @@
     
     NSInteger padding = ceilf(self.view.frame.size.height*0.045)-20;
     [self.filterToggleButton setBelow:self.mapCloseButton withPadding:padding];
-    if(self.filterToggleButton.hidden){
+    if(!self.filterToggleButton){
         [self.pinToUserButton setBelow:self.mapCloseButton withPadding:padding];
     } else {
         [self.pinToUserButton setBelow:self.filterToggleButton withPadding:padding];
@@ -451,8 +441,6 @@
     [MBRoutingHelper showRoutingForParking:parking fromViewController:self];
 }
 
-- (void) showFacilityFavorites{}
-
 
 -(MBMarker*)loadScrollViewWithPage:(NSInteger)page{
     //could implement more logic here to optimize memory usage
@@ -488,10 +476,6 @@
         bounds.origin.y = 0;
         [self.poiDetailsScrollView scrollRectToVisible:bounds animated:NO];
 
-        if(CGRectGetMaxY(self.levelPicker.frame) >= self.poiDetailsScrollView.originY){
-            //hide control, it collides with the details scrollview
-            self.levelPicker.hidden = YES;
-        }
         self.poiDetailsScrollView.hidden = NO;
         if (nil != self.mapFlyoutCenter) {
             MBMapFlyout *centerFlyout = [[self.mapFlyoutCenter subviews] lastObject];
@@ -506,13 +490,20 @@
 }
 -(void)didCloseFlyoutMapView:(MBMapView *)mapView{
     self.poiDetailsScrollView.hidden = YES;
-    
-    [self updateVisibilityStatusForUI];
 }
 - (void) didChangeVisiblePOIList{
     // Add selection state
     self.poiDetailsScrollView.contentSize = CGSizeMake([self poiDetailsWidth]*self.mapView.visiblePOIList.count, self.poiDetailsScrollView.frame.size.height);
     [self highlightPreSelectedMarker:NO];
+}
+
+-(void)setStation:(MBStation *)station{
+    _station = station;
+    BOOL mapHasNoLevelsAssigned = self.station.levels.count == 0;
+    if(mapHasNoLevelsAssigned){
+        [self.levelPicker removeFromSuperview];
+        self.levelPicker = nil;
+    }
 }
 
 -(void)mapFlyout:(MBMapFlyout *)flyout wantsToExtendView:(UIView *)view{
@@ -658,6 +649,7 @@
     [self.view addSubview:filterView];
     self.filterView = filterView;
     [self.filterView animateInitialView];
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, filterView);
 }
 
 - (void)didReceiveMemoryWarning {
@@ -666,21 +658,7 @@
 }
 
 
--(void)updateMobilityMarker{
-    if(self.station && CLLocationCoordinate2DIsValid(self.station.positionAsLatLng)){
-        [[SharedMobilityAPI client] getMappables:self.station.positionAsLatLng success:^(NSArray *mappables) {
-            NSMutableArray* markers = [NSMutableArray arrayWithCapacity:mappables.count];
-            [mappables enumerateObjectsUsingBlock:^(MobilityMappable *mappable, NSUInteger idx, BOOL *stop) {
-                MBMarker *marker = [mappable marker];
-                [markers addObject:marker];
-            }];
-            [self.mapView updateMobilityMarker:markers];
-            
-        } failureBlock:^(NSError *error) {
-            // NSLog(@"mobility failure %@",error);
-        }];
-    }
-}
+
 
 #pragma mark levelpicker
 - (void)userDidSelectLevel:(LevelplanWrapper *)level onPicker:(MBMapLevelPicker *)picker
@@ -736,7 +714,6 @@
             timeVC.hafasTimetable.needsInitialRequest = YES;
         }
         timeVC.oepnvOnly = YES;
-        timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
         timeVC.hafasStation = [MBOPNVStation stationWithId:stationId name:stationName];
         [self.navigationController pushViewController:timeVC animated:YES];
 

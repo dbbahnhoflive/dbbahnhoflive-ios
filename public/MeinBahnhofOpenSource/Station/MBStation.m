@@ -11,7 +11,6 @@
 
 #import "FacilityStatus.h"
 #import "RIMapPoi.h"
-#import "RIMapMetaData.h"
 #import "MBPlatformAccessibility.h"
 #import "MBOSMOpeningHoursParser.h"
 #import "UIImage+MBImage.h"
@@ -40,6 +39,7 @@
         if(location.count > 0){
             _position = location;
         }
+        [self logicTest];
     }
     return self;
 }
@@ -49,18 +49,17 @@
     NSLog(@"dealloc MBStation");
 }
 
+#define STATION_ID_BERLIN_HBF 1071
+#define STATION_ID_FRANKFURT_MAIN_HBF 1866
+#define STATION_ID_HAMBURG_HBF 2514
+#define STATION_ID_MUENCHEN_HBF 4234
+#define STATION_ID_KOELN_HBF 3320
+
 - (CLLocationCoordinate2D) positionAsLatLng
 {
     //prefer RIS:Station, fallback to rimaps
     if(self.position.count == 2){
         return CLLocationCoordinate2DMake([[self.position firstObject] doubleValue], [[self.position lastObject] doubleValue]);
-    } else {
-        if(self.additionalRiMapData){
-            CLLocationCoordinate2D loc = self.additionalRiMapData.coordinate;
-            if(CLLocationCoordinate2DIsValid(loc)){
-                return loc;
-            }
-        }
     }
     switch(self.mbId.integerValue){
         case STATION_ID_BERLIN_HBF:
@@ -93,7 +92,7 @@
     }
     // add station pin annotation to map
 
-    MBMarker *marker = [MBMarker markerWithPosition:position andType:STATION];
+    MBMarker *marker = [MBMarker markerWithPosition:position andType:MBMarkerType_STATION];
     if(UIAccessibilityIsVoiceOverRunning()){
         marker.title = self.title;
     }
@@ -110,7 +109,7 @@
 -(NSArray*)getFacilityMapMarker{
     NSMutableArray* facilityMarker = [NSMutableArray arrayWithCapacity:self.facilityStatusPOIs.count];
     for (FacilityStatus *facilityStatusPOI in self.facilityStatusPOIs) {
-        MBMarker *marker = [MBMarker markerWithPosition:[facilityStatusPOI centerLocation] andType:FACILITY];
+        MBMarker *marker = [MBMarker markerWithPosition:[facilityStatusPOI centerLocation] andType:MBMarkerType_FACILITY];
         if(UIAccessibilityIsVoiceOverRunning()){
             marker.title = facilityStatusPOI.title;
         }
@@ -133,7 +132,7 @@
     
     for (RIMapSEV *sev in self.sevPois) {
         if(CLLocationCoordinate2DIsValid(sev.coordinate)){
-            MBMarker *marker = [MBMarker markerWithPosition:sev.coordinate andType:SEV];
+            MBMarker *marker = [MBMarker markerWithPosition:sev.coordinate andType:MBMarkerType_SEV];
             if(UIAccessibilityIsVoiceOverRunning()){
                 marker.title = sev.text;
             }
@@ -728,33 +727,258 @@
     return self.sevPois.count > 0;
 }
 
+//BAHNHOFLIVE-2395
+-(void)logicTest{
+#if TARGET_IPHONE_SIMULATOR
+    NSInteger size = self.adHocBoxStations.count;
+    NSLog(@"testing size of adhoc tables, expecting %ld",(long)size);
+    if(size != self.additionalEvaIdsMapping_StadaToEvas.count){
+        NSAssert(false, @"entry missmatch");
+    }
+    if(size != self.mainEvaIdForStadaAdditions.count){
+        NSAssert(false, @"entry missmatch");
+    }
+    NSDictionary* mainEvas = self.mainEvaIdForStadaAdditions;
+    NSDictionary* additionalEva = self.additionalEvaIdsMapping_StadaToEvas;
+    for(NSString* number in self.adHocBoxStations){
+        if(mainEvas[number] == nil){
+            NSAssert(false, @"missing main eva %@",number);
+        }
+        if(additionalEva[number] == nil){
+            NSAssert(false, @"missing additional eva %@",number);
+        }
+    }
+    for(NSString* number in self.accompanimentStations){
+        if(![self.adHocBoxStations containsObject:number]){
+            NSAssert(false, @"all accompaniment stations should have adhoc %@",number);
+        }
+    }
+#endif
+}
+-(BOOL)hasARTeaser{
+    if(self.hasStaticAdHocBox && !UIAccessibilityIsVoiceOverRunning()){
+        NSString* stationId = self.mbId.stringValue;
+        NSString* startDateString;
+        if([stationId isEqualToString:@"6945"]){
+            startDateString = @"2023-05-29 00:00:01 GMT+02:00";
+        } else if([stationId isEqualToString:@"4593"]){
+            startDateString = @"2023-08-04 00:00:01 GMT+02:00";
+        } else {
+            return false;
+        }
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"DisableStartdateChecks"]){
+            return true;
+        }
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        NSDate* startDate = [dateFormatter dateFromString: startDateString];
+        return startDate.timeIntervalSinceNow < 0;
+    }
+    return false;
+}
+
+-(NSArray*)adHocBoxStations{
+    //BAHNHOFLIVE-2353 and BAHNHOFLIVE-2414
+    return @[
+        @"6945",
+        @"6946",
+        @"6808",
+        @"2206",
+        @"4720",
+        @"3973",
+        @"5400",
+        @"1181",
+        @"927",
+        @"3212",
+        @"3001",
+        @"3968",
+        @"4443",
+        @"8195",
+        @"1591",
+        @"2466",
+        @"5060",
+        @"5841",
+        @"1988",
+        @"1991",
+        @"1984",
+        @"4593",
+        @"3970",
+        @"1676",
+        @"13",
+        @"7961",
+        @"6775",
+        @"3569",
+        @"2558",
+        @"3556",
+        @"5102",
+    ];
+}
+-(NSArray*)accompanimentStations{
+    return @[
+        @"6945",
+        @"6946",
+        @"6808",
+        @"2206",
+        @"4720",
+        @"3973",
+        @"4443",
+        @"8195",
+        @"1591",
+        @"2466",
+        @"5841",
+        @"1988",
+        @"1991",
+        @"1984",
+        @"4593",
+        @"3970",
+        @"1676",
+        @"13",
+        @"7961",
+        @"6775",
+        @"3569",
+        @"2558",
+        @"3556",
+        @"5102"
+    ];
+}
+-(NSDictionary*)additionalEvaIdsMapping_StadaToEvas{
+    //stadaId -> additional evaids
+    return @{
+        @"6945" : @"8089299",
+        @"6946" : @"220219",
+        @"6808" : @"8071200",
+        @"2206" : @[@"8071316", @"8071317"],
+        @"4720" : @"820199",
+        @"3973" : @"467422",
+        @"5400" : @"462702",
+        @"1181" : @"467125",
+        @"927"  : @"8071313",
+        @"3212" : @"465514",
+        @"3001" : @"461619",
+        @"3968" : @"683142",
+        @"4443" : @"683174",
+        @"8195" : @"679173",
+        @"1591" : @"460530",
+        @"2466" : @[@"8071318",@"8071319"],
+        @"5060" : @"205271",
+        @"5841" : @"683449",
+        @"1988" : @"676317",
+        @"1991" : @"677263",
+        @"1984" : @"682635",
+        @"4593" : @"8071247",
+        @"3970" : @"8071323",
+        @"1676" : @[@"8071314",@"8071315"],
+        @"13"   : @"682886",
+        @"7961" : @"468705",
+        @"6775" : @"460395",
+        @"3569" : @"8071322",
+        @"2558" : @"678496",
+        @"3556" : @[@"8071320", @"8071321"],
+        @"5102" : @"460390",
+
+    };
+}
+-(NSDictionary<NSString*,NSString*>*)mainEvaIdForStadaAdditions{
+    //stadaId->main evaId
+    return @{
+        @"6945" : @"8000260",
+        @"6946" : @"8006582",
+        @"6808" : @"8006488",
+        @"2206" : @"8002333",
+        @"4720" : @"8000818",
+        @"3973" : @"8003881",
+        @"5400" : @"8005198",
+        @"1181" : @"8001421",
+        @"927"  : @"8001225",
+        @"3212" : @"8000479",
+        @"3001" : @"8003081",
+        @"3968" : @"8003876",
+        @"4443" : @"8004323",
+        @"8195" : @"8004336",
+        @"1591" : @"8001783",
+        @"2466" : @"8002517",
+        @"5060" : @"8004901",
+        @"5841" : @"8005557",
+        @"1988" : @"8002152",
+        @"1991" : @"8002155",
+        @"1984" : @"8000114",
+        @"4593" : @"8000284",
+        @"3970" : @"8003878",
+        @"1676" : @"8001877",
+        @"13" :   @"8000420",
+        @"7961" : @"8007856",
+        @"6775" : @"8006448",
+        @"3569" : @"8003567",
+        @"2558" : @"8002596",
+        @"3556" : @"8003552",
+        @"5102" : @"8004923",
+    };
+}
+-(NSString*)isAdditionalEvaId_MappedToMainEva:(NSString*)evaId{
+    for(NSString* stada in self.additionalEvaIdsMapping_StadaToEvas.allKeys){
+        id item = self.additionalEvaIdsMapping_StadaToEvas[stada];
+        if([item isKindOfClass:NSArray.class]){
+            NSArray* list = (NSArray*)item;
+            for(NSString* eva in list){
+                if([self evaIsIdentical:eva toEva:evaId]){
+                    return self.mainEvaIdForStadaAdditions[stada];
+                }
+            }
+        } else {
+            NSString* eva = item;
+            if([self evaIsIdentical:eva toEva:evaId]){
+                return self.mainEvaIdForStadaAdditions[stada];
+            }
+        }
+    }
+    return nil;
+}
+-(NSArray<NSString*>*)additionalEvasForStationId:(NSString*)stationId{
+    id item = self.additionalEvaIdsMapping_StadaToEvas[stationId];
+    if(item){
+        if([item isKindOfClass:NSArray.class]){
+            return item;
+        } else {
+            return @[item];
+        }
+    }
+    return nil;
+}
+
+-(BOOL)evaIsIdentical:(NSString*)eva1 toEva:(NSString*)eva2{
+    return eva1.longLongValue == eva2.longLongValue;
+}
+
 -(BOOL)hasStaticAdHocBox{
     //BAHNHOFLIVE-2353
     NSString* stationId = self.mbId.stringValue;
     BOOL isAffectedStation =
-           [@[ @"6945",
-               @"5400",
-               @"1181",
-               @"927",
-               @"3212",
-               @"3001",
-               @"3968",
-               @"4443",
-               @"8195",
-               @"1591",
-               @"2466",
-               @"5060",
-               @"5841",
-               @"1988",
-               @"1991",
-               @"1984",
-               @"4593",
-               ] containsObject:stationId];
+           [self.adHocBoxStations containsObject:stationId];
     if(isAffectedStation){
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         NSDate* endDate = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
         return endDate.timeIntervalSinceNow > 0;
+    }
+    return false;
+}
+-(BOOL)hasAccompanimentService{
+    NSString* stationId = self.mbId.stringValue;
+    //24 stations from BAHNHOFLIVE-2414
+    BOOL isAffectedStation =
+           [self.accompanimentStations containsObject:stationId];
+    if(isAffectedStation){
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        NSDate* startDate = [dateFormatter dateFromString: @"2023-08-06 00:00:01 GMT+02:00"];
+        BOOL afterStartDate = startDate.timeIntervalSinceNow < 0;//we are after the start date
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"DisableStartdateChecks"]){
+            afterStartDate = true;
+        }
+        if(afterStartDate){
+            NSDate* endDate = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
+            return endDate.timeIntervalSinceNow > 0;
+        }
     }
     return false;
 }
@@ -772,23 +996,6 @@
     return [gregorian dateFromComponents: comps];
 }
 
--(BOOL)hasPickPack{
-    return NO;
-    /*
-    NSString* stationId = self.mbId.stringValue;
-    BOOL res = [@[ @"53", // Berlin Alexanderplatz
-                   @"1071", // Berlin Hbf
-                   @"527", // Berlin Friedrichstraße
-                   @"528", // Berlin Gesundbrunnen
-                   @"3067", // Berlin Jungfernheide
-                   @"4809", // Berlin Ostkreuz
-                   @"561", // Berlin-Spandau
-                   @"533", // Berlin Zoologischer Garten
-                   @"4859", // Berlin Südkreuz
-                   @"530", // Berlin Ostbahnhof
-    ] containsObject:stationId];
-    return res;*/
-}
 
 -(BOOL)hasOccupancy{
     return true;//[@"2514" isEqualToString:self.mbId.stringValue];//hamburg
@@ -935,13 +1142,21 @@
 -(NSArray *)stationEvaIds{
     //prefer RIS:Station, fallback to rimaps
     if(_eva_ids){
-        return _eva_ids;
-    }
-    if(self.additionalRiMapData){
-        NSArray* arr = self.additionalRiMapData.evaNumbers;
-        if(arr.count > 0){
-            return arr;
+        if([self hasStaticAdHocBox]){
+            NSArray* additional = [self additionalEvasForStationId:self.mbId.stringValue];
+            if(additional.count > 0){
+                //add these evaIds to the result if they are not already present
+                NSMutableArray* res = [NSMutableArray arrayWithCapacity:_eva_ids.count+additional.count];
+                [res addObjectsFromArray:_eva_ids];
+                for(NSString* eva in additional){
+                    if(![res containsObject:eva]){
+                        [res addObject:eva];
+                    }
+                }
+                return res;
+            }
         }
+        return _eva_ids;
     }
     switch(self.mbId.integerValue){
         case STATION_ID_BERLIN_HBF:
@@ -963,7 +1178,7 @@
 }
 
 -(BOOL)hasShops{
-    return self.riPoiCategories.count > 0 || self.einkaufsbahnhofCategories.count > 0;
+    return self.riPoiCategories.count > 0;
 }
 
 +(NSString*)platformNumberFromPlatform:(NSString*)platform{

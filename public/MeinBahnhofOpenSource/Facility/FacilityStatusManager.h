@@ -8,7 +8,7 @@
 #import <AFNetworking/AFNetworking.h>
 #import "FacilityStatus.h"
 
-#define kFacilityStatusManagerGlobalPushChangedNotification @"kFacilityStatusManagerGlobalPushChangedNotification"
+#define PUSH_FACILITY_TOPIC_PREFIX @"F"
 
 @interface FacilityStatusManager : AFHTTPSessionManager<UIAlertViewDelegate>
 
@@ -21,18 +21,30 @@
                                                  success:(void (^)(NSArray<FacilityStatus*> *facilityStatusItems))success
                                             failureBlock:(void (^)(NSError *bhfError))failure;
 
--(void)disablePushForFacility:(NSString*)equipmentNumber;
--(void)enablePushForFacility:(NSString*)equipmentNumber stationNumber:(NSString*)stationNumber stationName:(NSString*)stationName;
--(void)setGlobalPushActive:(BOOL)active;
+-(void)disablePushForFacility:(NSString*)equipmentNumber completion:(void (^)(BOOL success,NSError *))completion;
+-(void)enablePushForFacility:(NSString*)equipmentNumber completion:(void (^)(BOOL success,NSError *))completion;
+-(void)setGlobalPushActive:(BOOL)active completion:(void (^)(NSError *))completion;
 -(BOOL)isGlobalPushActive;
+-(BOOL)isSystemPushActive;
 -(BOOL)isPushActiveForFacility:(NSString*)equipmentNumber;
+-(BOOL)isPushActiveForAtLeastOneFacility;
+
 -(BOOL)isFavoriteFacility:(NSString*)equipmentNumber;
+-(void)addToFavorites:(NSString*)equipmentNumber stationNumber:(NSString*)stationNumber stationName:(NSString*)stationName;
 -(void)removeFromFavorites:(NSString*)equipmentNumber;
--(NSSet*)storedFavorites;
+-(NSSet<NSString*>*)storedFavorites;
+
 -(void)removeAll;
 -(NSString*)stationNameForStationNumber:(NSString*)stationNumber;
 -(void)handleRemoteNotification:(NSDictionary *)userInfo;
 
 -(void)openFacilityStatusWithLocalNotification:(NSDictionary*)userInfo;
+
+-(UIAlertController*)alertForPushNotActive;
+
+//debug methods
+-(void)registerDebugPushes;
+-(void)removeDebugPushes;
+-(void)validateTopics;
 
 @end

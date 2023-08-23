@@ -64,6 +64,7 @@
         UIButton* closeBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
         [closeBtn setImage:[UIImage db_imageNamed:@"app_schliessen"] forState:UIControlStateNormal];
         [closeBtn addTarget:self action:@selector(closeCancel) forControlEvents:UIControlEventTouchUpInside];
+        closeBtn.accessibilityLabel = @"Filter schließen";
         [_headerView addSubview:closeBtn];
         [closeBtn setGravityRight:0];
         
@@ -86,8 +87,9 @@
 
         [self.confirmView addSubview:confirmButton];
 
-        self.filterBackButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 30, 30)];
-        [self.filterBackButton setImage:[UIImage db_imageNamed:@"MapFilterBack"] forState:UIControlStateNormal];
+        self.filterBackButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 32, 32)];
+        [self.filterBackButton setImage:[UIImage db_imageNamed:@"ChevronBlackLeft"] forState:UIControlStateNormal];
+        self.filterBackButton.accessibilityLabel = @"Zurück zur vorherigen Ebene";
         [self.filterBackButton addTarget:self action:@selector(filterBackButtonPressed) forControlEvents:UIControlEventTouchUpInside];
         [headerView addSubview:self.filterBackButton];
         self.titleLabel = [[UILabel alloc] init];
@@ -104,6 +106,8 @@
         [self.contentView addSubview:headerView];
 
         [self.confirmView setGravityBottom:0];
+        
+        self.accessibilityViewIsModal = true;
         
         [self configureHeader];
     }

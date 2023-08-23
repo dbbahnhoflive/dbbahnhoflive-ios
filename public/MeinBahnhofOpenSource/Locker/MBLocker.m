@@ -61,20 +61,20 @@
 }
     
 
--(LockerSize)parseSize:(NSString*)size{
+-(MBLockerSize)parseSize:(NSString*)size{
     if(![size isKindOfClass:NSString.class]){
-        return LockerSizeUnknown;
+        return MBLockerSizeUnknown;
     }
     if([size isEqualToString:@"SMALL"]){
-        return LockerSizeSmall;
+        return MBLockerSizeSmall;
     } else if([size isEqualToString:@"MEDIUM"]){
-        return LockerSizeMedium;
+        return MBLockerSizeMedium;
     } else if([size isEqualToString:@"LARGE"]){
-        return LockerSizeLarge;
+        return MBLockerSizeLarge;
     } else if([size isEqualToString:@"JUMBO"]){
-        return LockerSizeJumbo;
+        return MBLockerSizeJumbo;
     } else {
-        return LockerSizeUnknown;
+        return MBLockerSizeUnknown;
     }
 }
 -(NSString*)parsePaymentTypes:(NSArray<NSString*>*)paymentTypes{
@@ -118,19 +118,19 @@
 -(NSString *)headerText{
     NSString* res = nil;
     switch(self.size){
-        case LockerSizeSmall:
+        case MBLockerSizeSmall:
             res = @"Kleines Schließfach";
             break;
-        case LockerSizeMedium:
+        case MBLockerSizeMedium:
             res = @"Mittleres Schließfach";
             break;
-        case LockerSizeLarge:
+        case MBLockerSizeLarge:
             res = @"Großes Schließfach";
             break;
-        case LockerSizeJumbo:
+        case MBLockerSizeJumbo:
             res = @"Jumbo-Schließfach";
             break;
-        case LockerSizeUnknown:
+        case MBLockerSizeUnknown:
         default:
             res = @"Unbekannte Größe";
             break;

@@ -5,6 +5,7 @@
 
 #import "MBStationCollectionViewCell.h"
 #import "UIColor+DBColor.h"
+#import "UIView+Frame.h"
 @interface MBStationCollectionViewCell()
 
 @end
@@ -15,11 +16,7 @@
     self = [super initWithFrame:frame];
 
     self.backgroundColor = [UIColor whiteColor];
-
-    self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-    self.layer.shadowRadius = 3.0;
-    self.layer.shadowOpacity = 1.0;
+    [self configureH1Shadow];
     
     return self;
 }

@@ -32,10 +32,7 @@
     self.backgroundColor = [UIColor clearColor];
     // setup subviews
     self.topView = [UIView new];
-    self.topView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.topView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.topView.layer.shadowRadius = 1.5;
-    self.topView.layer.shadowOpacity = 1.0;
+    [self.topView configureDefaultShadow];
     self.topView.backgroundColor = [UIColor whiteColor];
 
     self.timeLabel = [UILabel new];
@@ -95,7 +92,7 @@
     if([hafas delayInMinutes] >= 5){
         self.expectedTimeLabel.textColor = [UIColor db_mainColor];
     } else {
-        self.expectedTimeLabel.textColor = [UIColor db_76c030];
+        self.expectedTimeLabel.textColor = [UIColor db_green];
     }
     
 }

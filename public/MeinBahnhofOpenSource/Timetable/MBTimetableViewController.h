@@ -33,6 +33,7 @@
 @property (nonatomic,strong) NSArray* mapMarkers;
 
 -(instancetype)initWithFernverkehr:(BOOL)showFernverkehr;
+-(instancetype)initWithOPNVAndAllowBack:(BOOL)allowBack;
 -(instancetype)initWithBackButton:(BOOL)showBackButton fernverkehr:(BOOL)showFernverkehr;
 
 - (void)reloadTimetable;

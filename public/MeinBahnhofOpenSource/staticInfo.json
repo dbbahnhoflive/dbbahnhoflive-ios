@@ -64,13 +64,6 @@
              "title": "Fragen & Feedback zum Bahnhof",
              "type": "chatbot"
          },
-         
-         {
-             "descriptionText": "<p><b>Einfach vorbestellen</b></p><p>Machen Sie es sich bequem, mit der pickpack App. Zum Beispiel das Lieblingsessen vorbestellen, Abholzeit aussuchen und ohne extra Wartezeit genießen. Das pickpack Einkaufserlebnis ermöglichen wir gemeinsam mit Partnerläden Ihres Bahnhofs.</p><p><b>Ihre Vorteile</b><ul><li>Kein Anstehen</li><li>Kein Bargeld</li><li>Keine Wartezeit</li></ul></p><p> </p>",
-             "title": "pickpack",
-             "type": "pickpack"
-         },
-         
          {
              "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/service/db-reinigungsteam\">bahnhof.de/service/db-reinigungsteam</a></p>",
              "title": "Verschmutzung und Defekte melden",

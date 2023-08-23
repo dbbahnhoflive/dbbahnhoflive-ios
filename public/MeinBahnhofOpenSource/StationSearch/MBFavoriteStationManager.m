@@ -6,15 +6,17 @@
 
 #import "MBFavoriteStationManager.h"
 
+#define SETTING_FAVORITE_STATIONS @"FAVORITE_STATIONS_V2"
+
 @interface MBFavoriteStationManager()
 
-@property(nonatomic,strong) NSMutableArray* favoriteStations;
+@property(nonatomic,strong) NSMutableArray<NSDictionary*>* favoriteStations;
 
 @end
 
 @implementation MBFavoriteStationManager
 
-+ (id)client
++ (MBFavoriteStationManager*)client
 {
     static MBFavoriteStationManager *sharedClient = nil;
     static dispatch_once_t onceToken;
@@ -27,51 +29,7 @@
     self = [super init];
     if(self)
     {
-        self.favoriteStations = [[NSUserDefaults.standardUserDefaults arrayForKey:@"FAVORITE_STATIONS"] mutableCopy];
-        
-        if(self.favoriteStations){
-            //can be removed on a future update, tansform and cleanup old data
-            
-            //transform data: old storage: used the id field for the evaId in hafas-stations
-            NSMutableArray* newFavorites = [NSMutableArray arrayWithCapacity:self.favoriteStations.count];
-            for(NSDictionary* dict in self.favoriteStations){
-                NSMutableDictionary* resultingDict = [dict mutableCopy];
-                if(dict[@"hafas_id"] != nil){
-                    //this was on opnv-station: the id field contains the eva_id
-                    NSString* idNum = dict[@"id"];
-                    if([idNum isKindOfClass:NSNumber.class]){
-                        idNum = [((NSNumber*)idNum) stringValue];
-                    } else if([idNum isKindOfClass:NSString.class]){
-                        //ensure that we clip leading 0
-                        idNum = [NSString stringWithFormat:@"%lld",idNum.longLongValue];
-                    } else {
-                        idNum = nil;
-                    }
-                    if(idNum){
-                        resultingDict[@"eva_ids"] = @[ idNum ];
-                        resultingDict[@"id"] = nil;
-                        resultingDict[@"hafas_id"] = nil;
-                        resultingDict[@"isOPNVStation"] = [NSNumber numberWithBool:YES];
-                    } else {
-                        //failure: we have no valid id for this station, ignore it
-                        NSLog(@"failure: can't convert old station: %@",dict);
-                        resultingDict = nil;
-                    }
-                } else {
-                    resultingDict[@"isOPNVStation"] = [NSNumber numberWithBool:NO];
-                }
-                if(resultingDict){
-                    [newFavorites addObject:resultingDict];
-                }
-            }
-            self.favoriteStations = newFavorites;
-            [self storeFavorites];
-            [NSUserDefaults.standardUserDefaults removeObjectForKey:@"FAVORITE_STATIONS"];
-        } else {
-            //new storage:
-            self.favoriteStations = [[NSUserDefaults.standardUserDefaults arrayForKey:@"FAVORITE_STATIONS_V2"] mutableCopy];
-        }
-        
+        self.favoriteStations = [[NSUserDefaults.standardUserDefaults arrayForKey:SETTING_FAVORITE_STATIONS] mutableCopy];
         if(!self.favoriteStations){
             self.favoriteStations = [NSMutableArray arrayWithCapacity:10];
         }
@@ -80,7 +38,7 @@
 }
 -(void)storeFavorites{
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-    [def setObject:self.favoriteStations forKey:@"FAVORITE_STATIONS_V2"];
+    [def setObject:self.favoriteStations forKey:SETTING_FAVORITE_STATIONS];
 }
 -(void)addStation:(MBStationFromSearch*)dict{
     //NSLog(@"addStation: %@",dict.dictRepresentation);

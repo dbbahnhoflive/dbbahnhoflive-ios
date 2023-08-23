@@ -15,16 +15,26 @@
 #import "MBPlatformAccessibilityView.h"
 #import "MBLinkButton.h"
 #import "MBTrainJourneyRequestManager.h"
-#import "MBLinkButton.h"
-
-#import "MBContentSearchResult.h"
+#import "AppDelegate.h"
+#import "MBStationSearchViewController.h"
 #import "MBRootContainerViewController.h"
+#import "MBRISStationsRequestManager.h"
+#import "MBTrackingManager.h"
+#import "MBProgressHUD.h"
+#import "HafasStopLocation.h"
+#import "MBLinkButton.h"
+#import "MBContentSearchResult.h"
+#import "MBTutorialManager.h"
+#import "MBBackNavigationState.h"
+#import "MBUrlOpening.h"
+#import "MBAccompanimentTeaserView.h"
 
 @interface MBTrainJourneyViewController ()<UITableViewDataSource,UITableViewDelegate>
 @property (nonatomic, strong) UIImageView *messageIcon;
 @property (nonatomic, strong) UILabel *messageTextLabel;
 @property (nonatomic, strong) MBLinkButton *showFullJourneyButton;
 @property (nonatomic, strong) MBLinkButton *sevButton;
+@property (nonatomic, strong) MBLinkButton *accompanimentButton;
 
 @property(nonatomic,strong) MBLargeButton* trainOrderButton;
 
@@ -49,6 +59,9 @@
     [(MBStationNavigationViewController *)self.navigationController hideNavbar:NO];
     [(MBStationNavigationViewController *)self.navigationController showBackgroundImage:NO];
     [(MBStationNavigationViewController *)self.navigationController setShowRedBar:YES];
+    
+    [[MBTutorialManager singleton] displayTutorialIfNecessary:MBTutorialViewType_Zuglauf_StationLink withOffset:60];
+
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
@@ -77,13 +90,13 @@
     [self.view addSubview:self.messageTextLabel];
 
     BOOL isSEV = false;
-    if(self.hafasJourney){
-        NSString* train = self.event.lineIdentifier;
+    if(self.hafasDeparture){
+        NSString* train = self.hafasDeparture.name;
         isSEV = [train.uppercaseString containsString:@"SEV"];
-        self.title = [NSString stringWithFormat:@"Haltestellen %@ nach %@", train,self.event.actualStation];
+        self.title = [NSString stringWithFormat:@"Haltestellen %@ nach %@", train,self.hafasDeparture.stopLocationTitles.lastObject];
     } else {
         NSString* train = [self.event.stop formattedTransportType:self.event.lineIdentifier];
-        isSEV = [train.uppercaseString containsString:@"SEV"];
+        isSEV = [train.uppercaseString containsString:@"SEV"] || self.journey.isSEVJourney;
         if(self.event.departure){
             self.title = [NSString stringWithFormat:@"Zuglauf %@ nach %@", train,self.event.actualStation];
         } else {
@@ -97,6 +110,12 @@
         [self.sevButton addTarget:self action:@selector(openSEV) forControlEvents:UIControlEventTouchUpInside];
         [self.sevButton setLabelText:@"Übersicht Ersatzverkehr"];
         [self.view addSubview:self.sevButton];
+        if(self.station.hasAccompanimentService){
+            self.accompanimentButton = [MBLinkButton boldButtonWithSmallRedExternalLink];
+            [self.accompanimentButton addTarget:self action:@selector(openAccompaniment) forControlEvents:UIControlEventTouchUpInside];
+            [self.accompanimentButton setLabelText:@"DB Wegbegleitung"];
+            [self.view addSubview:self.accompanimentButton];
+        }
     }
 
     if(self.showJourneyMessageAndTrainLinks && [Stop stopShouldHaveTrainRecord:self.event.stop]){
@@ -130,6 +149,9 @@
     MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
     [root handleSearchResult:res];
 }
+-(void)openAccompaniment{
+    [MBUrlOpening openURL:[NSURL URLWithString:WEGBEGLEITUNG_LINK]];
+}
 
 -(void)processData{
     [self configureMessage];
@@ -145,8 +167,10 @@
         self.layoutForIRIS = true;
         
         NSArray *stations = nil;
-        if(self.hafasJourney){
-            stations = self.event.actualStationsArray;
+        NSString* stationsTitle = self.station.title;
+        if(self.hafasDeparture){
+            stations = self.hafasDeparture.stopLocationTitles;
+            stationsTitle = self.hafasStationThatOpenedThisJourney.title;
         } else {
             stations = [self.event stationListWithCurrentStation:self.station.title];
         }
@@ -154,7 +178,14 @@
         for(NSString* station in stations){
             MBTrainJourneyStop* s = [MBTrainJourneyStop new];
             s.stationName = station;
-            if(self.firstIndexWithCurrentStation == -1 && [station isEqualToString:self.station.title]){
+            if(self.hafasDeparture){
+                //do we have an extId?
+                if(index < self.hafasDeparture.stopLocations.count){
+                    HafasStopLocation* stop = self.hafasDeparture.stopLocations[index];
+                    s.evaNumber = stop.extId;
+                }
+            }
+            if(self.firstIndexWithCurrentStation == -1 && [station isEqualToString:stationsTitle]){
                 self.firstIndexWithCurrentStation = index;
             }
             [res addObject:s];
@@ -169,6 +200,9 @@
                 self.firstIndexWithCurrentStation = index;
             }
             index++;
+        }
+        if(self.firstIndexWithCurrentStation == -1){
+            NSLog(@"did not find eva %@ in list of stops %@",self.currentEva,self.journeyStops);
         }
         [self updateJourneyProgress];
     }
@@ -193,7 +227,7 @@
         self.segmentTableView.tableFooterView = nil;
     }
     
-    if(self.layoutForIRIS && !self.hafasJourney){
+    if(self.layoutForIRIS && !self.hafasDeparture){
         UIView* header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
         header.backgroundColor = [UIColor clearColor];
         UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 15, self.view.frame.size.width-30, 20)];
@@ -322,7 +356,10 @@
     MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
     detailViewController.departure = self.departure;
     detailViewController.station = self.station;
+    detailViewController.hafasStationThatOpenedThisJourney = self.hafasStationThatOpenedThisJourney;
+    detailViewController.hafasDeparture = self.hafasDeparture;
     detailViewController.event = self.event;
+    detailViewController.stop = self.stop;
     detailViewController.journey = self.journey;
     [self.navigationController pushViewController:detailViewController animated:YES];
 }
@@ -388,8 +425,13 @@
             topSpace = 15;
         }
         [self.sevButton setGravityTop:topSpace];
-        [self.sevButton centerViewHorizontalInSuperView];
+        [self.sevButton setGravityLeft:24];
         topSpace = CGRectGetMaxY(self.sevButton.frame)+15;
+    }
+    if(self.accompanimentButton){
+        [self.accompanimentButton setGravityTop:topSpace];
+        [self.accompanimentButton setGravityLeft:24+2];
+        topSpace = CGRectGetMaxY(self.accompanimentButton.frame)+15;
     }
     
     if(self.trainOrderButton){
@@ -408,7 +450,7 @@
 
 - (id)mapSelectedPOI
 {
-    if(self.hafasJourney){
+    if(self.hafasDeparture){
         return nil;
     }
     RIMapPoi* res = [self.station poiForPlatform:self.event.actualPlatformNumberOnly];
@@ -418,7 +460,7 @@
     return NO;
 }
 -(NSArray<NSString *> *)mapFilterPresets{
-    if(self.hafasJourney){
+    if(self.hafasDeparture){
         return @[ PRESET_LOCAL_TIMETABLE ];
     }
     return @[ PRESET_DB_TIMETABLE ];
@@ -451,6 +493,74 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    MBTrainJourneyStop* stop = self.journeyStops[indexPath.row];
+    if(self.hafasStationThatOpenedThisJourney && stop.evaNumber && [self.hafasStationThatOpenedThisJourney.stationEvaIds containsObject:stop.evaNumber]){
+        NSLog(@"trying to select this station from journey, ignore");
+        return;
+    }
+    if(stop.evaNumber && ![self.station.stationEvaIds containsObject:stop.evaNumber]){
+        UIAlertController* alert = [UIAlertController alertControllerWithTitle:[@"Öffne " stringByAppendingString:stop.stationName] message:@"Sie werden zur ausgewählten Station weitergeleitet." preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"Öffnen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [[MBTutorialManager singleton] markTutorialAsObsolete:MBTutorialViewType_Zuglauf_StationLink];
+            [MBTrackingManager trackActionsWithStationInfo:@[@"h2",@"journey",@"openstation"]];
+            UIView* progressView = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+            UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, progressView);
+            
+            NSString* evaIdToLoad = stop.evaNumber;
+            //BAHNHOFLIVE-2395
+            if(self.station.hasStaticAdHocBox && self.journey.isSEVJourney){
+                NSString* evaReplace = [self.station isAdditionalEvaId_MappedToMainEva:stop.evaNumber];
+                if(evaReplace){
+                    NSLog(@"replacing %@ with %@ to load the DB-Station instead of the OPNV",evaIdToLoad,evaReplace);
+                    evaIdToLoad = evaReplace;
+                }
+            }
+            
+            [[MBRISStationsRequestManager sharedInstance] searchStationByEva:evaIdToLoad success:^(MBStationFromSearch *station) {
+                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                if(station){
+                    station.isInternalLink = true;
+                    MBBackNavigationState* state = [MBBackNavigationState new];
+                    if(!self.station && self.hafasStationThatOpenedThisJourney){
+                        state.isOPNVStation = true;
+                        state.mbId = self.hafasStationThatOpenedThisJourney.mbId;
+                        state.title = self.hafasStationThatOpenedThisJourney.title;
+                        state.evaIds = self.hafasStationThatOpenedThisJourney.stationEvaIds;
+                        state.position = self.hafasStationThatOpenedThisJourney.positionAsLatLng;
+                    } else {
+                        state.mbId = self.station.mbId;
+                        state.title = self.station.title;
+                        state.evaIds = self.station.stationEvaIds;
+                        state.position = self.station.positionAsLatLng;
+                    }
+                    state.isFromDeparture = self.departure;
+                    state.stop = self.stop;
+                    state.hafasDeparture = self.hafasDeparture;
+                    state.hafasStation = self.originalHafasStation;
+
+                    AppDelegate* app = (AppDelegate*) UIApplication.sharedApplication.delegate;
+                    MBStationSearchViewController* vc = (MBStationSearchViewController*) app.viewController;
+                    [vc openStationFromInternalLink:station withBackState:state];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nil);
+                    });
+                } else {
+                    [self stationLoadError];
+                }
+            } failureBlock:^(NSError * error) {
+                [MBProgressHUD hideHUDForView:self.view animated:YES];
+                [self stationLoadError];
+            }];
+        }]];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+}
+-(void)stationLoadError{
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Fehler" message:@"Die Station konnte nicht geladen werden." preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+
 }
 
 @end

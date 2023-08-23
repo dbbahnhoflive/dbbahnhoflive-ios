@@ -58,7 +58,7 @@
         self.symbolContainer.clipsToBounds = NO;
         
         self.bottomLine = [[UIView alloc] init];
-        self.bottomLine.backgroundColor = [UIColor colorWithRed:193.0/255.0 green:193.0/255.0 blue:193.0/255.0 alpha:1.0];
+        self.bottomLine.backgroundColor = [UIColor colorWithRed:193.0/255.0 green:193.0/255.0 blue:193.0/255.0 alpha:1.0];//0xC1C1C1
         self.rightLine = [[UIView alloc] init];
         self.rightLine.backgroundColor = self.bottomLine.backgroundColor;
         

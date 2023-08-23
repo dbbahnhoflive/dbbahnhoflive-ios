@@ -30,10 +30,12 @@
 @property (nonatomic, strong) NSString *rtDate;
 
 @property (nonatomic,strong) NSString* stopid;
+@property (nonatomic,strong) NSString* stopExtId;
 
 -(void)cleanupName;
 
 -(NSArray<NSString*>*)stopLocationTitles;
+-(NSArray<HafasStopLocation*>*)stopLocations;
 -(void)storeStopLocations:(NSArray<HafasStopLocation*>*)stops;
 
 -(HAFASProductCategory)productCategory;

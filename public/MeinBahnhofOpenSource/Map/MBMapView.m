@@ -38,7 +38,6 @@
 @property (nonatomic, assign) double currentZoomLevel;
 @property (nonatomic, strong) NSString* currentIndoorLevelString;
 
-@property (nonatomic, strong) NSMutableArray *mobilityMarker;
 @property (nonatomic, strong) NSMutableArray *facilityMarker;
 @property (nonatomic, strong) NSMutableArray *poiMarker;
 @property (nonatomic, strong) NSMutableArray *nearbyStationsMarker;
@@ -82,7 +81,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     if (self = [super initWithFrame:frame]) {
         self.indoorMarkers  = [NSArray array];
         self.outdoorMarkers = [NSMutableArray array];
-        self.mobilityMarker = [NSMutableArray array];
         self.facilityMarker = [NSMutableArray array];
         self.poiMarker = [NSMutableArray array];
         self.sevMarker = [NSMutableArray array];
@@ -114,7 +112,10 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 - (instancetype) initMapViewWithFrame:(CGRect)frame
 {
     GMSCameraPosition *cameraPosition = [GMSCameraPosition cameraWithTarget:CLLocationCoordinate2DMake(51.404930, 9.923518) zoom:6];
-    if (self = [self initWithFrame:frame forCameraPosition:cameraPosition]) {}
+    self = [self initWithFrame:frame forCameraPosition:cameraPosition];
+    if(self){
+        [self setupMap];
+    }
     return self;
 }
 
@@ -199,10 +200,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 //
 
 
--(void)setMapType:(MAP_TYPE)newMapType{
-    if(newMapType != OSM){
-        NSAssert(false, @"only OSM type supported");
-    }
+-(void)setupMap{
     [self enableOSMTileLayer];
     [self layoutIfNeeded];
     if(self.levels.count == 0){
@@ -270,7 +268,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 - (void) enableDefaultMapViewSettings
 {
-    self.filterMarkerByLevel = YES;
     self.gmsMapView.delegate = self;
     self.gmsMapView.settings.indoorPicker = NO;
     self.gmsMapView.settings.consumesGesturesInView = NO;
@@ -355,11 +352,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 }
 
 
-- (void) setFilterMarkerByLevel:(BOOL)filterByLevel
-{
-    _filterMarkerByLevel = filterByLevel;
-}
-
 - (void) setIndoorMarkers:(NSArray *)indoorMarkers
 {
     [self clearIndoorPOIs];
@@ -399,11 +391,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     [self.delegate showRoutingForParking:parking];
 }
 
-
-- (void)showFacilityFavorites
-{
-    [self.delegate showFacilityFavorites];
-}
 
 
 #pragma -
@@ -448,7 +435,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     if (self.userMarker) {
         oldBearing = self.userMarker.rotation;
     } else {
-        self.userMarker = [MBMarker markerWithPosition:location.coordinate andType:USER];
+        self.userMarker = [MBMarker markerWithPosition:location.coordinate andType:MBMarkerType_USER];
         if(UIAccessibilityIsVoiceOverRunning()){
             self.userMarker.title = @"Aktuelle Position";
         }
@@ -501,14 +488,14 @@ static const NSInteger skyHighLevel = 13;//changed from 14
         if (outdoorMarker && outdoorMarker.userData) {
             outdoorMarker.flat = NO;
             //outdoorMarker.zIndex = 13;
-            if(self.filterMarkerByLevel && [outdoorMarker isKindOfClass:[MBMarker class]]){
+            if([outdoorMarker isKindOfClass:[MBMarker class]]){
                 MBMarker* outdoor = (MBMarker*)outdoorMarker;
                 NSNumber *markerLevelNumber = [outdoor.userData objectForKey:@"level"];
                 BOOL levelOk = !markerLevelNumber || markerLevelNumber.integerValue == level.levelNumber;
                 if(([self hasActiveFilters] || outdoor.zoomLevel <= zoomLevel) && levelOk){
                     outdoorMarker.map = self.gmsMapView;
                 } else {
-                    if(levelOk && (outdoor.markerType == OEPNV_SELECTABLE || outdoor.markerType == STATION_SELECTABLE)){
+                    if(levelOk && (outdoor.markerType == MBMarkerType_OEPNV_SELECTABLE || outdoor.markerType == MBMarkerType_STATION_SELECTABLE)){
                         //always show these
                         outdoorMarker.map = self.gmsMapView;
                     } else {
@@ -535,14 +522,10 @@ static const NSInteger skyHighLevel = 13;//changed from 14
             indoorMarker.zIndex = 13;
             
             NSNumber *markerLevelNumber = [indoorMarker.userData objectForKey:@"level"];
-            if (!self.filterMarkerByLevel) {
+            if (level.levelNumber == [markerLevelNumber integerValue] && ([self hasActiveFilters] || indoorMarker.zoomLevel <= zoomLevel)) {
                 indoorMarker.map = self.gmsMapView;
-            } else {
-                if (level.levelNumber == [markerLevelNumber integerValue] && ([self hasActiveFilters] || indoorMarker.zoomLevel <= zoomLevel)) {
-                    indoorMarker.map = self.gmsMapView;
-                }
             }
-            
+
             if(indoorMarker.zoomForIconWithText != 0){
                 indoorMarker.icon = indoorMarker.zoomForIconWithText <= zoomLevel ? indoorMarker.iconWithText : indoorMarker.iconWithoutText;
             }
@@ -612,8 +595,8 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     // NSLog(@"showOnlyNearbyPOIs");
     __block GMSMarker *firstMarker = nil;
     [self.outdoorMarkers enumerateObjectsUsingBlock:^(GMSMarker *marker, NSUInteger idx, BOOL * _Nonnull stop) {
-        enum MarkerType type = [(MBMarker *)marker markerType];
-        if (type == STATION_SELECTABLE || type == OEPNV_SELECTABLE) {
+        MBMarkerType type = [(MBMarker *)marker markerType];
+        if (type == MBMarkerType_STATION_SELECTABLE || type == MBMarkerType_OEPNV_SELECTABLE) {
             marker.map = self.gmsMapView;
             if (nil == firstMarker) {
                 firstMarker = marker;
@@ -720,7 +703,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 -(void)setPOIs:(NSArray*)riPois{
     // Create POI Pins
-    self.filterMarkerByLevel = YES;
     self.showFilterToggle = YES;
     
     [self.poiMarker enumerateObjectsUsingBlock:^(GMSMarker *marker, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -754,12 +736,6 @@ static const NSInteger skyHighLevel = 13;//changed from 14
     [list removeAllObjects];
 }
 
--(void)updateMobilityMarker:(NSArray*)mobilityMarker{
-    [self removeMarkersFromMap:self.mobilityMarker];
-    [self.mobilityMarker addObjectsFromArray:mobilityMarker];
-    [self updateMarkers];
-}
-
 
 - (void) updateMarkers
 {
@@ -780,9 +756,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
             [allOutdoorMarker addObject:m];
         }
     }
-    
-    [allOutdoorMarker addObjectsFromArray:self.mobilityMarker];
-    
+        
     //and for indoor:
     [allIndoorMarker addObjectsFromArray:self.poiMarker];
     

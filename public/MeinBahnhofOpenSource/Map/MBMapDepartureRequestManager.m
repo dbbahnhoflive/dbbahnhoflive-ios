@@ -14,7 +14,7 @@
 
 @implementation MBMapDepartureRequestManager
 
-+ (id)sharedManager
++ (MBMapDepartureRequestManager*)sharedManager
 {
     static MBMapDepartureRequestManager *sharedManager = nil;
     static dispatch_once_t onceToken;

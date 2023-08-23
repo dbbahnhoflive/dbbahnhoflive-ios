@@ -107,10 +107,7 @@
     [super layoutSubviews];
     CGFloat bottomSlack = 8.0;
     self.backView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height-bottomSlack);
-    self.backView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.backView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.backView.layer.shadowRadius = 1.5;
-    self.backView.layer.shadowOpacity = 1.0;
+    [self.backView configureDefaultShadow];
 
     [self.filterButton setGravityLeft:self.frame.size.width - self.filterButton.frame.size.width - 16.0];
     [self.filterButton setGravityTop:(self.frame.size.height-self.filterButton.frame.size.height) / 2.0];

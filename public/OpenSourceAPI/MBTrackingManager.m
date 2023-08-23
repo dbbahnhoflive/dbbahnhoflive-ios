@@ -13,15 +13,6 @@
 +(void)trackPushMessageClick:(NSDictionary *)userInfo{}
 + (void)setOptOut:(BOOL)optOut{}
 + (NSArray *)stationInfoArray{ return nil; }
-+(NSString *)mapShopTitleToTrackingName:(NSString *)internalName{
-    return @"";
-}
-+(NSString *)mapMainMenuTypeToTrackingName:(NSString *)type{
-    return @"";
-}
-+(NSString *)mapInternalServiceToTrackingName:(NSString *)internalName{
-    return @"";
-}
 +(void)trackAction:(NSString *)action{}
 +(void)trackActions:(NSArray *)actions{}
 +(void)trackActionWithStationInfo:(NSString *)action{}

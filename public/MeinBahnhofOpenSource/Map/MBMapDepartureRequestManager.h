@@ -9,7 +9,7 @@
 
 @interface MBMapDepartureRequestManager : NSObject
 
-+ (id)sharedManager;
++ (MBMapDepartureRequestManager*)sharedManager;
 
 -(void)registerUpdateForFlyout:(MBMapFlyout*)mapFlyout;
 

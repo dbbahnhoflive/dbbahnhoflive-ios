@@ -7,6 +7,7 @@
 #import "Wagenstand.h"
 #import "MBTrainPositionViewController.h"
 #import "MBProgressHUD.h"
+#import "Stop.h"
 
 @interface MBTrainOrderDisplayHelper()
 @property(nonatomic,strong) UIViewController* vc;

@@ -13,6 +13,13 @@
     NSString* status = NSProcessInfo.processInfo.environment[@"isTestRun"];
     return [status isEqualToString:@"1"];
 }
++(BOOL)isTestPush{
+    //return true;
+    NSString* status = NSProcessInfo.processInfo.environment[@"isTestPush"];
+    return [status isEqualToString:@"1"];
+}
+
+
 +(NSString* _Nullable)mockDataForKey:(NSString*)key{
     NSString* jsonString = NSProcessInfo.processInfo.environment[@"mock_requests"];
     if(!jsonString){

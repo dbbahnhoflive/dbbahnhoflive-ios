@@ -8,22 +8,22 @@
 #import <Mantle/Mantle.h>
 #import <CoreLocation/CoreLocation.h>
 
-enum State : NSUInteger {
-    UNKNOWN = 0,
-    ACTIVE  = 1,
-    INACTIVE = 2
+typedef NS_ENUM(NSUInteger, FacilityState) {
+    FacilityStateUnknown = 0,
+    FacilityStateActive = 1,
+    FacilityStateInactive = 2
 };
 
-enum Type : NSUInteger {
-    ESCALATOR = 0,
-    ELEVATOR  = 1
+typedef NS_ENUM(NSUInteger, FacilityType) {
+    FacilityTypeEscalator = 0,
+    FacilityTypeElevator = 1,
 };
 
 @interface FacilityStatus : MTLModel <MTLJSONSerializing>
 
 @property (nonatomic, copy) NSNumber *equipmentNumber;
-@property (nonatomic, assign, readwrite) enum Type type;
-@property (nonatomic, assign, readwrite) enum State state;
+@property (nonatomic, assign, readwrite) FacilityType type;
+@property (nonatomic, assign, readwrite) FacilityState state;
 @property (nonatomic, copy) NSString *shortDescription;
 @property (nonatomic, copy) NSNumber *geoCoordinateX;
 @property (nonatomic, copy) NSNumber *geoCoordinateY;
@@ -37,5 +37,7 @@ enum Type : NSUInteger {
 -(BOOL)isSameFacility:(FacilityStatus*)another;
 
 -(NSString*)shortDescription;
+
+-(NSString*)equipmentNumberString;
 
 @end

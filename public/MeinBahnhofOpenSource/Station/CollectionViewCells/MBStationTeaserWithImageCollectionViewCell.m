@@ -13,6 +13,8 @@
 
 @end
 
+//TODO: class no longer used, can be removed
+
 @implementation MBStationTeaserWithImageCollectionViewCell
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -23,7 +25,7 @@
         self.mainLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         self.mainLabel.numberOfLines = 0;
         self.mainLabel.textColor = [UIColor db_333333];
-        self.mainLabel.font = [UIFont dbHeadBlackWithSize:17];
+        self.mainLabel.font = [UIFont db_HeadBlackSeventeen];
         [self.contentView addSubview:self.mainLabel];
                 
         self.mainImage = [[UIImageView alloc] init];

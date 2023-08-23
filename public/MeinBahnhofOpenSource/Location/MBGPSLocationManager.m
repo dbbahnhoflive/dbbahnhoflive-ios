@@ -17,7 +17,7 @@
 
 @implementation MBGPSLocationManager
 
-+ (id)sharedManager {
++ (MBGPSLocationManager*)sharedManager {
     static MBGPSLocationManager *sharedManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

@@ -53,12 +53,12 @@
          [self addSubview:self.background];
          */
         self.titleLabel = [[MBLabel alloc] initWithFrame:CGRectZero];
-        self.titleLabel.numberOfLines = 0;
+        self.titleLabel.numberOfLines = 2;
         self.titleLabel.backgroundColor = [UIColor clearColor];
         self.titleLabel.opaque = NO;
         self.titleLabel.textColor = [UIColor blackColor];
         self.titleLabel.font = [UIFont db_BoldSixteen];
-        self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        self.titleLabel.textAlignment = NSTextAlignmentLeft;
         [self addSubview:self.titleLabel];
         
         self.line = [[UIView alloc] initWithFrame:CGRectZero];
@@ -128,6 +128,9 @@
     self.titleLabel.frame = CGRectMake(40,16, ceilf(size.width), ceilf(size.height));
     
     self.line.frame = CGRectMake(0, 47, self.sizeWidth, 3);
+    if(CGRectGetMaxY(self.titleLabel.frame) > self.line.frame.origin.y){
+        [self.titleLabel setGravityTop:(47-self.titleLabel.sizeHeight)/2];
+    }
     
     size = [self.messageLabel sizeThatFits:CGSizeMake(self.size.width-18*2, MAXFLOAT)];
     self.messageLabel.frame = CGRectMake(18, CGRectGetMaxY(self.line.frame)+15, ceilf(size.width), ceilf(size.height));

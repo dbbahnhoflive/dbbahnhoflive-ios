@@ -10,6 +10,9 @@
 
 @end
 
+#define MBCACHE_VERSION 318
+#define SETTING_MBCACHE_VERSION @"mbcachemanager.version"
+
 @implementation MBCacheManager
 
 + (instancetype)sharedManager
@@ -22,16 +25,15 @@
     return sharedManager;
 }
 
-#define MBCACHE_VERSION 318
 -(instancetype)init{
     self = [super init];
     if(self){
         NSLog(@"setup cache manager with directory %@",[self applicationDocumentsDirectory]);
         NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-        if([def integerForKey:@"mbcachemanager.version"] < MBCACHE_VERSION){
+        if([def integerForKey:SETTING_MBCACHE_VERSION] < MBCACHE_VERSION){
             [self deleteCache];
             NSLog(@"cache version changed, clear cache dir");
-            [def setInteger:MBCACHE_VERSION forKey:@"mbcachemanager.version"];
+            [def setInteger:MBCACHE_VERSION forKey:SETTING_MBCACHE_VERSION];
         }
     }
     return self;

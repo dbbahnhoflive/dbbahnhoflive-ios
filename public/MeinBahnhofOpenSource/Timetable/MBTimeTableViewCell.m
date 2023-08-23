@@ -51,7 +51,7 @@
     [self.trainLabel setFont:[UIFont db_RegularFourteen]];
     [self.stationLabel setFont:[UIFont db_RegularSixteen]];
     
-    [self.expectedTimeLabel setTextColor:[UIColor db_76c030]];
+    [self.expectedTimeLabel setTextColor:[UIColor db_green]];
     [self.platformLabel setTextColor:[UIColor db_787d87]];
     [self.trainLabel setTextColor:[UIColor db_787d87]];
     [self.stationLabel setTextColor:[UIColor db_333333]];
@@ -89,10 +89,7 @@
     CGFloat leftSlack = 8.0;
     self.backView.frame = CGRectMake(leftSlack, 0, self.frame.size.width-2.0*leftSlack, self.frame.size.height);
     self.topView.frame = CGRectMake(0, 0, self.backView.frame.size.width, 80.0);
-    self.topView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.topView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.topView.layer.shadowRadius = 1.5;
-    self.topView.layer.shadowOpacity = 1.0;
+    [self.topView configureDefaultShadow];
     
     self.timeLabel.frame = CGRectMake(kLeftPadding, 16.0, 70, 20);
     self.stationLabel.frame = CGRectMake(self.timeLabel.frame.origin.x+self.timeLabel.frame.size.width+kInnerPadding, self.timeLabel.frame.origin.y, self.frame.size.width-self.timeLabel.frame.size.width-kInnerPadding-kLeftPadding*2, 20);
@@ -119,46 +116,9 @@
 
 - (NSString *)accessibilityLabel
 {
-    return [MBTimeTableViewCell voiceOverForEvent:_event expanded:NO viaStation:@[]];
+    return [_event voiceOverString];
 }
-+(NSString*)voiceOverForEvent:(Event*)event{
-    return [MBTimeTableViewCell voiceOverForEvent:event expanded:NO viaStation:nil];
-}
-+(NSString*)voiceOverForEvent:(Event*)event expanded:(BOOL)expanded viaStation:(NSArray*)viaStationList{
-    NSString* viaStations = @"";
-    if(expanded){
-        viaStations = [viaStationList componentsJoinedByString:@", "];
-        viaStations = [@", über " stringByAppendingString:viaStations];
-    }
-    NSString* train = [event.stop formattedTransportType:event.lineIdentifier];
-    if([train containsString:@"ICE"]){
-        train = [train stringByReplacingOccurrencesOfString:@"ICE" withString:@"I C E"];
-    } else if([train hasPrefix:@"STR"]){
-        train = [train stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
-    }
-    NSString* gleis = [NSString stringWithFormat:@"Gleis %@",event.actualPlatform];
-    NSString* msg = event.composedIrisMessage;
-    if(!msg){
-        msg = @"";
-    }
-    NSString* trainOrder = @"";
-    if([Stop stopShouldHaveTrainRecord:event.stop]){
-        trainOrder = @"Informationen zur Wagenreihung verfügbar.";
-    }
-    NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@ Uhr, %@, %@; %@%@.%@",
-                train,
-                event.departure ? @"nach" : @"von",
-                event.actualStation,
-                event.formattedTime,
-                ([event.formattedTime isEqualToString:event.formattedExpectedTime] ? @"" : [NSString stringWithFormat:@"Erwartet %@ Uhr",event.formattedExpectedTime]),
-                gleis,
-                msg,
-                viaStations,
-                trainOrder
-            ];
-    //NSLog(@"voiceover: %@",res);
-    return res;
-}
+
 
 - (void)prepareForReuse
 {

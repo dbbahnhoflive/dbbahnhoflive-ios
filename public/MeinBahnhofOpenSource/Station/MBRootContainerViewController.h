@@ -8,6 +8,7 @@
 #import "MBUIViewController.h"
 #import "MBStation.h"
 #import "MBStationTabBarViewController.h"
+#import "Stop.h"
 
 @class MBOverlayViewController;
 @class MBTimetableViewController;
@@ -21,7 +22,6 @@
 -(void)didLoadStationData:(BOOL)success;
 -(void)didLoadIndoorMapLevels:(BOOL)success;
 -(void)didLoadMapPOIs:(BOOL)success;
--(void)didLoadEinkaufData:(BOOL)success;
 -(void)didLoadFacilityData:(BOOL)success;
 -(void)didFinishAllLoading;
 
@@ -30,7 +30,6 @@
 -(void)didLoadLockerData;
 -(void)didLoadParkingData;
 -(void)didLoadNewsData;
--(void)didLoadEinkaufsbahnhofStatus;
 
 
 @end
@@ -43,6 +42,9 @@
 @property(nonatomic,weak) id<MBRootContainerViewControllerDelegate> rootDelegate;
 @property (nonatomic, strong) MBStationTabBarViewController *stationTabBarViewController;
 @property(nonatomic) BOOL startWithDepartures;
+@property(nonatomic,strong) NSArray<NSString*>* preloadedDepartures;
+@property(nonatomic) BOOL startWithFacility;
+@property(nonatomic) BOOL allowBackFromStation;
 
 +(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc allowNavigation:(BOOL)allowNavigation;
 +(void)presentViewControllerAsOverlay:(MBOverlayViewController*)vc;
@@ -55,7 +57,10 @@
 -(MBServiceListCollectionViewController*)infoVC;
 -(void)selectTimetableTab;
 -(void)selectTimetableTabAndDeparturesForTrack:(NSString*)track trainOrder:(Stop*)trainStop;
+-(void)showFacilities;
 -(void)cleanup;
+- (void)goBackToSearchAnimated:(BOOL)animated;
+- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory;
 
 -(void)handleSearchResult:(MBContentSearchResult*)search;
 @end

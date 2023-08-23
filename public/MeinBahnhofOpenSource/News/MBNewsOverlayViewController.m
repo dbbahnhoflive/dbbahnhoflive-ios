@@ -108,10 +108,7 @@
         [button setGravityTop:y];
         [button centerViewHorizontalInSuperView];
         button.layer.cornerRadius = button.frame.size.height / 2.0;
-        button.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        button.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        button.layer.shadowRadius = 1.5;
-        button.layer.shadowOpacity = 1.0;
+        [button configureDefaultShadow];
         y = CGRectGetMaxY(button.frame)+20;
     }
     

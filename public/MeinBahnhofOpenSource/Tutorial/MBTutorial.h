@@ -19,9 +19,14 @@ typedef NS_ENUM(NSUInteger, MBTutorialViewType)  {
     MBTutorialViewType_F3_Map_Departures,
     MBTutorialViewType_H1_Search,
     MBTutorialViewType_H1_Coupons,
+    MBTutorialViewType_H1_FacilityPush,
+    MBTutorialViewType_D1_FacilityPush,
+    MBTutorialViewType_Zuglauf_StationLink,
 } ;
 
 @interface MBTutorial : NSObject
+
+typedef BOOL (^TutorialRuleBlock)(MBTutorial*);
 
 @property(nonatomic) MBTutorialViewType identifier;
 @property(nonatomic,strong) NSString* title;
@@ -29,8 +34,10 @@ typedef NS_ENUM(NSUInteger, MBTutorialViewType)  {
 @property(nonatomic) NSInteger currentCount;
 @property(nonatomic) NSInteger countdown;
 @property(nonatomic) BOOL closedByUser;
+@property(nonatomic) BOOL markedAsAbsolete;
+@property (nonatomic, copy) TutorialRuleBlock ruleBlock;
 
-+(MBTutorial*)tutorialWithIdentifier:(MBTutorialViewType)identifier title:(NSString*)title text:(NSString*)text countdown:(NSInteger)countdown;
--(instancetype)initWithIdentifier:(MBTutorialViewType)identifier title:(NSString*)title text:(NSString*)text countdown:(NSInteger)countdown;
++(MBTutorial *)tutorialWithIdentifier:(MBTutorialViewType)identifier title:(NSString *)title text:(NSString *)text countdown:(NSInteger)countdown;
++(MBTutorial*)tutorialWithIdentifier:(MBTutorialViewType)identifier title:(NSString*)title text:(NSString*)text countdown:(NSInteger)countdown ruleBlock:(TutorialRuleBlock)ruleBlock;
 
 @end

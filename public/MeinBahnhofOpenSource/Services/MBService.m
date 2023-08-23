@@ -42,7 +42,6 @@
         kServiceType_LocalDBLounge: @"app_db_lounge",
         kServiceType_LocalLostFound: @"app_fundservice",
         kServiceType_Chatbot: @"chatbot_icon",
-        kServiceType_PickPack: @"pickpack",
         kServiceType_MobilerService: @"app_mobiler_service",
         kServiceType_Parking: @"rimap_parkplatz_grau",
         kServiveType_Dirt_Whatsapp: @"verschmutzungmelden",
@@ -72,6 +71,8 @@
     if ([self.type isEqualToString:kServiceType_3SZentrale]
         ||
         [self.type isEqualToString:kServiceType_LocalLostFound]
+        ||
+        [self.type isEqualToString:kServiceType_SEV]
         ) {
         NSArray* res = [self parseConfigurableService:string];
         return res;
@@ -92,8 +93,6 @@
             }
         }*/
         return res;
-    } else if ([self.type isEqualToString:kServiceType_PickPack]) {
-        return [self parsePickpackComponents:string];
     } else if ([self.type isEqualToString:kServiceType_MobilityService] || [self.type hasPrefix:kServiceType_Dirt_Prefix] || [self.type isEqualToString:kServiceType_Rating] || [self.type isEqualToString:kServiceType_Problems]
                || [self.type isEqualToString:kServiceType_Barrierefreiheit]){
         NSArray* res = [self parseConfigurableService:string];
@@ -133,14 +132,6 @@
     }
 }
 
-- (NSArray*)parsePickpackComponents:(NSString*)string{
-    //we expect a text and add one or two buttons
-    NSMutableArray* res = [NSMutableArray arrayWithCapacity:3];
-    [res addObject:string];
-    [res addObject:@{kActionButtonKey:@"Webseite", kActionButtonAction:kActionPickpackWebsite}];
-    [res addObject:@{kActionButtonKey:@"pickpack App", kActionButtonAction:kActionPickpackApp}];
-    return res;
-}
 
 -(NSArray*)parseConfigurableService:(NSString*)string{
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:6];
@@ -182,7 +173,34 @@
             break;
         }
     }
+    //replace other placeholders
+    [self replaceString:kPlaceholderARService with:@{kSpecialAction:kSpecialActionAR_Teaser} inList:res];
     return res;
+}
+
+-(void)replaceString:(NSString*)placeholder with:(NSDictionary*)action inList:(NSMutableArray*)list{
+    NSInteger index = 0;
+    BOOL found = false;
+    for(id item in list){
+        if([item isKindOfClass:NSString.class]){
+            NSString* text = item;
+            if([text containsString:placeholder]){
+                found = true;
+                break;
+            }
+        }
+        index++;
+    }
+    if(found){
+        NSString* text = list[index];
+        NSRange range = [text rangeOfString:placeholder];
+        NSString* textBefore = [text substringToIndex:range.location];
+        NSString* textAfter = [text substringFromIndex:range.location+range.length];
+        [list removeObjectAtIndex:index];
+        [list insertObject:textBefore atIndex:index];
+        [list insertObject:action atIndex:index+1];
+        [list insertObject:textAfter atIndex:index+2];
+    }
 }
 
 

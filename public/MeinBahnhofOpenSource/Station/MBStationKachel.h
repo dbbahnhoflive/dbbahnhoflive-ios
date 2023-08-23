@@ -7,9 +7,6 @@
 #import <GoogleMaps/GoogleMaps.h>
 #import "MBStation.h"
 
-typedef NS_ENUM(NSUInteger, MBStationTeaserType) {
-    MBStationTeaserTypePickPack    = 0,
-};
 
 @interface MBStationKachel : NSObject
 
@@ -24,8 +21,7 @@ typedef NS_ENUM(NSUInteger, MBStationTeaserType) {
 @property (nonatomic) BOOL showOnlyImage;
 @property (nonatomic) BOOL isGreenTeaser;
 @property (nonatomic) BOOL isChatbotTeaser;
-@property (nonatomic) BOOL isImageTeaser;
-@property (nonatomic) MBStationTeaserType teaserType;//used in combination with isImageTeaser
+@property (nonatomic) BOOL isARTeaser;
 
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, assign) BOOL showBubble;

@@ -17,8 +17,8 @@
 @property(nonatomic) BOOL userDisabledTutorials;
 -(BOOL)userDidCloseAllTutorials;
 
-- (void)displayTutorialIfNecessary:(MBTutorialViewType)type;
-- (void)displayTutorialIfNecessary:(MBTutorialViewType)type withOffset:(NSInteger)y;
+- (BOOL)displayTutorialIfNecessary:(MBTutorialViewType)type;
+- (BOOL)displayTutorialIfNecessary:(MBTutorialViewType)type withOffset:(NSInteger)y;
 - (void)hideTutorials;//ignored tutorials
 -(void)userClosedTutorial:(MBTutorial*)tutorial;
 -(void)markTutorialAsObsolete:(MBTutorialViewType)type;

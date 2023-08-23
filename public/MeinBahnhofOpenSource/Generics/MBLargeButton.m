@@ -20,10 +20,7 @@
         [self setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [self setBackgroundColor:[UIColor db_GrayButton]];
         [self.titleLabel setFont:[UIFont db_BoldEighteen]];
-        self.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.layer.shadowRadius = 1.5;
-        self.layer.shadowOpacity = 1.0;
+        [self configureDefaultShadow];
     }
     return self;
 }

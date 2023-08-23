@@ -158,6 +158,38 @@ static BOOL simulateSearchFailure = NO;
     data.country = [address db_stringForKey:@"country"];
 }
 
+-(void)searchStationByEva:(NSString *)evaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure{
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-key?keyType=EVA&key=%@&limit=10",[Constants kDBAPI], [Constants kRISStationsPath],evaNumber];
+    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
+    [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+        //
+    } success:^(NSURLSessionTask *operation, id responseObject) {
+        
+        if(simulateSearchFailure){
+            failure(nil);
+            return;
+        }
+
+        if([responseObject isKindOfClass:NSDictionary.class]){
+//            [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"success"]];
+            MBStationFromSearch* res = [self parseResponse:responseObject].firstObject;
+            if(res){
+                success(res);
+            } else {
+                failure(nil);
+            }
+        } else {
+//            [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"failure"]];
+            failure(nil);
+        }
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
+//        [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"failure"]];
+        NSLog(@"risstations search failed: %@",error.localizedDescription);
+        failure(error);
+    }];
+}
+
+
 -(void)searchStationByName:(NSString *)text success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success failureBlock:(void (^)(NSError *))failure{
     NSString* searchTerm = [text stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet letterCharacterSet]];
     NSInteger size = 100;
@@ -291,13 +323,13 @@ static BOOL simulateSearchFailure = NO;
             NSDictionary* dict = responseObject;
             NSArray* platforms = [dict db_arrayForKey:@"platforms"];
             if(platforms){
-                NSMutableArray* list = [NSMutableArray arrayWithCapacity:platforms.count];
+                NSMutableArray<MBPlatformAccessibility*>* list = [NSMutableArray arrayWithCapacity:platforms.count];
                 for(NSDictionary* platformsDict in platforms){
                     if(![platformsDict isKindOfClass:NSDictionary.class]){
                         continue;
                     }
                     MBPlatformAccessibility* pa = [MBPlatformAccessibility parseDict:platformsDict];
-                    if(pa){
+                    if(pa && ![self platformlist:list containsPlatformWithName:pa.name]){
                         [list addObject:pa];
                     }
                 }
@@ -311,7 +343,14 @@ static BOOL simulateSearchFailure = NO;
         failure(error);
     }];
 }
-
+-(BOOL)platformlist:(NSArray<MBPlatformAccessibility*>*)list containsPlatformWithName:(NSString*)name{
+    for(MBPlatformAccessibility* p in list){
+        if([p.name isEqualToString:name]){
+            return true;
+        }
+    }
+    return false;
+}
 
 -(void)requestEvaIdsForStation:(MBStationFromSearch*)station success:(void (^)(NSArray<NSString*>* evaIds))success failureBlock:(void (^)(NSError *))failure{
     

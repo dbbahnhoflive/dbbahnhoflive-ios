@@ -36,10 +36,7 @@
     [self.contentView addSubview:self.contentScrollView];
     self.contentView.backgroundColor = [UIColor whiteColor];
     self.headerView.backgroundColor = [UIColor db_HeaderColor];
-    self.headerView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.headerView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.headerView.layer.shadowRadius = 1.5;
-    self.headerView.layer.shadowOpacity = 1.0;
+    [self.headerView configureDefaultShadow];
 
     int y = 16;
     
@@ -136,10 +133,7 @@
     [button centerViewVerticalInSuperView];
     [button centerViewHorizontalInSuperView];
     button.layer.cornerRadius = button.frame.size.height / 2.0;
-    button.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    button.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    button.layer.shadowRadius = 1.5;
-    button.layer.shadowOpacity = 1.0;
+    [button configureDefaultShadow];
 }
 
 

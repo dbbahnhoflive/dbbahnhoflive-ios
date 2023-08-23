@@ -138,7 +138,6 @@
                 timeVC.hafasTimetable.includedSTrains = YES;
                 timeVC.hafasTimetable.needsInitialRequest = YES;
                 timeVC.oepnvOnly = YES;
-                timeVC.trackingTitle = TRACK_KEY_TIMETABLE;
                 timeVC.hafasStation = station;
                 [vcWeak.navigationController pushViewController:timeVC animated:YES];
             };

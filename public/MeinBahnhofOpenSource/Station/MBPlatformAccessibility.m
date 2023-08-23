@@ -24,17 +24,27 @@
     for(NSNumber* featureType in [MBPlatformAccessibilityFeature featureOrder]){
         MBPlatformAccessibilityFeature* feature = [MBPlatformAccessibilityFeature featureForType:featureType.integerValue];
         feature.accType = [self parseAccessibility:[accessibility db_stringForKey:feature.serverKey]];
+        if((feature.feature == MBPlatformAccessibilityFeatureType_boardingAid ||
+           feature.feature == MBPlatformAccessibilityFeatureType_automaticDoor)
+           && (feature.accType == MBPlatformAccessibilityType_UNKNOWN ||
+               feature.accType == MBPlatformAccessibilityType_NOT_AVAILABLE ||
+               feature.accType == MBPlatformAccessibilityType_NOT_APPLICABLE)
+        ){
+            //skip boardingAid and automaticDoor when not available, BAHNHOFLIVE-2400
+            continue;
+        }
         [features addObject:feature];
     }
     return res;
 }
 
 
--(NSArray<NSString*>*)availableTypesDisplayStrings{
-    NSMutableArray* res = [NSMutableArray arrayWithCapacity:12];
+
+-(NSArray<MBPlatformAccessibilityFeature *> *)availableFeatures{
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:self.features.count];
     for(MBPlatformAccessibilityFeature* feature in self.features){
-        if(feature.accType == MBPlatformAccessibilityType_AVAILABLE){
-            [res addObject:feature.displayText];
+        if(feature.accType != MBPlatformAccessibilityType_NOT_APPLICABLE){
+            [res addObject:feature];
         }
     }
     return res;

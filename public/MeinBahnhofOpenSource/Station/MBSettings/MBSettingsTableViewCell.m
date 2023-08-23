@@ -26,18 +26,12 @@
     if(self){
         self.backgroundBottomWhite = [[UIView alloc] init];
         self.backgroundBottomWhite.backgroundColor = [UIColor whiteColor];
-        self.backgroundBottomWhite.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        self.backgroundBottomWhite.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.backgroundBottomWhite.layer.shadowRadius = 1.5;
-        self.backgroundBottomWhite.layer.shadowOpacity = 1.0;
+        [self.backgroundBottomWhite configureDefaultShadow];
         [self.contentView addSubview:self.backgroundBottomWhite];
         
         self.backgroundTopWhite = [[UIView alloc] init];
         self.backgroundTopWhite.backgroundColor = [UIColor whiteColor];
-        self.backgroundTopWhite.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-        self.backgroundTopWhite.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.backgroundTopWhite.layer.shadowRadius = 1.5;
-        self.backgroundTopWhite.layer.shadowOpacity = 1.0;
+        [self.backgroundTopWhite configureDefaultShadow];
         [self.contentView addSubview:self.backgroundTopWhite];
         
         self.mainIcon = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 40, 40)];
@@ -55,11 +49,12 @@
         self.subTitleLabel.textColor = [UIColor db_333333];
         [self.contentView addSubview:self.subTitleLabel];
         
-        self.aSwitch = [[UISwitch alloc] init];
+        self.aSwitch = [[DBSwitch alloc] init];
+        self.aSwitch.isAccessibilityElement = false;
         [self.contentView addSubview:self.aSwitch];
         
         self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
-        self.accessibilityHint = @"Für weitere Einstellungen doppeltippen.";
+        self.accessibilityHint = @"Zum Umschalten doppeltippen.";
     }
     return self;
 }
@@ -73,7 +68,7 @@
     [self.mainIcon setGravityTop:(int)((80-self.mainIcon.sizeHeight)/2)];
     
     self.mainTitleLabel.frame = CGRectMake(116, 0, self.sizeWidth-116-16, 80);
-    self.subTitleLabel.frame = CGRectMake(16, 80, self.sizeWidth-16-90, 72);
+    self.subTitleLabel.frame = CGRectMake(40, 80, self.sizeWidth-40-90, 72);
     
     [self.aSwitch setGravityRight:16];
     [self.aSwitch setGravityBottom:24];

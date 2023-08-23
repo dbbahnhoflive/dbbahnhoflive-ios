@@ -200,7 +200,7 @@ static NSNumberFormatter * numberFormatter = nil;
     if(!CLLocationCoordinate2DIsValid(location)){
         return nil;
     }
-    MBMarker *marker = [MBMarker markerWithPosition:location andType:PARKING];
+    MBMarker *marker = [MBMarker markerWithPosition:location andType:MBMarkerType_PARKING];
     if(UIAccessibilityIsVoiceOverRunning()){
         marker.title = [@"Parkplatz: " stringByAppendingString:self.name];
     }

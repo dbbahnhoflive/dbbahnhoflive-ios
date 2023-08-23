@@ -26,4 +26,7 @@
 
 @property (nonatomic, strong) NSDictionary* queryValues;
 
+
++(void) showWagenstandForUserInfo:(NSDictionary *)userInfo fromViewController:(MBUIViewController*)vc;
+
 @end

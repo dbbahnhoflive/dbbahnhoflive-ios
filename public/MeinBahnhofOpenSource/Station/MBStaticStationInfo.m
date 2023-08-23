@@ -7,14 +7,13 @@
 #import "MBStaticStationInfo.h"
 #import "MBService.h"
 #import "RIMapPoi.h"
-#import "MBEinkaufsbahnhofCategory.h"
-#import "MBEinkaufsbahnhofStore.h"
 #import "MBStation.h"
 #import "MBShopDetailCellView.h"
 #import "MBTravelcenter.h"
 #import "MBOSMOpeningHoursParser.h"
 #import "RIMapSEV.h"
 #import "MBLocker.h"
+#import "MBAccompanimentTeaserView.h"
 
 @implementation MBStaticStationInfo
 
@@ -80,7 +79,7 @@
             NSString* headerText = station.sevPois.count > 1 ? @"An diesem Bahnhof finden Sie folgende Ersatzhaltestellen" : @"An diesem Bahnhof finden Sie folgende Ersatzhaltestelle";
             NSMutableString* text = [NSMutableString string];
             if(station.hasStaticAdHocBox){
-                [text appendString:@"<p>Aufgrund von Bauarbeiten kommt es zwischen Würzburg und Nürnberg vom 26. Mai bis zum 11. September 2023 zu Einschränkungen im Zugverkehr.</p><p>Ein Ersatzverkehr mit Bussen ist eingerichtet.</p>"];
+                [text appendString:@"<p>Aufgrund von Bauarbeiten kommt es zwischen Würzburg und Nürnberg vom 26. Mai bis zum 11. September 2023 zu Einschränkungen im Zugverkehr.</p><p>Ein Ersatzverkehr mit Bussen ist teilweise eingerichtet.</p>"];
             }
             if(!skipTitle){
                 [text appendFormat:@"<p>%@:</p>",headerText];
@@ -107,8 +106,16 @@
                     [text appendFormat:@"<p><b>%@</b></p><p>Lagebeschreibung:<br>%@</p>", titles, list.firstObject.walkDescription];
                 }
             }
+            if(station.hasARTeaser){
+                [text appendString:kPlaceholderARService];
+            }
+            if(station.hasAccompanimentService){
+                // we need an image here... either we use some special tags like <imagewithtext img=\"wegbegleitung_icon\"> or the whole part must be layouted separatly in MBService (see the part after checking for kServiceType_SEV)
+                
+                [text appendFormat:@"<p><b>DB Wegbegleitung – Unterstützung per Videoanruf für blinde und sehbeeinträchtigte Reisende</b><br><br>Während des Ersatzverkehrs an den Bahnhöfen zwischen Würzburg und Nürnberg begleitet unser geschultes Personal Sie sicher vom Gleis zur Ersatzhaltestelle und zurück.<br>Sie können uns unter folgendem Link einfach per Videoanruf kontaktieren und Unterstützung erhalten. <dbactionbutton href=\"%@\">DB Wegbegleitung öffnen</dbactionbutton><br> </p>",WEGBEGLEITUNG_LINK];
+            }
             if(station.hasStaticAdHocBox){
-                [text appendString:@"<p>Die Sanierung erfolgt in zwei Abschnitten. Zunächst wird die Strecke zwischen Rottendorf und Neustadt (Aisch) Bahnhof vom 26. Mai bis 06. August 2023 für den Zugverkehr komplett gesperrt. Anschließend erfolgt eine Sperrung der Strecke zwischen Neustadt (Aisch) Bahnhof und Fürth Hauptbahnhof vom 06. August bis 11. September 2023. Durch die Sperrung in dem zweiten genannten Zeitraum erfolgt auf der Strecke Markt Erlbach – Siegelsdorf – Fürth Hauptbahnhof zudem ebenfalls kein Zugverkehr.</p><p>Weiterführende Informationen finden Sie unter bahnhof.de.</p>"];
+                [text appendString:@"<p>Die Sanierung erfolgt in zwei Abschnitten. Zunächst wird die Strecke zwischen Rottendorf und Neustadt (Aisch) Bahnhof vom 26. Mai bis 05. August 2023 für den Zugverkehr komplett gesperrt. Anschließend erfolgt eine Sperrung der Strecke zwischen Neustadt (Aisch) Bahnhof und Fürth (Bay) Hauptbahnhof vom 06. August bis 11. September 2023. Durch die Sperrung in dem zweiten genannten Zeitraum erfolgt auf der Strecke Markt Erlbach – Siegelsdorf – Fürth (Bay) Hauptbahnhof zudem ebenfalls kein Zugverkehr.</p><p>Darüber hinaus entfallen über beide Bauphasen die meisten Züge der Linie RB80 zwischen Würzburg Hauptbahnhof und Marktbreit.</p><p>Weiterhin kommt es in den späten Abend- und frühen Morgenstunden zwischen Nürnberg Hauptbahnhof und Würzburg Hauptbahnhof über den gesamten Zeitraum hinweg zu Zugausfällen.</p><p>Weiterführende Informationen finden Sie unter bahnhof.de.</p>"];
             }
             service.title = @"Ersatzverkehr";
             service.descriptionText = text;

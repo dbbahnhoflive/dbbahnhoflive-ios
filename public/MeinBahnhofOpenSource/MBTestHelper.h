@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MBTestHelper : NSObject
 
 +(BOOL)isTestRun;
++(BOOL)isTestPush;
+
 +(NSString* _Nullable)mockDataForKey:(NSString*)key;
 
 @end

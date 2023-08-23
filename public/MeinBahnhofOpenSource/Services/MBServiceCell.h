@@ -8,21 +8,11 @@
 #import "MBLabel.h"
 #import "MBDetailViewDelegate.h"
 #import "MBStaticServiceView.h"
-#import "MBShopDetailCellView.h"
 #import "MBExpandableTableViewCell.h"
 
 @interface MBServiceCell : MBExpandableTableViewCell 
 
-@property (nonatomic, strong) id item;
-@property (nonatomic, strong) id itemCategory;
-
-@property (nonatomic, weak) id<MBDetailViewDelegate> delegate;
+@property(nonatomic,strong) MBService* serviceItem;
 @property (nonatomic, strong) MBStaticServiceView *staticServiceView;
-@property (nonatomic, strong) MBShopDetailCellView *shopDetailView;
-// only visible in expanded view, and when the shop contains contact information
-@property (nonatomic, strong) UIView *contactAddonView;
-
-
--(void)setItem:(id)item andCategory:(id)category;
 
 @end

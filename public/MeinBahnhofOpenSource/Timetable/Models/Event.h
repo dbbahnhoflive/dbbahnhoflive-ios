@@ -7,13 +7,9 @@
 #import <Foundation/Foundation.h>
 #import "Message.h"
 
-enum EventType {
-    ARRIVAL,
-    DEPARTURE
-};
+#define PLATFORM_STRING_MISSING @"k.A."
 
 @class Stop;
-
 
 /*!
  *  @brief An event (arrival or departure) that is part of a stop.
@@ -56,10 +52,6 @@ enum EventType {
  *  @brief  List of changed stations according to the Stop.
  */
 @property (nonatomic, strong) NSArray *changedStations;
-/*!
- *  @brief  final or first station of the Stop
- */
-@property (nonatomic, strong) NSString *station;
 
 
 @property (nonatomic, strong) NSString* plannedDistantEndpoint;
@@ -131,6 +123,8 @@ enum EventType {
 -(void) updateComposedIrisWithStop:(Stop*)stop;
 
 -(BOOL)sameDayEvent:(Event*)event;
+
+-(NSString*)voiceOverString;
 
 -(NSArray<NSString*>*)stationListWithCurrentStation:(NSString*)currentStation;
 @end

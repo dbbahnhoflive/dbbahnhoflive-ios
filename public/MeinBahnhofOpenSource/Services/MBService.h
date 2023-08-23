@@ -13,15 +13,16 @@
 #define kPhoneKey @"phone"
 #define kImageKey @"image"
 
+#define kPlaceholderARService @"[ARTEASER]"
+
 #define kSpecialAction @"specialAction"
 #define kSpecialActionPlatformAccessibiltyUI @"kSpecialActionPlatformAccessibiltyUI"
+#define kSpecialActionAR_Teaser @"kSpecialActionAR_Teaser"
 
 #define kActionButtonKey @"actionButton"
 #define kActionButtonAction @"actionButtonAction"
 #define kActionChatbot @"chatbot"
 #define kActionMobilitaetsService @"mobilitaetsservice"
-#define kActionPickpackWebsite @"pickpackWebsite"
-#define kActionPickpackApp @"pickpackApp"
 #define kActionFeedbackMail @"feedbackmail"
 #define kActionWhatsAppFeedback @"whatsappfeedback"
 #define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
@@ -48,7 +49,6 @@
 #define kServiceType_Barrierefreiheit @"barrierefreiheit"
 #define kServiceType_Parking @"parkplaetze"
 
-#define kServiceType_PickPack @"pickpack"
 
 @class MBStation;
 

@@ -19,6 +19,8 @@
                                     success:(void (^)(MBStationDetails *response))success
                                failureBlock:(void (^)(NSError *error))failure;
 
+-(void)searchStationByEva:(NSString *)evaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure;
+
 - (void)searchStationByName:(NSString*)text
         success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success
    failureBlock:(void (^)(NSError *error))failure;

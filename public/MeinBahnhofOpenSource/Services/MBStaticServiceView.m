@@ -18,6 +18,7 @@
 #import "MBLargeButton.h"
 #import "MBContentSearchResult.h"
 #import "MBRootContainerViewController.h"
+#import "MBARAppTeaserView.h"
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
 @property (nonatomic, weak) UIViewController* viewController;
@@ -211,6 +212,24 @@
                         [baseView addSubview:av];
                         contentSize.height += av.frame.size.height;
                         offset.y += av.frame.size.height;
+                    } else if([specialAction isEqualToString:kSpecialActionAR_Teaser]){
+                        offset.y += 10;
+                        contentSize.height += 10;
+                        UIView* container = [UIView new];
+                        container.backgroundColor = UIColor.whiteColor;
+                        container.layer.shadowOffset = CGSizeMake(0,0);
+                        container.layer.shadowColor = [[UIColor db_dadada] CGColor];
+                        container.layer.shadowRadius = 3;
+                        container.layer.shadowOpacity = 1.0;
+                        MBARAppTeaserView* av = [MBARAppTeaserView new];
+                        [container addSubview:av];
+                        container.frame = CGRectMake(16, offset.y, contentSize.width-2*16, 180);
+                        av.frame = CGRectMake(0, 0, container.sizeWidth, container.sizeHeight);
+                        [baseView addSubview:container];
+                        contentSize.height += container.frame.size.height + 20;
+                        offset.y += container.frame.size.height + 20;
+                    } else {
+                        NSLog(@"ERROR: unknown special action: %@",specialAction);
                     }
                 } else if(imageName){
                     UIImageView* imgV = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:imageName]];
@@ -277,7 +296,7 @@
         contentSize.height += entryHeight;
 
         MBTextView* timeintervalLabel = [MBTextView new];
-        timeintervalLabel.font = [UIFont db_ItalicWithSize:14];
+        timeintervalLabel.font = [UIFont db_ItalicFourteen];
         timeintervalLabel.textColor = UIColor.db_333333;
         timeintervalLabel.text = self.service.openingTimesOSM.weekstringForDisplay;
         [timeintervalLabel sizeToFit];
@@ -447,7 +466,7 @@
         [self.delegate didTapOnEmailLink:url.absoluteString];
     } else if([url.absoluteString isEqualToString:kActionMobilitaetsService]){
         MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
-        MBContentSearchResult* search = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Info & Services Mobilitätsservice"];
+        MBContentSearchResult* search = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILITY_SERVICE];
         [root handleSearchResult:search];
     } else {
         [self.delegate didOpenUrl:url];
@@ -464,12 +483,6 @@
     if([action isEqualToString:kActionChatbot]){
         [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"chatbot"]];
         [MBUrlOpening openURL:[NSURL URLWithString:@"https://bahnhof-bot.deutschebahn.com/"]];
-    } else if([action isEqualToString:kActionPickpackWebsite]){
-        [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"pickpack",@"website"]];
-        [MBUrlOpening openURL:[NSURL URLWithString:@"https://www.pickpack.de"]];
-    } else if([action isEqualToString:kActionPickpackApp]){
-        [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"tap",@"pickpack",@"app"]];
-        [MBUrlOpening openURL:[NSURL URLWithString:@"https://itunes.apple.com/de/app/pickpack-unterwegs-bestellen/id1437396914?ls=1&mt=8"]];
     } else if([action isEqualToString:kActionFeedbackMail]){
         [self openFeedbackMail];
     } else if([action isEqualToString:kActionFeedbackChatbotMail]){

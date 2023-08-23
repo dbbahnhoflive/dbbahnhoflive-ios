@@ -13,6 +13,8 @@
 
 #define SETTINGS_LAST_SEARCHES @"last_search_requests_v2"
 
+@class MBBackNavigationState;
+@class MBStationFromSearch;
 @class MBRootContainerViewController;
 
 @interface MBStationSearchViewController : MBUIViewController 
@@ -20,13 +22,19 @@
 - (void) openStationAndShowFacility:(nonnull NSDictionary *)station;
 - (void) openStation:(nonnull NSDictionary*)station andShowWagenstand:(nonnull NSDictionary*)wagenstandUserInfo;
 - (void) openStation:(nonnull NSDictionary*)station;
--(void)freeStation;
+-(void)openStationFromInternalLink:(nonnull MBStationFromSearch *)station withBackState:(nonnull MBBackNavigationState*)state;
+
+-(void)freeStationAndClearBackHistory:(BOOL)clearBackHistory;
 
 -(MBStation* _Nullable)selectedStation;
 -(MBRootContainerViewController* _Nullable)stationMapController;
+-(BOOL)allowBackFromStation;
+-(void)goBackToPreviousStation;
+
 
 +(void)displayDataProtectionOn:(nonnull UIViewController*)vc;
 
+@property(nonatomic,strong) MBBackNavigationState* _Nullable trainJourneyToRestore;
 @property(nonatomic) BOOL onBoardingVisible;
 @property(nonatomic) BOOL privacySetupVisible;
 @end

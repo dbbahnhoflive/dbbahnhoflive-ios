@@ -12,12 +12,7 @@
 #import "MBTrackingManager.h"
 
 @interface MBCouponTableViewCell()
-@property (nonatomic, strong) UIView *topView;
-@property (nonatomic, strong) MBLabel* cellTitle;
-@property (nonatomic, strong) MBLabel* cellSubTitle;
-@property (nonatomic, strong) UIImageView *cellIcon;
 
-@property (nonatomic, strong) UIView *bottomView;
 @property (nonatomic, strong) MBLabel* contentDetailsLabel;
 @property (nonatomic, strong) UIImageView *contentImage;
 @property (nonatomic, strong) UIButton *contentLinkButton;
@@ -27,49 +22,11 @@
 @implementation MBCouponTableViewCell
 
 
-- (instancetype) initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
-    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        [self configureCell];
-    }
-    return self;
-}
-
 - (void) configureCell
 {
-    self.backgroundColor = [UIColor clearColor];
-    self.topView = [UIView new];
-    self.topView.backgroundColor = [UIColor whiteColor];
-    self.topView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.topView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.topView.layer.shadowRadius = 1.5;
-    self.topView.layer.shadowOpacity = 1.0;
+    [super configureCell];
 
-    [self.contentView addSubview:self.topView];
-    
-    self.bottomView = [UIView new];
-    self.bottomView.backgroundColor = [UIColor whiteColor];
-    self.bottomView.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    self.bottomView.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    self.bottomView.layer.shadowRadius = 1.5;
-    self.bottomView.layer.shadowOpacity = 1.0;
 
-    [self.contentView addSubview:self.bottomView];
-
-    self.cellIcon = [[UIImageView alloc] init];
-    [self.topView addSubview:self.cellIcon];
-    
-    self.cellTitle = [[MBLabel alloc] init];
-    self.cellTitle.textAlignment = NSTextAlignmentLeft;
-    self.cellTitle.font = [UIFont db_BoldSixteen];
-    self.cellTitle.textColor = [UIColor db_333333];
-    [self.topView addSubview:self.cellTitle];
-    
-    self.cellSubTitle = [[MBLabel alloc] init];
-    self.cellSubTitle.textAlignment = NSTextAlignmentLeft;
-    self.cellSubTitle.font = [UIFont db_RegularFourteen];;
-    self.cellSubTitle.textColor = [UIColor db_333333];
-    [self.topView addSubview:self.cellSubTitle];
     
     self.contentImage = [[UIImageView alloc] init];
     self.contentImage.contentMode = UIViewContentModeScaleAspectFit;
@@ -92,10 +49,7 @@
     [button.titleLabel setFont:[UIFont db_BoldEighteen]];
     button.height = 60;
     button.layer.cornerRadius = button.frame.size.height / 2.0;
-    button.layer.shadowOffset = CGSizeMake(1.0, 2.0);
-    button.layer.shadowColor = [[UIColor db_dadada] CGColor];
-    button.layer.shadowRadius = 1.5;
-    button.layer.shadowOpacity = 1.0;
+    [button configureDefaultShadow];
 }
 
 -(void)didTapOnButton:(id)sender{
@@ -103,17 +57,10 @@
     [MBUrlOpening openURL:[NSURL URLWithString:self.newsItem.link]];
 }
 
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
-
-    // Configure the view for the selected state
-}
 
 -(void)layoutSubviews{
     [super layoutSubviews];
     
-    self.topView.frame = CGRectMake(8, 8, self.frame.size.width-2*8, 80);
-
     [self.cellIcon setGravityLeft:35];
     [self.cellIcon centerViewVerticalInSuperView];
     self.cellTitle.frame = CGRectMake(0, 18, 0, 20);
@@ -142,7 +89,7 @@
         bottomHeight = CGRectGetMaxY(self.contentLinkButton.frame)+20;
     }
 
-    self.bottomView.frame = CGRectMake(8,  CGRectGetMaxY(self.topView.frame)+4, self.frame.size.width-2*8, bottomHeight);
+    self.bottomView.frame = CGRectMake(0,  CGRectGetMaxY(self.topView.frame)+4, self.frame.size.width-2*8, bottomHeight);
 
 }
 
@@ -150,10 +97,6 @@
     return self.bottomView.frame.size.height+4;
 }
 
--(void)updateStateAfterExpandChange{
-    [super updateStateAfterExpandChange];
-    self.bottomView.hidden = !self.expanded;
-}
 
 -(void)setNewsItem:(MBNews *)newsItem{
     _newsItem = newsItem;

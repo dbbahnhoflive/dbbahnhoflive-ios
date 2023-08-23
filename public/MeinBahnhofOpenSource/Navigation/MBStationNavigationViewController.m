@@ -6,12 +6,18 @@
 
 #import "MBStationNavigationViewController.h"
 #import "MBUIHelper.h"
+#import "FacilityStatusManager.h"
+#import "MBStationViewController.h"
+@import Firebase;//only used for debugging here
 
 @interface MBStationNavigationViewController ()
 @property (nonatomic, assign) BOOL behindViewSmall;
 @property (nonatomic, assign) BOOL behindViewHuge;
 
 @property (nonatomic, strong) UIView *redBar;
+
+@property(nonatomic,strong) UIButton* backToPreviousStationButton;
+@property(nonatomic,weak) MBStationViewController* stationController;
 
 @end
 
@@ -87,7 +93,16 @@
     [self.view insertSubview:self.contentSearchButton.contentSearchButtonShadow belowSubview:self.behindView];
     [self.view addSubview:self.contentSearchButton];
 
-    
+    self.backToPreviousStationButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    [self.backToPreviousStationButton setBackgroundImage:[UIImage imageNamed:@"ChevronWhiteLeft"] forState:UIControlStateNormal];
+    [self.backToPreviousStationButton addTarget:self action:@selector(backToPreviousStationPressed) forControlEvents:UIControlEventTouchUpInside];
+    self.backToPreviousStationButton.accessibilityLabel = @"Zurück zur vorherigen Station";
+    [self.view addSubview:self.backToPreviousStationButton];
+    self.backToPreviousStationButton.hidden = true;
+}
+
+-(void)backToPreviousStationPressed{
+    [self.stationController popToPreviousStation];
 }
 
 -(void)setShowRedBar:(BOOL)showRedBar{
@@ -95,9 +110,25 @@
     [self.view setNeedsLayout];
 }
 
+- (void)showBackButtonForStationViewController:(MBStationViewController *)vc{
+    self.backToPreviousStationButton.hidden = false;
+    self.stationController = vc;
+}
+
+-(void)setNavigationBarHidden:(BOOL)navigationBarHidden{
+    [super setNavigationBarHidden:navigationBarHidden];
+    //ensure that the back button is hidden when the "normal" navigation bar is visible
+    if(!navigationBarHidden){
+        _backToPreviousStationButton.alpha = 0;
+    }
+}
+
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     
+    [self.backToPreviousStationButton setGravityLeft:20];
+    [self.backToPreviousStationButton setGravityTop:20+self.view.safeAreaInsets.top];
+
     [self.contentSearchButton layoutForScreenWidth:self.view.sizeWidth];
     [self.contentSearchButton setGravityTop:self.behindView.sizeHeight- self.contentSearchButton.sizeHeight/2];
     self.contentSearchButton.contentSearchButtonShadow.frame = self.contentSearchButton.frame;
@@ -107,6 +138,7 @@
         //fade out button quicker
         self.contentSearchButton.alpha = (self.behindView.alpha*2)-1.;
     }
+    self.backToPreviousStationButton.alpha = self.contentSearchButton.alpha;
 
     self.redBar.hidden = !self.showRedBar;
     self.behindView.hidden = self.hideEverything;
@@ -173,5 +205,49 @@
 -(UIInterfaceOrientationMask)supportedInterfaceOrientations{
     return ISIPAD ? (UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskPortraitUpsideDown) : UIInterfaceOrientationMaskPortrait;
 }
+
+-(void)debugShake{
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Debug" message:@"Select an options" preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"FCM-Token" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        NSLog(@"Firebase Token: %@",FIRMessaging.messaging.FCMToken);
+        UIPasteboard.generalPasteboard.string = FIRMessaging.messaging.FCMToken;
+        UIAlertController* alert2 = [UIAlertController alertControllerWithTitle:@"FCM-Token" message:FIRMessaging.messaging.FCMToken preferredStyle:UIAlertControllerStyleAlert];
+        [alert2 addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
+        [self.visibleViewController presentViewController:alert2 animated:true completion:nil];
+
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Push: Test-Aufzüge abonnieren" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [FacilityStatusManager.client registerDebugPushes];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Push: Test-Abos beenden" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [FacilityStatusManager.client removeDebugPushes];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Push: validierung" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [FacilityStatusManager.client validateTopics];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Push: testaufzug abonnieren" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [FacilityStatusManager.client enablePushForFacility:@"10560984" completion:^(BOOL success, NSError * error) {
+            NSLog(@"result: %d, %@",success,error);
+        }];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Push: testaufzug entfernen" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [FacilityStatusManager.client disablePushForFacility:@"10560984" completion:^(BOOL success, NSError * error) {
+            NSLog(@"result: %d, %@",success,error);
+        }];
+    }]];
+    [self.visibleViewController presentViewController:alert animated:true completion:nil];
+}
+
+#ifdef DEBUG
+-(BOOL)canBecomeFirstResponder{
+    return true;
+}
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event{
+    if(motion == UIEventSubtypeMotionShake){
+        [self debugShake];
+    }
+}
+#endif  // DEBUG
 
 @end

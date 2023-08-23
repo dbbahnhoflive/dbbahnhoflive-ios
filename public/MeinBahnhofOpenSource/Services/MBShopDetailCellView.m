@@ -30,13 +30,7 @@
     [self fillWithData];
     return self;
 }
-- (instancetype)initWithStore:(MBEinkaufsbahnhofStore *)store {
-    self = [super initWithFrame:CGRectZero];
-    self.store = store;
-    [self setupViews];
-    [self fillWithData];
-    return self;
-}
+
 - (void)setupViews {
     self.addressLabel = [MBLabel new];
     self.addressLabel.font = [UIFont db_RegularFourteen];
@@ -82,11 +76,7 @@
 }
 
 -(BOOL)hasContactLinks{
-    if(self.store){
-        return (self.store.web.length > 0)
-        || (self.store.phone.length > 0)
-        || (self.store.email.length > 0);
-    } else if(self.poi){
+    if(self.poi){
         return
         self.poi.phone.length > 0
         || self.poi.email.length > 0
@@ -100,12 +90,6 @@
         ve.phone = self.poi.phone;
         ve.web = self.poi.website;
         ve.email = self.poi.email;
-        return ve;
-    } else if(self.store){
-        VenueExtraField* ve = [VenueExtraField new];
-        ve.phone = self.store.phone;
-        ve.web = self.store.web;
-        ve.email = self.store.email;
         return ve;
     }
     return nil;
@@ -127,58 +111,10 @@
     timeText = [openingTimeComponents componentsJoinedByString:@"\n"];
     return timeText;
 }
-+(NSString*)displayStringOpenTimesForStore:(MBEinkaufsbahnhofStore*)store{
-    return [MBShopDetailCellView displayStringForOpeningTimes:store.openingTimes voiceOver:NO];
-}
 
 - (void)fillWithData {
     // Location
-    if (self.store) {
-        self.addressLabel.text = self.store.location;
-        // Opening hours
-        self.openingHeaderLabel.text = @"Öffnungszeiten";
-
-        NSString* timeText = [MBShopDetailCellView displayStringForOpeningTimes:self.store.openingTimes voiceOver:NO];
-        NSString* timeTextVoiceOver = [MBShopDetailCellView displayStringForOpeningTimes:self.store.openingTimes voiceOver:YES];
-        if (self.store.openingTimes.count == 0 || nil == timeText || timeText.length == 0) {
-            self.openingHoursLabel.text = @"keine Angaben";
-        } else {
-            self.openingHoursLabel.text = timeText;
-            self.openingHoursLabel.accessibilityLabel = timeTextVoiceOver;
-        }
-
-        // payment stuff
-        if (self.store.paymentTypes.count > 0) {
-            self.paymentHeaderLabel.text = @"Zahlungsmöglichkeiten";
-            
-            // set payment methods
-            NSArray *paymentMethods = self.store.paymentTypes;
-            NSLog(@"paymentMethods: %@",paymentMethods);
-            NSMutableString* paymentStrings = [[NSMutableString alloc] init];
-            for(NSString* str in paymentMethods){
-                if(![str isKindOfClass:NSString.class]){
-                    continue;
-                }
-                [paymentStrings appendString:str];
-                if(str != paymentMethods.lastObject){
-                    [paymentStrings appendString:@", "];
-                }
-            }
-            self.paymentTextLabel.text = paymentStrings;
-            if(paymentStrings.length > 0){
-                self.paymentTextLabel.hidden = NO;
-                self.paymentHeaderLabel.hidden =NO;
-            } else {
-                self.paymentTextLabel.hidden = YES;
-                self.paymentHeaderLabel.hidden = YES;
-            }
-        } else {
-            self.paymentTextLabel.hidden = YES;
-            self.paymentHeaderLabel.hidden = YES;
-        }
-        
-        
-    } else if(self.poi){
+    if(self.poi){
         self.addressLabel.text = [RIMapPoi levelCodeToDisplayString:self.poi.levelcode ];
         // Opening hours
         self.openingHeaderLabel.text = @"Öffnungszeiten";

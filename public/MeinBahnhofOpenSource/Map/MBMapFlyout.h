@@ -17,10 +17,7 @@
 @protocol MBMapFlyoutDelegate <NSObject>
 
 @optional
-//- (void) startNavigationTo:(id)poi;
 - (void) showRoutingForParking:(MBParkingInfo*)parking;
-- (void) showFacilityFavorites;
-//- (void) showViewController:(UIViewController*)vc;
 
 - (void)showTimetableForStationId:(NSString *)stationId stationName:(NSString *)stationName evas:(NSArray*)evas location:(NSArray*)location opnvStation:(MBOPNVStation*)opnvStation isOPNV:(BOOL)isOPNV;
 - (void) mapFlyout:(MBMapFlyout*)flyout wantsToExtendView:(UIView*)view;

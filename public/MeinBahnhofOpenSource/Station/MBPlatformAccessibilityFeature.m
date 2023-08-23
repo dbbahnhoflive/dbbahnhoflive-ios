@@ -66,27 +66,27 @@
         case MBPlatformAccessibilityFeatureType_boardingAid:
             return @"Einstieghilfe";
         case MBPlatformAccessibilityFeatureType_platformSign:
-            return @"kontrastreiche Wegeleitung";
+            return @"Kontrastreiche Wegeleitung";
         case MBPlatformAccessibilityFeatureType_stairsMarking:
             return @"Treppenstufenmarkierung";
         case MBPlatformAccessibilityFeatureType_tactileHandrailLabel:
             return @"Handlaufschilder";
         case MBPlatformAccessibilityFeatureType_tactileGuidingStrips:
-            return @"taktiles Leitsystem auf dem Bahnsteig";
+            return @"Taktiles Leitsystem auf dem Bahnsteig";
         case MBPlatformAccessibilityFeatureType_tactilePlatformAccess:
-            return @"taktiler Weg zum Bahnsteig";
+            return @"Taktiler Weg zum Bahnsteig";
         case MBPlatformAccessibilityFeatureType_audibleSignalsAvailable:
             return @"Lautsprecheranlage";
         case MBPlatformAccessibilityFeatureType_passengerInformationDisplay:
             return @"Zuganzeiger";
         case MBPlatformAccessibilityFeatureType_standardPlatformHeight:
             if(UIAccessibilityIsVoiceOverRunning()){
-                return @"moderne Bahnsteighöhe. 55 cm oder höher";
+                return @"Moderne Bahnsteighöhe. 55 cm oder höher";
             } else {
                 return @"Bahnsteighöhe >= 55 cm";
             }
         case MBPlatformAccessibilityFeatureType_stepFreeAccess:
-            return @"stufenfreier Zugang";
+            return @"Stufenfreier Zugang";
     }
     return @"";
 }

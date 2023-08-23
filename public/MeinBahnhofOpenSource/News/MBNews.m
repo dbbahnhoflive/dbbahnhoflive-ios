@@ -240,6 +240,7 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
     n.subtitle = @"subtitle!";
     n.content = @"Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet.";
     n.updatedAtTimestamp = [date dateByAddingTimeInterval:-10];
+    n.imageBase64 = [UIImagePNGRepresentation([UIImage imageNamed:@"FloatingMap"]) base64EncodedStringWithOptions:0];
     n.groupId = MBNewsTypeOffer;
     n.link = @"https://www.bahn.de";
     [res addObject:n];

@@ -229,7 +229,7 @@
         [self.tabBarView selectTabIndex:index];
         if (index == 0) {
             if (nil != self.delegate) {
-                [self.delegate goBackToSearch];
+                [self.delegate goBackToSearchAnimated:true];
             }
         } else {
             if (self.viewControllers.count > index) {

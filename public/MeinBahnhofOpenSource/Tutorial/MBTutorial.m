@@ -9,7 +9,12 @@
 @implementation MBTutorial
 
 +(MBTutorial *)tutorialWithIdentifier:(MBTutorialViewType)identifier title:(NSString *)title text:(NSString *)text countdown:(NSInteger)countdown{
+    return [MBTutorial tutorialWithIdentifier:identifier title:title text:text countdown:countdown ruleBlock:nil];
+}
+
++(MBTutorial *)tutorialWithIdentifier:(MBTutorialViewType)identifier title:(NSString *)title text:(NSString *)text countdown:(NSInteger)countdown ruleBlock:(TutorialRuleBlock)ruleBlock{
     MBTutorial* res = [[MBTutorial alloc] initWithIdentifier:identifier title:title text:text countdown:countdown];
+    res.ruleBlock = ruleBlock;
     return res;
 }
 

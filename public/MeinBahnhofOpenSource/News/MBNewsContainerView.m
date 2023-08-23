@@ -38,10 +38,7 @@
         _news = news;
         self.clipsToBounds = NO;
         self.backgroundColor = [UIColor whiteColor];
-        self.layer.shadowColor = [[UIColor db_dadada] CGColor];
-        self.layer.shadowOffset = CGSizeMake(3.0, 3.0);
-        self.layer.shadowRadius = 3.0;
-        self.layer.shadowOpacity = 1.0;
+        [self configureH1Shadow];
         
         self.headerLabelContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 44)];
         self.headerLabelContainer.clipsToBounds = YES;

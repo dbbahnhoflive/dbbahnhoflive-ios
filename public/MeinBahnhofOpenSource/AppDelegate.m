@@ -5,20 +5,21 @@
 
 
 #import "AppDelegate.h"
+#import <GoogleMaps/GoogleMaps.h>
+
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
 
 #import "FacilityStatusManager.h"
 
 #import "MBStationNavigationViewController.h"
-
+#import "MBRootContainerViewController.h"
 #import "MBStationSearchViewController.h"
 
 #import "TimetableManager.h"
 
 #import "MBGPSLocationManager.h"
 
-#import "SharedMobilityAPI.h"
 #import "MBMapInternals.h"
 
 #import "MBStationNavigationViewController.h"
@@ -31,10 +32,20 @@
 
 @import UserNotifications;
 @import Sentry;
+@import Firebase;
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 @property(nonatomic) BOOL hasHadBeenActive;
+
+@property(nonatomic) BOOL hasEnabledPushServices;
+
 @end
+
+//note that these settings are also defined in the Root.plist in Settings
+#define SETTING_ENABLED_TRACKING @"enabled_tracking"
+#define SETTING_DELETE_CACHE @"DeleteCache"
+
+#define SETTING_GOT_TRACKING_DECISION @"got_tracking_decisison"
 
 @implementation AppDelegate
 
@@ -52,14 +63,37 @@
     NSURLCache *cache = [[NSURLCache alloc] initWithMemoryCapacity:capacity diskCapacity:capacity diskPath:nil];
     [NSURLCache setSharedURLCache:cache];
     
-    
+    NSString *appVersionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    //NSString* previousStoredAppVersionString = [self previousAppVersion];
+    NSString* currentStoredAppVersionString = [NSUserDefaults.standardUserDefaults stringForKey:@"CurrentCFBundleShortVersionString"];
+
     NSString* currentBuildNumber = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
     NSString* lastBuildNumber = [NSUserDefaults.standardUserDefaults stringForKey:@"LastCFBundleVersion"];
     if(lastBuildNumber && ![lastBuildNumber isEqualToString:currentBuildNumber]){
         //build number changed, disable rimaps debug feature
         [NSUserDefaults.standardUserDefaults setBool:false forKey:@"RiMapUseProviderSetting"];
     }
+    
+    if(currentStoredAppVersionString == nil){
+        //user had a version installed which did not yet store the version number
+        // OR this is a new install
+        if(lastBuildNumber){
+            //this is an update, but we don't know the previous version, just set 0.0.0
+            [NSUserDefaults.standardUserDefaults setObject:@"0.0.0" forKey:@"PreviousCFBundleShortVersionString"];
+        } else {
+            //this is a new install, don't set the previous value! It will be set on the fist update
+        }
+    } else {
+        if(![currentStoredAppVersionString isEqualToString:appVersionString]){
+            //the app version has changed, store the old "current" as previous
+            [NSUserDefaults.standardUserDefaults setObject:currentStoredAppVersionString forKey:@"PreviousCFBundleShortVersionString"];
+        }
+    }
+    [NSUserDefaults.standardUserDefaults setObject:appVersionString forKey:@"CurrentCFBundleShortVersionString"];
+    
     [NSUserDefaults.standardUserDefaults setObject:currentBuildNumber forKey:@"LastCFBundleVersion"];
+    //NSLog(@"stored: CurrentCFBundleShortVersionString=%@",appVersionString);
+    //NSLog(@"stored: PreviousCFBundleShortVersionString=%@",self.previousAppVersion);
 
 #ifdef DEBUG
     NSLog(@"Sentry: no crash reporting on debug builds");
@@ -96,7 +130,12 @@
     [GMSServices setAbnormalTerminationReportingEnabled:NO];
     [GMSServices provideAPIKey:[MBMapInternals kGoogleMapsApiKey]];
 
-
+    if(Constants.usePushServices){
+        //firebase setup
+        [FIRApp configure];
+        NSLog(@"Firebase Token: %@",FIRMessaging.messaging.FCMToken);
+    }
+    
     CGRect mainScreenBounds = [[UIScreen mainScreen] bounds];
 
     self.window = [[UIWindow alloc] initWithFrame:mainScreenBounds];
@@ -110,20 +149,29 @@
     notificationCenter.delegate = self;
     
     [MBOSMOpeningHoursParser sharedInstance];
-   
+    
+    if(Constants.usePushServices){
+        [self registerRemoteNotif:application];
+    }
+    
     return YES;
 }
 
+-(NSString*)previousAppVersion{
+    return [NSUserDefaults.standardUserDefaults stringForKey:@"PreviousCFBundleShortVersionString"];
+}
+
+
 -(BOOL)trackingEnabled{
-    return [NSUserDefaults.standardUserDefaults boolForKey:@"enabled_tracking"];
+    return [NSUserDefaults.standardUserDefaults boolForKey:SETTING_ENABLED_TRACKING];
 }
 -(BOOL)needsInitialPrivacyScreen{
     //return true;
-    return ![NSUserDefaults.standardUserDefaults boolForKey:@"got_tracking_decisison"];
+    return ![NSUserDefaults.standardUserDefaults boolForKey:SETTING_GOT_TRACKING_DECISION];
 }
 -(void)userFeedbackOnPrivacyScreen:(BOOL)enabledTracking{
-    [NSUserDefaults.standardUserDefaults setBool:YES forKey:@"got_tracking_decisison"];
-    [NSUserDefaults.standardUserDefaults setBool:enabledTracking forKey:@"enabled_tracking"];
+    [NSUserDefaults.standardUserDefaults setBool:YES forKey:SETTING_GOT_TRACKING_DECISION];
+    [NSUserDefaults.standardUserDefaults setBool:enabledTracking forKey:SETTING_ENABLED_TRACKING];
     [MBTrackingManager setOptOut:!self.trackingEnabled];
 }
 
@@ -136,6 +184,52 @@
 +(AppDelegate *)appDelegate{
     return (AppDelegate*) [UIApplication sharedApplication].delegate;
 }
+
+-(void)registerRemoteNotif:(UIApplication*)application{
+    UNAuthorizationOptions authOptions = UNAuthorizationOptionAlert |
+        UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+    [UNUserNotificationCenter.currentNotificationCenter
+        requestAuthorizationWithOptions:authOptions
+        completionHandler:^(BOOL granted, NSError * _Nullable error) {
+          // ...
+        self.hasEnabledPushServices = granted;
+    }];
+    [application registerForRemoteNotifications];
+}
+
+-(void)checkRemoteNotificationAccess{
+    [UNUserNotificationCenter.currentNotificationCenter getNotificationSettingsWithCompletionHandler:^(UNNotificationSettings * _Nonnull settings) {
+        switch(settings.authorizationStatus){
+            case UNAuthorizationStatusAuthorized:
+                self.hasEnabledPushServices = true;
+                break;
+            default:
+                self.hasEnabledPushServices = false;
+                break;
+        }
+    }];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+    fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+  // If you are receiving a notification message while your app is in the background,
+  // this callback will not be fired till the user taps on the notification launching the application.
+
+  // With swizzling disabled you must let Messaging know about the message, for Analytics
+  // [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
+
+  // Print full message.
+  NSLog(@"didReceiveRemoteNotification: %@", userInfo);
+    [FacilityStatusManager.client handleRemoteNotification:userInfo];
+//    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Push" message:userInfo.description preferredStyle:UIAlertControllerStyleAlert];
+//    [alert addAction:[UIAlertAction actionWithTitle:@"close" style:UIAlertActionStyleCancel handler:nil]];
+//    [self.navigationController.topViewController presentViewController:alert animated:YES completion:nil];
+    
+    completionHandler(UIBackgroundFetchResultNewData);
+}
+
+
+
 
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)(void))completionHandler{
     NSLog(@"didreceive some notif, %@",response);
@@ -150,6 +244,7 @@
     completionHandler();
 }
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler{
+    NSLog(@"userNotificationCenter:willPresentNotification");
     [self handleLocalNotification:notification.request.content.userInfo];
     completionHandler(UNNotificationPresentationOptionNone);
 }
@@ -175,13 +270,16 @@
 
 - (void) applicationDidBecomeActive:(UIApplication *)application
 {
+    NSLog(@"applicationDidBecomeActive");
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     [[TimetableManager sharedManager] startTimetableScheduler];
     
-    if([NSUserDefaults.standardUserDefaults boolForKey:@"DeleteCache"]){
+    if([NSUserDefaults.standardUserDefaults boolForKey:SETTING_DELETE_CACHE]){
         [[MBCacheManager sharedManager] deleteCache];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:@"DeleteCache"];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:SETTING_DELETE_CACHE];
     }
+    
+    [self checkRemoteNotificationAccess];
     
     if(self.hasHadBeenActive){
         [MBTrackingManager setOptOut:!self.trackingEnabled];
@@ -194,7 +292,7 @@
 
 - (void) handleLocalNotification:(NSDictionary*)userInfo
 {
-    // NSLog(@"handleLocalNotification: %@",notification);
+    NSLog(@"handleLocalNotification: %@",userInfo);
     if([userInfo[@"type"] isEqualToString:@"wagenstand"]){
         if ([UIApplication sharedApplication].applicationState == UIApplicationStateActive) {
             //app running, display alert
@@ -211,13 +309,14 @@
             //should open station and display wagenstand for this train
             [self openWagenstandWithUserInfo:userInfo];
         }
-    } else if(userInfo[@"properties"]){
-        //handle code for facility manager (when merged from facility branch!)
+    } else if(userInfo[@"facilityEquipmentNumber"]){
+        //user received a notification for facility
         if ([UIApplication sharedApplication].applicationState == UIApplicationStateActive) {
-            // NSLog(@"Local Notification received by running app - ignore");
+            // NSLog(@"Push Notification received by running app, display alert");
+            [FacilityStatusManager.client handleRemoteNotification:userInfo];
         } else {
             //NSLog(@"App opened from Notification, now should go to station %@",notification.userInfo[@"properties"]);
-            [[FacilityStatusManager client] openFacilityStatusWithLocalNotification:userInfo];
+            [FacilityStatusManager.client openFacilityStatusWithLocalNotification:userInfo];
         }
     } else {
         NSLog(@"unknown type in userinfo %@",userInfo);
@@ -235,10 +334,10 @@
         //we already are in this station
         MBStationSearchViewController* vc = (MBStationSearchViewController*) self.viewController;
         // NSLog(@"we are in this station!");
-        [vc showWagenstandForUserInfo:userInfo];
+        [MBTrainPositionViewController showWagenstandForUserInfo:userInfo fromViewController:vc];
     } else {
         // NSLog(@"must open another station OR did display search controller!");
-        [self.navigationController popToRootViewControllerAnimated:NO];
+        [MBRootContainerViewController.currentlyVisibleInstance goBackToSearchAnimated:false];
         MBStationSearchViewController* vc = (MBStationSearchViewController*) self.viewController;
         [vc openStation:@{ @"title":stationTitle, @"id": [NSNumber numberWithLongLong:[stationNumber longLongValue]] } andShowWagenstand:userInfo];
     }
@@ -248,10 +347,6 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     // Saves changes in the application's managed object context before the application terminates.
-
-    // clean cached pdfs when app is terminated
-    [self clearCachedFiles];
-    
 
     [[MBGPSLocationManager sharedManager] stopAllUpdates];
 }
@@ -298,20 +393,6 @@
     return ISIPAD ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
-- (void) clearCachedFiles
-{
-    NSArray *myPathList = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString *mainPath  = myPathList[0];
-
-    NSFileManager *fileMgr = [NSFileManager defaultManager];
-    NSArray *fileArray = [fileMgr contentsOfDirectoryAtPath:mainPath error:nil];
-
-    [fileArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        if ([obj isKindOfClass:[NSString class]] && ([obj rangeOfString:@".pdf"].length != 0)) {
-            [fileMgr removeItemAtPath:[mainPath stringByAppendingPathComponent:obj] error:NULL];
-        }
-    }];
-}
 
 
 @end

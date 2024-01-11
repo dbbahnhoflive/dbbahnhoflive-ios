@@ -17,6 +17,7 @@
 
 @protocol MBTimeTableViewCellDelegate <NSObject>
 
+-(MBStation*)stationForEvents;
 - (void)cellWasSelectedViaVoiceOver:(MBTimeTableViewCell*)cell;
 - (void)cellWasDeselectedViaVoiceOver:(MBTimeTableViewCell*)cell;
 

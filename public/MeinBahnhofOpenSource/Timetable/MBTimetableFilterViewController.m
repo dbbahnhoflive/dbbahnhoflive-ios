@@ -34,14 +34,18 @@
 
 @implementation MBTimetableFilterViewController
 
+-(BOOL)usesContentScrollView{
+    return false;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
     if(self.platforms){
-        self.titleLabel.text = @"Gleis";
+        self.title = @"Gleis";
     } else {
-        self.titleLabel.text = @"Verkehrsmittel";
+        self.title = @"Verkehrsmittel";
     }
     
     self.pickerContainer = [[UIView alloc] init];

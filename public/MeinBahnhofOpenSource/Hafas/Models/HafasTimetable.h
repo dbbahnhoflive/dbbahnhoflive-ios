@@ -19,6 +19,7 @@
 @property (nonatomic, assign) NSInteger requestDuration;//in minutes
 @property (nonatomic) BOOL isBusy;
 @property (nonatomic) BOOL needsInitialRequest;
+@property (nonatomic) BOOL hasError;
 
 @property (nonatomic) BOOL includeLongDistanceTrains;
 

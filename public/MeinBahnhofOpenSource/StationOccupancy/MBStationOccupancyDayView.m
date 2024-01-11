@@ -40,7 +40,7 @@
         
         self.headerLabel = [UILabel new];
         self.headerLabel.font = [UIFont db_BoldSeventeen];
-        self.headerLabel.text = @"Besucheraufkommen";
+        self.headerLabel.text = @"Besuchendenaufkommen";
         self.headerLabel.textColor = UIColor.blackColor;
         [self.headerLabel sizeToFit];
         [self addSubview:self.headerLabel];
@@ -118,20 +118,20 @@
     NSString* text = @"";
     switch(occupancy.currentLevel){
         case 1:
-            text = @"Weniger Besucher als üblich";
+            text = @"Weniger Besuchende als üblich";
             break;
         case 2:
-            text = @"Übliches Besucheraufkommen";
+            text = @"Übliches Besuchendenaufkommen";
             break;
         case 3:
-            text = @"Mehr Besucher als üblich";
+            text = @"Mehr Besuchende als üblich";
             break;
         case 0:
         default:
-            text = @"Es liegt keine\naktuelle Information vor.";
+            text = @"Es liegen zurzeit keine Informationen über das Besuchendenaufkommen vor";
             self.occupancyHeaderLabel.hidden = YES;
             break;
-    }
+    }    
     self.occupancyLabel.text = text;
 
     self.diagram.isAccessibilityElement = YES;
@@ -149,7 +149,7 @@
     [self.topLine setWidth:self.size.width];
     [self.topLine setGravityTop:43];
     
-    CGSize size = [self.occupancyLabel sizeThatFits:CGSizeMake(self.frame.size.width-161, 200)];
+    CGSize size = [self.occupancyLabel sizeThatFits:CGSizeMake(self.frame.size.width-175, 200)];
     [self.occupancyLabel setSize:CGSizeMake(ceil(size.width), ceil(size.height))];
     
     [self.occupancyHeaderLabel setGravityLeft:15];

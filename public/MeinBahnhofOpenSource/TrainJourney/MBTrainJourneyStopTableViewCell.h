@@ -11,7 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MBTrainJourneyStopTableViewCell : UITableViewCell
 
 -(void)setStop:(MBTrainJourneyStop*)stop isFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation;
--(void)setStopWithString:(NSString *)stationTitle isFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation;
 
 @end
 

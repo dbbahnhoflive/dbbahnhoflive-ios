@@ -5,6 +5,8 @@
 
 #import "MBTrainJourneyStopTableViewCell.h"
 #import "MBUIHelper.h"
+#import "MBTrainJourneyViewController.h"
+#import "MBVoiceOverHelper.h"
 
 @interface MBTrainJourneyStopTableViewCell()
 @property(nonatomic,strong) UILabel* stationLabel;
@@ -13,6 +15,9 @@
 @property(nonatomic,strong) UILabel* departureLabel;
 @property(nonatomic,strong) UILabel* arrivalNewLabel;
 @property(nonatomic,strong) UILabel* departureNewLabel;
+@property(nonatomic,strong) UILabel* platformInformationLinkLabel;
+@property(nonatomic,strong) UIImageView* platformInformationLinkImage;
+
 @property(nonatomic,strong) UIView* bottomLine;
 @property(nonatomic,strong) UIView* journeyLineBackground;
 @property(nonatomic,strong) UIView* journeyLineActive;
@@ -26,6 +31,8 @@
 @property(nonatomic) BOOL isLast;
 
 @property(nonatomic,weak) MBTrainJourneyStop* stop;
+
+@property(nonatomic) BOOL isCurrentStation;
 
 @end
 
@@ -51,6 +58,14 @@
     self.platformLabel.textAlignment = NSTextAlignmentRight;
     self.platformLabel.font = UIFont.db_RegularFourteen;
     [self.contentView addSubview:self.platformLabel];
+    
+    self.platformInformationLinkLabel = [UILabel new];
+    self.platformInformationLinkLabel.font = UIFont.db_BoldFourteen;
+    self.platformInformationLinkLabel.textColor = UIColor.db_333333;
+    [self.contentView addSubview:self.platformInformationLinkLabel];
+    self.platformInformationLinkImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"app_links_pfeil"]];
+    self.platformInformationLinkImage.hidden = true;
+    [self.contentView addSubview:self.platformInformationLinkImage];
 
     self.warningImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_warndreieck"]];
     [self.contentView addSubview:self.warningImage];
@@ -147,6 +162,12 @@
     }
     [self.warningLabel setBelow:self.stationLabel withPadding:7];
     [self.warningLabel setWidth:self.frame.size.width-self.warningLabel.frame.origin.x-spaceRight];
+    
+    NSInteger platformInfoY = MAX(CGRectGetMaxY(self.departureLabel.frame),CGRectGetMaxY(self.warningLabel.frame))+10;
+    [self.platformInformationLinkLabel setGravityTop:platformInfoY];
+    [self.platformInformationLinkImage setGravityTop:platformInfoY];
+    [self.platformInformationLinkImage setGravityLeft:self.departureLabel.frame.origin.x];
+    [self.platformInformationLinkLabel setRight:self.platformInformationLinkImage withPadding:5];
 
     if(!_isFirst && !_isLast){
         [self.journeyLineBackground setGravityTop:0];
@@ -195,6 +216,8 @@
     [super prepareForReuse];
     self.stationLabel.text = @"";
     self.platformLabel.text = @"";
+    self.platformInformationLinkLabel.text = @"";
+    self.platformInformationLinkImage.hidden = true;
     self.arrivalLabel.text = @"";
     self.departureLabel.text = @"";
     self.arrivalNewLabel.text = @"";
@@ -212,26 +235,36 @@
     NSString* departureDelta = @"";
     NSInteger p = self.stop.journeyProgress;
     if(self.arrivalNewLabel.text.length > 0 && ![self.arrivalNewLabel.text isEqualToString:self.arrivalLabel.text]){
-        arrivalDelta = [NSString stringWithFormat:@", heute %@ %@ Uhr",((p == -1 || (p > 50 && p < 100)) ? @"voraussichtlich" : @""),self.arrivalNewLabel.text];
+        arrivalDelta = [NSString stringWithFormat:@", heute %@ %@",((p == -1 || (p > 50 && p < 100)) ? @"voraussichtlich" : @""), [MBVoiceOverHelper timeForVoiceOver:self.arrivalNewLabel.text]];
     }
     if(self.departureNewLabel.text.length > 0 && ![self.departureNewLabel.text isEqualToString:self.departureLabel.text]){
-        departureDelta = [NSString stringWithFormat:@", heute %@ %@ Uhr",((p == 100 || (p > 0 && p <= 50)) ? @"" : @"voraussichtlich"),self.departureNewLabel.text];
+        departureDelta = [NSString stringWithFormat:@", heute %@ %@",((p == 100 || (p > 0 && p <= 50)) ? @"" : @"voraussichtlich"), [MBVoiceOverHelper timeForVoiceOver:self.departureNewLabel.text]];
     }
 
     NSString* arrivalText = @"";
     if(self.arrivalLabel.text.length > 0){
-        arrivalText = [NSString stringWithFormat:@"Ankunft %@ Uhr %@",self.arrivalLabel.text,
+        arrivalText = [NSString stringWithFormat:@"Ankunft %@ %@",[MBVoiceOverHelper timeForVoiceOver:self.arrivalLabel.text],
                        arrivalDelta];
     }
     NSString* departureText = @"";
     if(self.departureLabel.text.length > 0){
-        departureText = [NSString stringWithFormat:@"Abfahrt %@ Uhr %@",self.departureLabel.text,
+        departureText = [NSString stringWithFormat:@"Abfahrt %@ %@",[MBVoiceOverHelper timeForVoiceOver:self.departureLabel.text],
                                departureDelta];
     }
-
+    
+    NSString* platformText = (self.platformLabel.text.length > 0 ? self.platformLabel.accessibilityLabel : @"");
+    if(self.isCurrentStation && self.stop.hasPlatformInfo){
+        if(self.stop.linkedPlatformsForStop.count == 1){
+            platformText = [platformText stringByAppendingFormat:@", gegenüberliegend Gleis %@",self.stop.linkedPlatformsForStop.firstObject];
+        }
+        if(self.stop.headPlatform){
+            platformText = [platformText stringByAppendingString:@", Kopfgleis"];
+        }
+    }
+    
     return [NSString stringWithFormat:@"%@, %@; %@; %@; %@",
             self.stationLabel.text,
-            (self.platformLabel.text.length > 0 ? self.platformLabel.accessibilityLabel : @""),
+            platformText,
             warnings,
             arrivalText,
             departureText
@@ -249,35 +282,34 @@
     }
 }
 
--(NSString*)timeStringForDate:(NSDate*)date{
-    if(!date){
-        return @"";
-    }
-    NSCalendar *calendar  = [NSCalendar currentCalendar];
-    NSDateComponents *components = [calendar components:(NSCalendarUnitHour| NSCalendarUnitMinute) fromDate:date];
-    NSInteger hour = [components hour];
-    NSInteger minutes = [components minute];
-    return [NSString stringWithFormat:@"%02ld:%02ld", (long)hour, (long)minutes];
-}
+
 
 -(void)setStop:(MBTrainJourneyStop *)stop isFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation{
     self.stop = stop;
+    self.isCurrentStation = isCurrentStation;
     self.layoutWithStationNameOnly = false;
     self.stationLabel.text = stop.stationName;
 //    self.stationLabel.text = @"Lorem impsum lorem ipsum lorem ipsum";
     
-    self.arrivalLabel.text = [self timeStringForDate:stop.arrivalTimeSchedule];
-    self.departureLabel.text = [self timeStringForDate:stop.departureTimeSchedule];
+    self.arrivalLabel.text = [MBTrainJourneyViewController timeStringForDate:stop.arrivalTimeSchedule];
+    self.departureLabel.text = [MBTrainJourneyViewController timeStringForDate:stop.departureTimeSchedule];
 
-    self.arrivalNewLabel.text = [self timeStringForDate:stop.arrivalTime];
-    self.departureNewLabel.text = [self timeStringForDate:stop.departureTime];
+    self.arrivalNewLabel.text = [MBTrainJourneyViewController timeStringForDate:stop.arrivalTime];
+    self.departureNewLabel.text = [MBTrainJourneyViewController timeStringForDate:stop.departureTime];
 
     [self configureDeltaStringPlaned:stop.arrivalTimeSchedule actual:stop.arrivalTime label:self.arrivalNewLabel];
     [self configureDeltaStringPlaned:stop.departureTimeSchedule actual:stop.departureTime label:self.departureNewLabel];
 
-    if(stop.platform.length > 0){
-        self.platformLabel.text = [NSString stringWithFormat:@"Gl. %@",stop.platform];
-        self.platformLabel.accessibilityLabel = [NSString stringWithFormat:@"Gleis %@",stop.platform];
+    self.platformInformationLinkLabel.text = @"";
+    self.platformInformationLinkImage.hidden = true;
+    NSString* platform = stop.platformForDisplay;
+    if(platform.length > 0){
+        self.platformLabel.text = [NSString stringWithFormat:@"%@ %@",stop.platformDesignator,platform];
+        self.platformLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ %@",stop.platformDesignatorVoiceOver,platform];
+        if(stop.hasPlatformInfo){
+            self.platformInformationLinkLabel.text = @"Gleisinformationen";
+            self.platformInformationLinkImage.hidden = false;
+        }
     } else {
         self.platformLabel.text = @"";
         self.platformLabel.accessibilityLabel = @"";
@@ -288,8 +320,14 @@
         self.platformLabel.textColor = UIColor.db_787d87;
     }
     [self.platformLabel sizeToFit];
+    [self.platformInformationLinkLabel sizeToFit];
     
-    if(stop.additional){
+    if(stop.canceled){
+        self.warningImage.hidden = false;
+        self.warningLabel.text = @"Halt fällt aus";
+        self.warningLabel.textColor = UIColor.db_mainColor;
+        self.warningImage.image = [UIImage db_imageNamed:@"app_warndreieck"];
+    } else if(stop.additional){
         self.warningImage.hidden = true;
         self.warningLabel.text = @"Zusätzlicher Halt";
         self.warningLabel.textColor = UIColor.db_333333;
@@ -313,12 +351,7 @@
     [self setNeedsLayout];
 }
 
--(void)setStopWithString:(NSString *)stationTitle isFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation{
-    self.layoutWithStationNameOnly = true;
-    self.stationLabel.text = stationTitle;
-    [self setupForIsFirst:isFirst isLast:isLast isCurrentStation:isCurrentStation];
-    [self setNeedsLayout];
-}
+
 
 -(void)setupForIsFirst:(BOOL)isFirst isLast:(BOOL)isLast isCurrentStation:(BOOL)isCurrentStation{
     self.isFirst = isFirst;
@@ -338,7 +371,11 @@
     self.departureNewLabel.font = font;
     self.platformLabel.font = UIFont.db_RegularFourteen;
     if(isCurrentStation){
-        self.accessibilityHint = nil;
+        if(self.stop.hasPlatformInfo){
+            self.accessibilityHint = @"Zur Anzeige von Gleisinformationen doppeltippen";
+        } else {
+            self.accessibilityHint = nil;
+        }
     } else {
         self.accessibilityHint = @"Zum Öffnen des Bahnhofs doppeltippen.";
     }

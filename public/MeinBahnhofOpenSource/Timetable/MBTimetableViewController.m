@@ -66,6 +66,7 @@
 
 @property (nonatomic, strong) MBSwitch *toggleFernverkehrSwitch;
 
+@property (nonatomic, strong) UIImageView* errorImageView;
 @property (nonatomic, strong) MBLabel *tableViewMessageLabel;
 @property (nonatomic, strong) NSString* availableDataUntilTime;
 @property (nonatomic, strong) MBLargeButton *requestMoreButton;
@@ -452,7 +453,7 @@
             BOOL isLoading = self.hafasTimetable.isBusy;
             [self setLoading:isLoading];
             if (!isLoading) {
-                [self updateEmptyView:TimetableResponseStatus_EMPTY];
+                [self updateEmptyView: self.hafasTimetable.hasError ? TimetableResponseStatus_ERROR : TimetableResponseStatus_EMPTY];
             }
 
         } else {
@@ -548,6 +549,9 @@
         self.stopIdForSelectedVoiceOverCell = nil;
     }
 }
+-(MBStation *)stationForEvents{
+    return self.station;
+}
 
 -(void)setTimetableData:(NSArray *)timetableData{
     _timetableData = timetableData;
@@ -607,6 +611,9 @@
     
     if(self.showFernverkehr){
         [[MBTutorialManager singleton] displayTutorialIfNecessary:MBTutorialViewType_H2_Departure withOffset:0];
+        if(self.station.platformAccessibility.count > 0 && MBStation.displayPlaformInfo){
+            [MBTutorialManager.singleton displayTutorialIfNecessary:MBTutorialViewType_H2_Platform_info withOffset:0];
+        }
     }
     
 }
@@ -736,6 +743,11 @@
         self.tableViewMessageLabel.textColor = [UIColor db_646973];
         self.tableViewMessageLabel.numberOfLines = 0;
     }
+    if(!self.errorImageView){
+        self.errorImageView = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_error"]];
+        self.errorImageView.isAccessibilityElement = false;
+        self.errorImageView.hidden = true;
+    }
     if(!self.requestMoreButton){
         self.requestMoreButton = [[MBLargeButton alloc] initWithFrame:CGRectMake(16, 0, self.view.frame.size.width-2*16, 60)];
         [self.requestMoreButton setTitle:@"Später" forState:UIControlStateNormal];
@@ -750,6 +762,7 @@
         self.tableFooterView = [[UIView alloc] init];
         self.tableFooterView.backgroundColor = [UIColor clearColor];
         [self.tableFooterView addSubview:self.tableViewMessageLabel];
+        [self.tableFooterView addSubview:self.errorImageView];
         [self.tableFooterView addSubview:self.requestMoreButton];
         [self.tableFooterView addSubview:self.requestMoreProgress];
     }
@@ -791,21 +804,20 @@
     }
     [message appendString:@"."];
     NSString *errorMessage = message;
+    self.errorImageView.hidden = true;
 
     if(reason == TimetableResponseStatus_ERROR){
         errorMessage = @"Daten nicht verfügbar.";
+        self.errorImageView.hidden = false;
     }
     self.tableViewMessageLabel.text = errorMessage;
 
     CGSize textSize = [self.tableViewMessageLabel sizeThatFits:CGSizeMake(self.timetableView.sizeWidth-2*16, 1024)];
     self.tableViewMessageLabel.size = textSize;
-    
-    if(!self.showFernverkehr){
-        //the hafas cells don't have space at the bottom, so we need to add it here
-        CGRect f = self.tableViewMessageLabel.frame;
-        f.size.height += 20;
-        self.tableViewMessageLabel.frame = f;
-    }
+    //increase height to add some spacing around the label
+    CGRect f = self.tableViewMessageLabel.frame;
+    f.size.height += 20;
+    self.tableViewMessageLabel.frame = f;
     
     [self.requestMoreProgress stopAnimating];
     BOOL canRequestAdditionalData = [self canRequestAdditionalData];
@@ -821,7 +833,7 @@
         [self.requestMoreButton setBelow:self.tableViewMessageLabel withPadding:16];
         self.tableFooterView.frame = CGRectMake(0, 0, self.timetableView.sizeWidth, CGRectGetMaxY(self.requestMoreButton.frame)+16);
 
-    } else if(canRequestAdditionalData && !hasEntry) {
+    } else if(canRequestAdditionalData && !hasEntry && reason != TimetableResponseStatus_ERROR) {
         //show both!
         self.requestMoreButton.hidden = NO;
         self.tableViewMessageLabel.hidden = NO;
@@ -831,11 +843,13 @@
         //no additional data, show only text
         self.requestMoreButton.hidden = YES;
         self.tableViewMessageLabel.hidden = NO;
-        self.tableFooterView.frame = CGRectMake(0, 0, self.timetableView.sizeWidth, CGRectGetMaxY(self.tableViewMessageLabel.frame));
+        self.tableFooterView.frame = CGRectMake(0, 0, self.timetableView.sizeWidth, CGRectGetMaxY(self.tableViewMessageLabel.frame)+10);
     }
     [self.requestMoreProgress centerViewHorizontalInSuperView];
     [self.requestMoreProgress setGravityTop:self.requestMoreButton.frame.origin.y];
     [self.tableViewMessageLabel centerViewHorizontalInSuperView];
+    [self.errorImageView setLeft:self.tableViewMessageLabel withPadding:10];
+    [self.errorImageView centerViewVerticalWithView:self.tableViewMessageLabel];
     self.timetableView.tableFooterView = self.tableFooterView;
     //self.timetableView.tableFooterView = self.tableViewMessageLabel;
     /*
@@ -1253,7 +1267,7 @@
 }
 -(void)showJourneyForHafasDeparture:(HafasDeparture*)departure animated:(BOOL)animated{
     [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-    [[HafasRequestManager sharedManager] requestJourneyDetails:departure completion:^(HafasDeparture * dep, NSError * err) {
+    [[HafasRequestManager sharedManager] requestJourneyDetails:departure forceReload:false completion:^(HafasDeparture * dep, NSError * err) {
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
         if(!dep){
             [self showJourneyAlert];
@@ -1271,6 +1285,9 @@
         detailViewController.originalHafasStation = self.hafasStation;
         detailViewController.station = self.station;
         detailViewController.hafasDeparture = departure;
+        if(departure.partCancelled){
+            detailViewController.hafasEventText = STOP_MISSING_TEXT;
+        }
         detailViewController.showJourneyFromCurrentStation = true;
         [self.navigationController pushViewController:detailViewController animated:animated];
     }];

@@ -241,19 +241,19 @@ static NSDictionary* staticConfig = nil;
 
                          
                          [ART_PLAETZEROLLSTUHL stringByAppendingString:STATUS_VERFUEGBAR]: @{
-                                 @"text": @"Plätze für Rollstuhlfahrer verfügbar",
+                                 @"text": @"Plätze für Menschen mit Rollstuhl verfügbar",
                                  @"icons": @[@"wagenaustattung_rollstuhlstellplaetze"]
                                  },
                          [ART_PLAETZEROLLSTUHL stringByAppendingString:STATUS_NICHTVERFUEGBAR]: @{
-                                 @"text": @"Plätze für Rollstuhlfahrer nicht verfügbar",
+                                 @"text": @"Plätze für Menschen mit Rollstuhl nicht verfügbar",
                                  @"icons": @[@"wagenaustattung_rollstuhlstellplaetze-nicht-verfuegbar"]
                                  },
                          [ART_PLAETZEROLLSTUHL stringByAppendingString:STATUS_RESERVIERT]: @{
-                                 @"text": @"Plätze für Rollstuhlfahrer reserviert",
+                                 @"text": @"Plätze für Menschen mit Rollstuhl reserviert",
                                  @"icons": @[@"wagenaustattung_rollstuhlstellplaetze-nicht-verfuegbar"]
                                  },
                          [ART_PLAETZEROLLSTUHL stringByAppendingString:STATUS_UNDEFINIERT]: @{
-                                 @"text": @"Plätze für Rollstuhlfahrer",
+                                 @"text": @"Plätze für Menschen mit Rollstuhl",
                                  @"icons": @[@"wagenaustattung_rollstuhlstellplaetze"]
                                  },
 

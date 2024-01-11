@@ -111,9 +111,10 @@
 }
 -(void)updateEvaIds:(void (^)(BOOL success))completion{
     NSLog(@"update evaIds for station: %@",self.dictRepresentation);
-    [MBRISStationsRequestManager.sharedInstance requestEvaIdsForStation:self success:^(NSArray<NSString *> *evaIds) {
-        NSLog(@"replace %@ with %@",self.eva_ids, evaIds);
-        self.eva_ids = evaIds;
+    [MBRISStationsRequestManager.sharedInstance requestUpdateForStation:self success:^(MBStationFromSearch* stationFromSearch) {
+        NSLog(@"replace %@ with %@",self.eva_ids, stationFromSearch.eva_ids);
+        self.eva_ids = stationFromSearch.eva_ids;
+        self.title = stationFromSearch.title;
         completion(true);
     } failureBlock:^(NSError * error) {
         completion(false);

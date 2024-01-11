@@ -11,8 +11,6 @@
 
 @interface MBSingleParkingOverviewViewController ()<UIScrollViewDelegate>
 
-@property(nonatomic,strong) UIScrollView* contentScrollView;
-
 @property(nonatomic,strong) UIImageView* parkingAllocation;
 @property(nonatomic,strong) UILabel *allocationLabel;
 
@@ -30,10 +28,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.titleLabel.text = self.title;
-
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
-    [self.contentView addSubview:self.contentScrollView];
+    
     self.contentView.backgroundColor = [UIColor whiteColor];
     self.headerView.backgroundColor = [UIColor db_HeaderColor];
     [self.headerView configureDefaultShadow];
@@ -121,7 +116,7 @@
 
     }
     self.calculatedContentHeight = y;
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
+    [self updateContentScrollViewContentHeight:y];
 }
 
 -(void)configureButton:(UIButton*)button{
@@ -160,7 +155,7 @@
                     // NSLog(@"request occupancy for id %@",num);
                     dispatch_group_enter(group);
                     
-                    [[MBParkingOccupancyManager client] requestParkingOccupancy:num success:^(NSNumber *allocationCategory) {
+                    [[MBParkingOccupancyManager client] requestParkingOccupancy:num forcedByUser:true success:^(NSNumber *allocationCategory) {
                         //update allocationCategory
                         self.parking.allocationCategory = allocationCategory;
                         
@@ -224,25 +219,11 @@
 }
 
 -(void)viewDidLayoutSubviews{
+    [self updateContentScrollViewContentHeight:self.calculatedContentHeight+self.view.safeAreaInsets.bottom];
+
     [super viewDidLayoutSubviews];
-    //resize view for content
-
-    UIEdgeInsets safeArea = self.view.safeAreaInsets;
-    CGSize size = self.contentScrollView.contentSize;
-    size.height = self.calculatedContentHeight+safeArea.bottom;
-    self.contentScrollView.contentSize = size;
-
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
-
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 - (void)didInteractWithURL:(NSURL *)url
 {

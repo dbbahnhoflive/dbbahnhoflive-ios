@@ -116,7 +116,7 @@
 
 - (NSString *)accessibilityLabel
 {
-    return [_event voiceOverString];
+    return [_event voiceOverStringWithStation:self.delegate.stationForEvents];
 }
 
 

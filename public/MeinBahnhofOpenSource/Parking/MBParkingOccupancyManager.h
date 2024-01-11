@@ -11,6 +11,7 @@
 
 + (instancetype)client;
 - (NSURLSessionTask *)requestParkingOccupancy:(NSString*)siteId
+                                 forcedByUser:(BOOL)forcedByUser 
                                    success:(void (^)(NSNumber *allocationCategory))success
                               failureBlock:(void (^)(NSError *error))failure;
 

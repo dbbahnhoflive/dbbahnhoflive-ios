@@ -8,7 +8,6 @@
 #import "MBUIHelper.h"
 
 @interface MBStationOccupancyOverlayViewController ()
-@property(nonatomic,strong) UIScrollView* contentScrollView;
 
 @end
 
@@ -17,19 +16,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
         
-    self.title = @"Besucheraufkommen";
-    self.titleLabel.text = self.title;
-
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
-    [self.contentView addSubview:self.contentScrollView];
+    self.title = @"Besuchendenaufkommen";
     
     NSInteger y = 16+20;
     
     NSArray* texts = @[
-    @"Weniger Besucher als üblich",@"Vor Ort ist aktuell mit weniger Besuchern als gewöhnlich zu rechnen. In der Regel ist das Besucheraufkommen zu dieser Uhrzeit an diesem Wochentag höher.",
-    @"Übliches Besucheraufkommen",@"Die Anzahl der Besucher vor Ort entspricht dem gewöhnlichen Besucheraufkommen zu dieser Uhrzeit an diesem Wochentag.",
-    @"Mehr Besucher als üblich",@"Vor Ort ist aktuell mit mehr Besuchern als gewöhnlich zu rechnen. In der Regel ist das Besucheraufkommen zu dieser Uhrzeit an diesem Wochentag geringer.",
-    @"Hinweise",@"Bitte beachten Sie: Diese Info-Grafik gibt Auskunft über das aktuelle Besucheraufkommen im Vergleich zum durchschnittlichen Besucheraufkommen der vergangenen acht Wochen. Für diese Grafik werden Näherungswerte errechnet und keine absoluten Zahlen verwendet. Folglich sind Abweichungen zum tatsächlichen Besucheraufkommen vor Ort möglich. Diese Grafik gibt außerdem keine Auskunft hinsichtlich des Besucheraufkommens im Verhältnis zu den räumlichen Kapazitäten vor Ort. Alle Angaben sind ohne Gewähr.",
+    @"Weniger Besuchende als üblich",@"Vor Ort ist aktuell mit weniger Besuchenden als gewöhnlich zu rechnen. In der Regel ist das Publikumsaufkommen zu dieser Uhrzeit an diesem Wochentag höher.",
+    @"Übliches Besuchendenaufkommen",@"Die Anzahl der Besuchenden vor Ort entspricht dem gewöhnlichen Publikumsaufkommen zu dieser Uhrzeit an diesem Wochentag.",
+    @"Mehr Besuchende als üblich",@"Vor Ort ist aktuell mit mehr Besuchenden als gewöhnlich zu rechnen. In der Regel ist das Publikumsaufkommen zu dieser Uhrzeit an diesem Wochentag geringer.",
+    @"Hinweise",@"Bitte beachten Sie: Diese Info-Grafik gibt Auskunft über das aktuelle Besuchendenaufkommen im Vergleich zum durchschnittlichen Besuchendenaufkommen der vergangen acht Wochen. Für diese Grafik werden Näherungswerte errechnet und keine absoluten Zahlen verwendet. Folglich sind Abweichungen zum tatsächlichen Publikumsaufkommen vor Ort möglich. Diese Grafik gibt außerdem keine Auskunft hinsichtlich des Besuchendenaufkommens im Verhältnis zu den räumlichen Kapazitäten vor Ort. Alle Angaben sind ohne Gewähr.",
     ];
     for(NSInteger i=0; i<texts.count; ){
         NSString* header = texts[i++];
@@ -65,16 +60,8 @@
 
     }
     y += 20;
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
+    [self updateContentScrollViewContentHeight:y];
 }
 
--(void)viewDidLayoutSubviews{
-    [super viewDidLayoutSubviews];
-    //resize view for content
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
-}
 
 @end

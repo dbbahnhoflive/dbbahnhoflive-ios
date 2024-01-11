@@ -43,6 +43,9 @@ typedef NS_ENUM(NSUInteger, MBPlatformAccessibilityFeatureType)  {
 -(NSString*)serverKey;
 -(NSString*)displayText;
 -(NSString*)descriptionText;
+
+-(BOOL)isEqual:(id)object;
+
 @end
 
 NS_ASSUME_NONNULL_END

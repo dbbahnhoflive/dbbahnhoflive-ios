@@ -7,6 +7,7 @@
 #import "MBTimeTableOEPNVTableViewCell.h"
 #import "HafasStopLocation.h"
 #import "MBUIHelper.h"
+#import "MBVoiceOverHelper.h"
 
 @interface MBTimeTableOEPNVTableViewCell()
 @property (nonatomic, strong) UIView *topView;
@@ -14,6 +15,8 @@
 @property (nonatomic, strong) UILabel *lineLabel;
 @property (nonatomic, strong) UILabel *destLabel;
 @property (nonatomic, strong) UILabel *expectedTimeLabel;
+@property (nonatomic, strong) UIImageView *messageIcon;
+@property (nonatomic, strong) UILabel *platformLabel;
 
 
 @end
@@ -49,13 +52,21 @@
     
     self.expectedTimeLabel = [[UILabel alloc] init];
     self.expectedTimeLabel.textColor = [UIColor db_333333];
-    self.expectedTimeLabel.font = [UIFont db_RegularFourteen];;
+    self.expectedTimeLabel.font = [UIFont db_RegularFourteen];
+    
+    self.messageIcon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"app_warndreieck"]];
+    [self.topView addSubview:self.messageIcon];
+    
+    self.platformLabel = [[UILabel alloc] init];
+    [self.platformLabel setFont:[UIFont db_RegularFourteen]];
+    [self.platformLabel setTextColor:[UIColor db_787d87]];
 
     [self.topView addSubview:self.timeLabel];
     [self.topView addSubview:self.lineLabel];
     [self.topView addSubview:self.destLabel];
     [self.topView addSubview:self.expectedTimeLabel];
-    
+    [self.topView addSubview:self.platformLabel];
+
     [self.contentView addSubview:self.topView];
 
     self.accessibilityTraits = self.accessibilityTraits|UIAccessibilityTraitButton;
@@ -71,7 +82,14 @@
     self.expectedTimeLabel.frame = CGRectMake(16, CGRectGetMaxY(self.timeLabel.frame)+8, 100, 20);
     self.destLabel.frame = CGRectMake(70, 16, self.frame.size.width-70-3*8, 20);
     self.lineLabel.frame = CGRectMake(self.destLabel.frame.origin.x, self.expectedTimeLabel.frame.origin.y, self.frame.size.width-self.destLabel.frame.origin.x-3*8, 20);
+    [self.lineLabel setWidth:ceilf([self.lineLabel sizeThatFits:self.lineLabel.frame.size].width)];
+    [self.messageIcon setRight:self.lineLabel withPadding:8];
+    [self.messageIcon centerViewVerticalWithView:self.lineLabel];
     
+    [self.platformLabel sizeToFit];
+    [self.platformLabel setGravityTop:self.lineLabel.frame.origin.y];
+    [self.platformLabel setGravityRight:16];
+
 }
 
 - (void)prepareForReuse
@@ -87,6 +105,7 @@
     self.lineLabel.text = hafas.name;
     [self.lineLabel sizeToFit];
     self.destLabel.text = hafas.direction;
+    self.messageIcon.hidden = !hafas.partCancelled && !hafas.trackChanged;
 //    [self.destLabel sizeToFit];//NO, this leads to autolayout failure!
     self.expectedTimeLabel.text = [hafas expectedDeparture];
     if([hafas delayInMinutes] >= 5){
@@ -94,6 +113,16 @@
     } else {
         self.expectedTimeLabel.textColor = [UIColor db_green];
     }
+    self.platformLabel.text = @"";
+    if(hafas.displayTrack.length > 0){
+        self.platformLabel.text = [NSString stringWithFormat:@"Gl. %@",hafas.displayTrack];
+    }
+    if(hafas.trackChanged){
+        self.platformLabel.textColor = [UIColor db_mainColor];
+    } else {
+        self.platformLabel.textColor = [UIColor db_787d87];
+    }
+
     
 }
 
@@ -103,12 +132,26 @@
     NSString* line = self.lineLabel.text;
     line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
 
-    return [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@.",
+    NSString* trackInfo = @"";
+    if(self.hafas.displayTrack.length > 0){
+        if(self.hafas.trackChanged){
+            trackInfo = [NSString stringWithFormat:@"Heute abweichend Gleis %@",self.hafas.displayTrack];
+        } else {
+            trackInfo = [NSString stringWithFormat:@"Gleis %@",self.hafas.displayTrack];
+        }
+    }
+    
+    NSString* res = [NSString stringWithFormat:@"%@ nach %@. %@, %@. %@",
             line,
             self.destLabel.text,
-            self.timeLabel.text,
-            ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@",self.expectedTimeLabel.text])
+            [MBVoiceOverHelper timeForVoiceOver:self.timeLabel.text],
+            ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@",[MBVoiceOverHelper timeForVoiceOver:self.expectedTimeLabel.text]]),
+            trackInfo
             ];
+    if(_hafas.partCancelled){
+        res = [res stringByAppendingFormat:@" %@",STOP_MISSING_TEXT];
+    }
+    return res;
 }
 
 

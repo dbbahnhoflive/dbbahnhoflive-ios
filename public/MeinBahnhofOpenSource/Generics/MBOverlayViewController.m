@@ -48,6 +48,18 @@
     [_closeBtn addTarget:self action:@selector(hideOverlay) forControlEvents:UIControlEventTouchUpInside];
     [_headerView addSubview:_closeBtn];
     
+    if(self.usesContentScrollView){
+        _contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
+        [self.contentView addSubview:self.contentScrollView];        
+    }
+    
+    self.titleLabel.text = self.title;
+
+}
+
+-(void)setTitle:(NSString *)title{
+    [super setTitle:title];
+    self.titleLabel.text = title;
 }
 
 - (BOOL)accessibilityViewIsModal {
@@ -63,18 +75,41 @@
     
     _contentView.frame = CGRectMake(0, self.view.frame.size.height-50-[self expectedContentHeight], self.view.frame.size.width, [self expectedContentHeight]+50);
     self.headerView.frame = CGRectMake(0, 0, _contentView.frame.size.width, 50);
-    self.titleLabel.frame = CGRectMake(15, 0, _contentView.frame.size.width, 50);
     [_closeBtn setGravityRight:0];
+    self.titleLabel.frame = CGRectMake(15, 0, _contentView.frame.size.width-_closeBtn.size.width-15, 50);
+    
+    if(self.usesContentScrollView){
+        int totalHeight = MIN(self.view.sizeHeight-50, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
+        [self.contentView setHeight:totalHeight];
+        [self.contentView setGravityBottom:0];
+        self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
+    }
 }
 
+-(void)updateContentScrollViewContentHeight:(NSInteger)y{
+    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
+}
+
+
 -(void)hideOverlay{
+    [self hideOverlayWithCompletion:nil];
+}
+
+-(void)hideOverlayWithCompletion:(void(^)(void))actionBlock{
     //some overlays are presented as child viewcontroller, some are presented inside a navigation controller
     if(self.overlayIsPresentedAsChildViewController){
         [self willMoveToParentViewController:nil];
         [self.view removeFromSuperview];
         [self removeFromParentViewController];
+        if(actionBlock){
+            actionBlock();
+        }
     } else {
-        [self.navigationController dismissViewControllerAnimated:NO completion:nil];
+        [self.navigationController dismissViewControllerAnimated:NO completion:^{
+            if(actionBlock){
+                actionBlock();
+            }
+        }];
     }
 }
 
@@ -98,14 +133,8 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+-(BOOL)usesContentScrollView{
+    return true;
 }
-*/
 
 @end

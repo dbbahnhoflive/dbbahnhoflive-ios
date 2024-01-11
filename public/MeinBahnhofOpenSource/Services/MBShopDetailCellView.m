@@ -125,16 +125,8 @@
             self.openingHoursLabel.text = @"keine Angaben";
         } else {
             self.openingHoursLabel.text = timeText;
-        }
-        if(timeText.length > 0){
-            NSMutableString* timeVoiceOver = [[NSMutableString alloc] initWithString:[NSString stringWithFormat:@"%@ Uhr.",timeText]];
-            [timeVoiceOver replaceOccurrencesOfString:@"-" withString:@" bis " options:0 range:NSMakeRange(0, timeVoiceOver.length)];
-            [timeVoiceOver replaceOccurrencesOfString:@"\n" withString:@" Uhr\n" options:0 range:NSMakeRange(0, timeVoiceOver.length)];
-            
-            self.openingHoursLabel.accessibilityLabel = timeVoiceOver;
-            //NSLog(@"converted %@ into %@",timeText,timeVoiceOver);
-        }
-        
+            self.openingHoursLabel.accessibilityLabel = [self.poi allOpenTimesForVoiceOver:true];
+        }        
     }
     [self setNeedsLayout];
 }

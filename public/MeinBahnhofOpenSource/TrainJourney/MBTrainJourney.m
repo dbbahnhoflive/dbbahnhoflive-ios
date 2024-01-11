@@ -33,15 +33,13 @@
     return [realType isEqualToString:@"BUS"];
 }
 
--(NSArray<MBTrainJourneyStop *> *)journeyStops{
+-(NSArray<MBTrainJourneyStop *> *)journeyStopsForDeparture:(BOOL)departure{
     if(!self.eventCache){
         NSArray* serverSegments = [self.dict db_arrayForKey:@"events"];
         NSMutableArray<MBTrainJourneyEvent*>* events = [NSMutableArray arrayWithCapacity:serverSegments.count];
         for(NSDictionary* segmentDict in serverSegments){
             MBTrainJourneyEvent* event = [[MBTrainJourneyEvent alloc] initWithDict:segmentDict];
-            if(!event.canceled){
-                [events addObject:event];
-            }
+            [events addObject:event];
         }
 
         //now combine events: arrival followed by departure with same evaNumber: combine into one
@@ -52,6 +50,10 @@
                     MBTrainJourneyEvent* nextevent = events[i+1];
                     if(!nextevent.isArrival && [event.evaNumber isEqualToString:nextevent.evaNumber]){
                         //next event is the departure from same station
+                        if(!nextevent.canceled && event.canceled){
+                            //don't mark this as canceled, since only the arrival was cancelled
+                            event.canceled = false;
+                        }
                         event.linkedDepartureForThisArrival = nextevent;
                         [events removeObjectAtIndex:i+1];
                     }
@@ -62,7 +64,7 @@
 
         NSMutableArray<MBTrainJourneyStop*>* res = [NSMutableArray arrayWithCapacity:events.count];
         for(MBTrainJourneyEvent* event in events){
-            MBTrainJourneyStop* stop = [[MBTrainJourneyStop alloc] initWithEvent:event];
+            MBTrainJourneyStop* stop = [[MBTrainJourneyStop alloc] initWithEvent:event forDeparture:departure];
             [res addObject:stop];
         }
         

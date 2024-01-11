@@ -18,7 +18,6 @@
 #import "MBTrackingManager.h"
 
 @interface MBOPNVInStationOverlayViewController ()
-@property(nonatomic,strong) UIScrollView* contentScrollView;
 
 @end
 
@@ -31,8 +30,6 @@
     [headerText setAttributes:@{NSFontAttributeName:[UIFont db_RegularSeventeen]} range:NSMakeRange(@"ÖPNV Anschlüsse".length, headerText.length-@"ÖPNV Anschlüsse".length)];
     self.titleLabel.attributedText = headerText;
     self.titleLabel.accessibilityLabel = [NSString stringWithFormat:@"ÖPNV Anschlüsse im Umkreis von %d meter",NEAREST_STATIONS_LIMIT_IN_M];
-
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
     
     NSInteger y = 10;
     
@@ -218,8 +215,7 @@
     }
     [self addLine:y];
     y += 20;
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.sizeWidth, y);
-    [self.contentView addSubview:self.contentScrollView];
+    [self updateContentScrollViewContentHeight:y];
 }
 
 
@@ -284,16 +280,6 @@
     }
 }
 
--(void)viewDidLayoutSubviews{
-    [super viewDidLayoutSubviews];
-    
-    //resize view for content
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
-    
-}
 
 
 @end

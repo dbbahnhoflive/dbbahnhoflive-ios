@@ -70,7 +70,7 @@ static BOOL simulateSearchFailure = NO;
 -(MBStationDetails*)getStationFromCache:(NSNumber*)stationId{
     NSDictionary* cachedResponse = [[MBCacheManager sharedManager] cachedResponseForStationId:stationId type:MBCacheResponseRISStationServices];
     if(cachedResponse){
-        NSLog(@"using RIS:Station:services data from cache!");
+        NSLog(@"using RIS:Station data from cache!");
         MBStationDetails* response = [[MBStationDetails alloc] initWithResponse:cachedResponse];
         
         //do we also have the RIS:Station data?
@@ -94,6 +94,7 @@ static BOOL simulateSearchFailure = NO;
         cacheState = MBCacheStateOutdated;
     }
     if(cacheState == MBCacheStateValid){
+        NSLog(@"using RIS: station services data from cache!");
         MBStationDetails* response = [self getStationFromCache:stationId];
         if(response){
             success(response);
@@ -173,6 +174,7 @@ static BOOL simulateSearchFailure = NO;
         if([responseObject isKindOfClass:NSDictionary.class]){
 //            [MBTrackingManager trackActions:@[@"risstations_request", @"text", @"success"]];
             MBStationFromSearch* res = [self parseResponse:responseObject].firstObject;
+            res.isFreshStationFromSearch = false;//stop-places/by-key does not contain all evaIDs, this flag leads to an additional search request on by-name which will contain all Evas.
             if(res){
                 success(res);
             } else {
@@ -313,26 +315,30 @@ static BOOL simulateSearchFailure = NO;
 #pragma mark Platform api
 
 -(void)requestAccessibility:(NSString *)stationId success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure{
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/platforms/by-key?includeAccessibility=true&keyType=STADA&key=%@",[Constants kDBAPI], [Constants kRISStationsPath], stationId];
+    
+    MBCacheResponseType type = MBCacheResponseRISPlatforms;
+    NSNumber* stationIdNum = [NSNumber numberWithLongLong:stationId.longLongValue];
+    MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:stationIdNum type:type];
+    if(cacheState == MBCacheStateValid){
+        NSDictionary* cachedResponse = [[MBCacheManager sharedManager] cachedResponseForStationId:stationIdNum type:type];
+        NSMutableArray<MBPlatformAccessibility*>* list = [self parsePlatforms:cachedResponse];
+        if(list){
+            NSLog(@"using RIS: platforms data from cache!");
+            success(list);
+            return;
+        }
+    }
+    
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/platforms/by-key?includeAccessibility=true&includeSubPlatforms=false&keyType=STADA&key=%@",[Constants kDBAPI], [Constants kRISStationsPath], stationId];
     NSLog(@"RIS:Stations: %@",requestUrlWithParams);
     [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
     } success:^(NSURLSessionTask *operation, id responseObject) {
-        
         if([responseObject isKindOfClass:NSDictionary.class]){
             NSDictionary* dict = responseObject;
-            NSArray* platforms = [dict db_arrayForKey:@"platforms"];
-            if(platforms){
-                NSMutableArray<MBPlatformAccessibility*>* list = [NSMutableArray arrayWithCapacity:platforms.count];
-                for(NSDictionary* platformsDict in platforms){
-                    if(![platformsDict isKindOfClass:NSDictionary.class]){
-                        continue;
-                    }
-                    MBPlatformAccessibility* pa = [MBPlatformAccessibility parseDict:platformsDict];
-                    if(pa && ![self platformlist:list containsPlatformWithName:pa.name]){
-                        [list addObject:pa];
-                    }
-                }
+            NSMutableArray<MBPlatformAccessibility*>* list = [self parsePlatforms:dict];
+            if(list){
+                [MBCacheManager.sharedManager storeResponse:dict forStationId:stationIdNum type:type];
                 success(list);
                 return;
             }
@@ -343,6 +349,26 @@ static BOOL simulateSearchFailure = NO;
         failure(error);
     }];
 }
+
+-(NSMutableArray<MBPlatformAccessibility*>*)parsePlatforms:(NSDictionary*)dict{
+    NSArray* platforms = [dict db_arrayForKey:@"platforms"];
+    if(platforms){
+        NSMutableArray<MBPlatformAccessibility*>* list = [NSMutableArray arrayWithCapacity:platforms.count];
+        for(NSDictionary* platformsDict in platforms){
+            if(![platformsDict isKindOfClass:NSDictionary.class]){
+                continue;
+            }
+            MBPlatformAccessibility* pa = [MBPlatformAccessibility parseDict:platformsDict];
+            if(pa){
+                [list addObject:pa];
+            }
+        }
+        return list;
+    }
+    return nil;
+}
+
+
 -(BOOL)platformlist:(NSArray<MBPlatformAccessibility*>*)list containsPlatformWithName:(NSString*)name{
     for(MBPlatformAccessibility* p in list){
         if([p.name isEqualToString:name]){
@@ -352,16 +378,17 @@ static BOOL simulateSearchFailure = NO;
     return false;
 }
 
--(void)requestEvaIdsForStation:(MBStationFromSearch*)station success:(void (^)(NSArray<NSString*>* evaIds))success failureBlock:(void (^)(NSError *))failure{
+-(void)requestUpdateForStation:(MBStationFromSearch*)station success:(void (^)(MBStationFromSearch* stationFromSearch))success failureBlock:(void (^)(NSError *))failure{
     
     MBCacheResponseType type = MBCacheResponseRISStopPlacesForEva;
     MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:station.stationId type:type];
     if(cacheState == MBCacheStateValid){
         NSDictionary* cachedResponse = [[MBCacheManager sharedManager] cachedResponseForStationId:station.stationId type:type];
         if(cachedResponse){
-            NSArray* evaIDs = [self getEvaIdsFromResponse:cachedResponse forStation:station.stationId];
-            if(evaIDs){
-                success(evaIDs);
+            MBStationFromSearch* stationFromSearch = [self getMatchingStationFromResponse:cachedResponse forStation:station.stationId];
+            if(stationFromSearch.eva_ids){
+                NSLog(@"using RIS: StopPlacesForEva data from cache!");
+                success(stationFromSearch);
             } else {
                 failure(nil);
             }
@@ -375,10 +402,10 @@ static BOOL simulateSearchFailure = NO;
     [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
     } success:^(NSURLSessionTask *operation, id responseObject) {
-        NSArray* evaIDs = [self getEvaIdsFromResponse:responseObject forStation:station.stationId];
-        if(evaIDs){
+        MBStationFromSearch* stationFromSearch = [self getMatchingStationFromResponse:responseObject forStation:station.stationId];
+        if(stationFromSearch.eva_ids){
             [[MBCacheManager sharedManager] storeResponse:responseObject forStationId:station.stationId type:type];
-            success(evaIDs);
+            success(stationFromSearch);
         } else {
             failure(nil);
         }
@@ -388,12 +415,12 @@ static BOOL simulateSearchFailure = NO;
     }];
 }
 
--(NSArray*)getEvaIdsFromResponse:(NSDictionary*)responseObject forStation:(NSNumber*)stationId{
+-(MBStationFromSearch*)getMatchingStationFromResponse:(NSDictionary*)responseObject forStation:(NSNumber*)stationId{
     if([responseObject isKindOfClass:NSDictionary.class]){
         NSArray* stations = [self parseResponse:responseObject];
         for(MBStationFromSearch* searchResult in stations){
             if([searchResult.stationId isEqualToNumber:stationId]){
-                return searchResult.eva_ids;
+                return searchResult;
             }
         }
         NSLog(@"Error: station not found in search");

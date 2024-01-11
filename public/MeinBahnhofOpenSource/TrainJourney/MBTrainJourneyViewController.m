@@ -28,6 +28,7 @@
 #import "MBBackNavigationState.h"
 #import "MBUrlOpening.h"
 #import "MBAccompanimentTeaserView.h"
+#import "MBPlatformOverlayInfoViewController.h"
 
 @interface MBTrainJourneyViewController ()<UITableViewDataSource,UITableViewDelegate>
 @property (nonatomic, strong) UIImageView *messageIcon;
@@ -157,13 +158,13 @@
     [self configureMessage];
     
     if(self.journey){
-        self.journeyStops = self.journey.journeyStops;
+        self.journeyStops = [self.journey journeyStopsForDeparture:self.departure];
     }
     self.firstIndexWithCurrentStation = -1;
     self.journeyHasPreviousStations = false;
     NSInteger index = 0;
-    if(!self.journeyStops){
-        //create segments from IRIS station list
+    if(self.hafasDeparture || self.journey == nil){
+        //create segments from Hafas data or IRIS station list
         self.layoutForIRIS = true;
         
         NSArray *stations = nil;
@@ -183,6 +184,19 @@
                 if(index < self.hafasDeparture.stopLocations.count){
                     HafasStopLocation* stop = self.hafasDeparture.stopLocations[index];
                     s.evaNumber = stop.extId;
+                    s.canceled = stop.cancelled || stop.cancelledDeparture;
+                    s.additional = stop.additional;
+                    s.platform = stop.rtDepTrack.length > 0 ? stop.rtDepTrack : stop.rtArrTrack;
+                    s.platformSchedule = stop.depTrack.length > 0 ? stop.depTrack : stop.arrTrack;
+                    s.arrivalTimeSchedule = stop.arrival;
+                    s.arrivalTime = stop.rtArrival;
+                    s.departureTimeSchedule = stop.departure;
+                    s.departureTime = stop.rtDeparture;
+                    HAFASProductCategory p = self.hafasDeparture.productCategory;
+                    if(p == HAFASProductCategoryBUS || p == HAFASProductCategorySHIP || p == HAFASProductCategoryCAL){
+                        s.platformDesignator = @"Pl.";
+                        s.platformDesignatorVoiceOver = @"Plattform";
+                    }
                 }
             }
             if(self.firstIndexWithCurrentStation == -1 && [station isEqualToString:stationsTitle]){
@@ -192,6 +206,7 @@
             index++;
         }
         self.journeyStops = res;
+        [self updateJourneyProgress];
     } else {
         NSLog(@"stations:");
         for(MBTrainJourneyStop* s  in self.journeyStops){
@@ -253,23 +268,54 @@
 
 -(void)refreshData{
     [self.refreshControl beginRefreshing];
-    NSLog(@"refreshing data for event %@",self.event);
-    [[MBTrainJourneyRequestManager sharedManager] loadJourneyForEvent:self.event completionBlock:^(MBTrainJourney * _Nullable journey) {
-        if(journey){
-            self.journey = journey;
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self processData];
-            [self.segmentTableView reloadData];
-            [self.refreshControl endRefreshing];
-            [self.view setNeedsLayout];
-        });
-    }];
+    if(self.hafasDeparture){
+        [[HafasRequestManager sharedManager] requestJourneyDetails:self.hafasDeparture forceReload:true completion:^(HafasDeparture * dep, NSError * err) {
+            if(dep){
+                self.hafasDeparture = dep;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self processData];
+                [self.segmentTableView reloadData];
+                [self.refreshControl endRefreshing];
+                [self.view setNeedsLayout];
+            });
+        }];
+    } else {
+        NSLog(@"refreshing data for event %@",self.event);
+        [[MBTrainJourneyRequestManager sharedManager] loadJourneyForEvent:self.event completionBlock:^(MBTrainJourney * _Nullable journey) {
+            if(journey){
+                self.journey = journey;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self processData];
+                [self.segmentTableView reloadData];
+                [self.refreshControl endRefreshing];
+                [self.view setNeedsLayout];
+            });
+        }];
+    }
+}
+
+-(void)updateLinkedPlatform:(MBTrainJourneyStop*)j{
+    if(MBStation.displayPlaformInfo && self.station.platformAccessibility.count > 0 && j.platformForDisplay.length > 0 && [self isStopCurrentStation:j] && self.stop){
+        NSString* gl = j.platformForDisplay;
+        NSArray* linked = [self.station linkedPlatformsForPlatform:gl];
+        BOOL head = [self.station platformIsHeadPlatform:gl];
+        j.linkedPlatformsForStop = linked;
+        j.headPlatform = head;
+        j.platformLevel = [self.station levelForPlatform:gl];
+        j.isCurrentStation = true;
+    } else {
+        j.linkedPlatformsForStop = nil;
+        j.platformLevel = nil;
+        j.headPlatform = false;
+        j.isCurrentStation = false;
+    }
 }
 
 -(void)updateJourneyProgress{
     if(!self.journey){
-        return;//no journey progress for IRIS data
+        //return;//no journey progress for IRIS data
     }
     self.dateForTrainPosition = NSDate.date;
     NSTimeInterval now = self.dateForTrainPosition.timeIntervalSinceReferenceDate;
@@ -282,14 +328,20 @@
         if(s.isTimeScheduleStop){
             containsScheduleTime = true;
         }
+        [self updateLinkedPlatform:s];
     }
     if(containsScheduleTime){
         NSLog(@"don't show journey progress when there are SCHEDULEd events");
         return;
     }
+    MBTrainJourneyStop* trainIsAtStop = nil;
     for(MBTrainJourneyStop* s  in self.journeyStops){
         MBTrainJourneyStop* nextStop = (index+1 < self.journeyStops.count ? self.journeyStops[index+1] : nil);
-        
+        if(s.canceled){
+            s.journeyProgress = -1;
+            index++;
+            continue;
+        }
         NSTimeInterval arrival = s.arrivalTime.timeIntervalSinceReferenceDate;
         NSTimeInterval departure = s.departureTime.timeIntervalSinceReferenceDate;
         NSTimeInterval arrivalNextStation = nextStop.arrivalTime.timeIntervalSinceReferenceDate;
@@ -303,17 +355,31 @@
                 nextStop.journeyProgress = s.journeyProgress;
                 s.journeyProgress = 100;
             }
+            trainIsAtStop = s;
             break;
         } else if(arrivalNextStation != 0 && now > arrivalNextStation) {
             NSLog(@"train is past %@",s.stationName);
             s.journeyProgress = 100;
+            trainIsAtStop = s;
         } else if(arrival != 0 && now >= arrival && now <= departure){
             NSLog(@"train is at %@",s.stationName);
             s.journeyProgress = 0;
+            trainIsAtStop = s;
         } else if(arrival != 0 && now >= arrival){
             s.journeyProgress = 100;
+            trainIsAtStop = s;
         }
         index++;
+    }
+    //finally, ensure that all stations before the one where we have a train are marked as complete (hafas has no real arrival/depature for stations in the past)
+    if(trainIsAtStop){
+        for(MBTrainJourneyStop* s  in self.journeyStops){
+            if(s == trainIsAtStop ){
+                break;
+            } else if(s.journeyProgress == -1){
+                s.journeyProgress = 100;
+            }
+        }
     }
     NSLog(@"result:");
     for(MBTrainJourneyStop* s  in self.journeyStops){
@@ -341,7 +407,7 @@
     }
     MBService* service = [MBStaticStationInfo serviceForType:kServiceType_Barrierefreiheit withStation:self.station];
     MBTrainJourneyStop* stop = self.journeyStops[self.firstIndexWithCurrentStation];
-    NSString* platform = [MBStation platformNumberFromPlatform:stop.platform];
+    NSString* platform = stop.platform;
     service.serviceConfiguration = @{ MB_SERVICE_ACCESSIBILITY_CONFIG_KEY_PLATFORM: platform};
     MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
     [self.navigationController pushViewController:vc animated:NO];
@@ -365,7 +431,7 @@
 }
 
 -(void)configureMessage{    
-    if(self.showJourneyMessageAndTrainLinks && self.hasMessageForThisStation){
+    if((self.showJourneyMessageAndTrainLinks || self.hafasDeparture) && self.hasMessageForThisStation){
         self.messageIcon.hidden = NO;
         self.messageTextLabel.hidden = NO;
         if(self.event.hasOnlySplitMessage){
@@ -388,6 +454,9 @@
     return self.messageForThisStation.length > 0;
 }
 -(NSString*)messageForThisStation{
+    if(self.hafasEventText){
+        return self.hafasEventText;
+    }
     return self.event.composedIrisMessage;
 }
 
@@ -467,17 +536,35 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    MBTrainJourneyStop* j = self.journeyStops[indexPath.row];
+    BOOL isCurrentStation = [self isStopCurrentStation:j];
+    if(isCurrentStation && (j.hasPlatformInfo)){
+        //we have platform info
+        return 72+30;
+    }
     return 72;
+}
+
+-(BOOL)isStopCurrentStation:(MBTrainJourneyStop*)j{
+    if(_layoutForIRIS){
+        if(self.hafasStationThatOpenedThisJourney && j.evaNumber && [self.hafasStationThatOpenedThisJourney.stationEvaIds containsObject:j.evaNumber]){
+            return true;
+        }
+        return false;
+    } else {
+        return [j.evaNumber isEqualToString:self.currentEva];
+    }
 }
 
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
     MBTrainJourneyStopTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
     MBTrainJourneyStop* j = self.journeyStops[indexPath.row];
+    BOOL isCurrentStation = [self isStopCurrentStation:j];
     if(_layoutForIRIS){
-        [cell setStopWithString:j.stationName isFirst:(j==self.journeyStops.firstObject) isLast:((j==self.journeyStops.lastObject)) isCurrentStation:[j.evaNumber isEqualToString:self.currentEva]];
+        [cell setStop:j isFirst:(indexPath.row == 0) isLast:((j==self.journeyStops.lastObject)) isCurrentStation:isCurrentStation];
     } else {
         BOOL isFirst = (j==self.journeyStops.firstObject && ((self.showJourneyFromCurrentStation && !self.journeyHasPreviousStations) || (!self.showJourneyFromCurrentStation)));
-        [cell setStop:j isFirst:isFirst isLast:((j==self.journeyStops.lastObject)) isCurrentStation:[j.evaNumber isEqualToString:self.currentEva]];
+        [cell setStop:j isFirst:isFirst isLast:((j==self.journeyStops.lastObject)) isCurrentStation:isCurrentStation];
     }
     return cell;
 }
@@ -554,6 +641,15 @@
             }];
         }]];
         [self presentViewController:alert animated:YES completion:nil];
+    } else if(stop.evaNumber && [self.station.stationEvaIds containsObject:stop.evaNumber]) {
+        if(stop.hasPlatformInfo){
+            [MBTutorialManager.singleton markTutorialAsObsolete:MBTutorialViewType_H2_Platform_info];
+            MBPlatformOverlayInfoViewController* vc = [MBPlatformOverlayInfoViewController new];
+            vc.station = self.station;
+            vc.trainJourneyStop = stop;
+            vc.event = self.event;
+            [MBRootContainerViewController presentViewControllerAsOverlay:vc allowNavigation:YES];
+        }
     }
 }
 -(void)stationLoadError{
@@ -561,6 +657,17 @@
     [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 
+}
+
++(NSString*)timeStringForDate:(NSDate*)date{
+    if(!date){
+        return @"";
+    }
+    NSCalendar *calendar  = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar components:(NSCalendarUnitHour| NSCalendarUnitMinute) fromDate:date];
+    NSInteger hour = [components hour];
+    NSInteger minutes = [components minute];
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)hour, (long)minutes];
 }
 
 @end

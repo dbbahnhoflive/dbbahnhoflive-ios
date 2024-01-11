@@ -57,7 +57,7 @@
                   completionBlock:(void (^)(MBTrainJourney * _Nullable journey))completion
 {
     //completion(nil);return;//simulate failure
-    
+    //event.journeyID = @"36a450a9-fb46-49ce-b8be-36116f5bf930";//test-fixed-journey-id
     if(event.journeyID.length > 0){
         NSLog(@"use cached journeyID %@",event.journeyID);
         //this event was requested before, use this id
@@ -228,6 +228,12 @@
 {
     //gets a journey and compares it to the event to check if they match
     [self getJourneyDictForId:journeyID completionBlock:^(NSDictionary * _Nullable dict) {
+
+        //test-fixed-journey-id
+        /*MBTrainJourney* trainJourney = [[MBTrainJourney alloc] initWithDict:dict];
+        completion(trainJourney);
+        return;
+        */
         if(!dict){
             completion(nil);
         } else {

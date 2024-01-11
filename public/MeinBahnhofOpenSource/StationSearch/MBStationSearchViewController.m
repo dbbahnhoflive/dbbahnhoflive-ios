@@ -831,13 +831,20 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
 }
 
-
++(BOOL)isInOrAfter2024{
+    NSCalendar *gregorian = [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
+    NSInteger year = [gregorian component:NSCalendarUnitYear fromDate:NSDate.date];
+    return year >= 2024;
+}
 
 - (void)didTapOnImprintLink:(id)sender
 {
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
     imprintViewController.title = @"Impressum";
     imprintViewController.url = @"impressum";
+    if(MBStationSearchViewController.isInOrAfter2024){
+        imprintViewController.url = @"impressum2024";
+    }
     imprintViewController.openAsModal = YES;
     
     MBNavigationController *imprintNavigationController = [[MBNavigationController alloc] initWithRootViewController:imprintViewController];
@@ -856,6 +863,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
     imprintViewController.title = @"Datenschutz";
     imprintViewController.url = @"datenschutz";
+    if(MBStationSearchViewController.isInOrAfter2024){
+        imprintViewController.url = @"datenschutz2024";
+    }
+
     imprintViewController.openAsModal = YES;
     
     MBNavigationController *imprintNavigationController = [[MBNavigationController alloc] initWithRootViewController:imprintViewController];
@@ -1060,15 +1071,16 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
     
 //    NSLog(@"updateSearchresults: %d, %@",isLocation, results);
-    
-    if(isLocation){
-        self.searchResultGeoArray = results;
-    } else {
-        //must be text search
-        self.searchResultListFromSearchHistory = false;
-        self.searchResultTextArray = results;
-        self.searchResultDeleteButton.hidden = YES;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(isLocation){
+            self.searchResultGeoArray = results;
+        } else {
+            //must be text search
+            self.searchResultListFromSearchHistory = false;
+            self.searchResultTextArray = results;
+            self.searchResultDeleteButton.hidden = YES;
+        }
+    });
 }
 
 
@@ -1724,15 +1736,16 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     return cell;
 }
 -(MBStationFromSearch*)stationDataForTableView:(UITableView*)tableView path:(NSIndexPath*)indexPath{
-    if(tableView == self.searchResultTableView){
-        return self.searchResultTextArray[indexPath.row];
+    NSInteger row = indexPath.row;
+    if(tableView == self.searchResultTableView && row < self.searchResultTextArray.count){
+        return self.searchResultTextArray[row];
     }
     if(tableView == self.favoritesTableView){
         NSArray* fav = [[MBFavoriteStationManager client] favoriteStationsList];
-        return fav[indexPath.row];
+        return fav[row];
     }
-    if(tableView == self.geoSearchTableView){
-        return self.searchResultGeoArray[indexPath.row];
+    if(tableView == self.geoSearchTableView && row < self.searchResultGeoArray.count){
+        return self.searchResultGeoArray[row];
     }
     return nil;
 }

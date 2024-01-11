@@ -22,7 +22,7 @@
 @property (nonatomic, copy) NSArray *eva_ids;
 @property (nonatomic, copy) NSArray  *position; //lat,lng
 @property (nonatomic, strong) NSMutableArray *platformAccessibiltyData;
-
+@property (nonatomic,strong) NSMutableArray<MBPlatformAccessibility*>* mergedPlatformData;
 @end
 
 @implementation MBStation
@@ -1080,15 +1080,6 @@
     return [@[@"5274", @"5530", @"6192", @"519", @"6762", @"4424", @"8309", @"424", @"2698", @"4399", @"6235"] containsObject:stationId];//BAHNHOFLIVE-2094
 }
 
--(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList{
-    if(!self.platformAccessibiltyData){
-        self.platformAccessibiltyData = [NSMutableArray arrayWithCapacity:20];
-    }
-    [self.platformAccessibiltyData addObjectsFromArray:platformList];
-}
--(NSArray<MBPlatformAccessibility *> *)platformAccessibility{
-    return self.platformAccessibiltyData;
-}
 
 -(void)updateStationWithDetails:(MBStationDetails *)details{
     self.stationDetails = details;
@@ -1181,15 +1172,251 @@
     return self.riPoiCategories.count > 0;
 }
 
-+(NSString*)platformNumberFromPlatform:(NSString*)platform{
-    //remove characters (e.g. transform "5A-G" into "5")
-    return [[platform componentsSeparatedByCharactersInSet:
-                            [[NSCharacterSet decimalDigitCharacterSet] invertedSet]] componentsJoinedByString:@""];
+-(void)setRiPois:(NSArray *)riPois{
+    _riPois = riPois;
+    self.riPoiCategories = [RIMapPoi generatePXRGroups:_riPois];
 }
 
--(RIMapPoi *)poiForPlatform:(NSString *)platformNumber{
-    platformNumber = [MBStation platformNumberFromPlatform:platformNumber];
+
+#pragma mark Platform Data
+
+-(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList{
+    if(!self.platformAccessibiltyData){
+        self.platformAccessibiltyData = [NSMutableArray arrayWithCapacity:20];
+    }
+    [self.platformAccessibiltyData addObjectsFromArray:platformList];
+}
+-(NSArray<MBPlatformAccessibility *> *)platformAccessibility{
+    return self.platformAccessibiltyData;
+}
+-(NSArray<MBPlatformAccessibility*>*)platformForTrackInfo{
+    if(self.mergedPlatformData){
+        return self.mergedPlatformData;
+    }
+    NSMutableArray<MBPlatformAccessibility*>* tracksToShow = [NSMutableArray arrayWithCapacity:self.platformAccessibility.count];
+    BOOL filterOnParentPlatforms = true;
+    if(filterOnParentPlatforms){
+        //filter on main tracks (those that don't have a parent!)
+        for(MBPlatformAccessibility* p in self.platformAccessibility){
+            if(p.parentPlatform.length == 0){
+                [tracksToShow addObject:p];
+            }
+        }
+    }
+    NSMutableDictionary<NSString*,MBPlatformAccessibility*>* platformDict = [NSMutableDictionary dictionaryWithCapacity:tracksToShow.count];
+    NSMutableArray* keys = [NSMutableArray arrayWithCapacity:tracksToShow.count];
+    for(MBPlatformAccessibility* p in tracksToShow){
+        if(!platformDict[p.name] || platformDict[p.name].platformSetWithNameAndLinked.count < p.linkedPlatforms.count+1 ){
+            p.platformSetWithNameAndLinked = [[NSSet setWithArray:p.linkedPlatforms] setByAddingObject:p.name];
+            platformDict[p.name] = p;
+            if(![keys containsObject:p.name]){
+                [keys addObject:p.name];
+            }
+        }
+    }
     
+    //create groups with identical platformSetWithNameAndLinked
+    //NSLog(@"create groups from %@",platformDict);
+    NSMutableArray<NSMutableArray<MBPlatformAccessibility*>*>* groups = [NSMutableArray arrayWithCapacity:platformDict.count];
+    for(NSString* key in keys){
+        MBPlatformAccessibility* p = platformDict[key];
+        //NSLog(@"outer loop: %@",p);
+        NSMutableArray<MBPlatformAccessibility*>* found = nil;
+        for(NSMutableArray<MBPlatformAccessibility*>* list in groups){
+            for(MBPlatformAccessibility* p2 in list){
+                if([p2.platformSetWithNameAndLinked isEqualToSet:p.platformSetWithNameAndLinked]){
+                    found = list;
+                    break;
+                }
+            }
+            if(found){
+                break;
+            }
+        }
+        if(found){
+            [found addObject:p];
+        } else {
+            NSMutableArray<MBPlatformAccessibility*>* newGroup = [NSMutableArray arrayWithCapacity:10];
+            [newGroup addObject:p];
+            [groups addObject:newGroup];
+        }
+        //NSLog(@"result: %@",groups);
+    }
+    //create a flat list, using only the first item from each group and adding all the other items in linkedMBPlatformAccessibility
+    NSMutableArray<MBPlatformAccessibility*>* res = [NSMutableArray arrayWithCapacity:30];
+    for(NSMutableArray<MBPlatformAccessibility*>* list in groups){
+        [MBPlatformAccessibility sortArray:list];
+        [res addObject:list.firstObject];
+        NSMutableArray<MBPlatformAccessibility*>* linkedList = [NSMutableArray arrayWithCapacity:list.count];
+        [linkedList addObjectsFromArray:[list subarrayWithRange:NSMakeRange(1, list.count-1)]];
+        [MBPlatformAccessibility sortArray:linkedList];
+        list.firstObject.linkedMBPlatformAccessibility = linkedList;
+    }
+    //update the linkedMBPlatformAccessibility param in the other tracks
+    for(MBPlatformAccessibility* p in res){
+        for(MBPlatformAccessibility* linked in p.linkedMBPlatformAccessibility){
+            NSMutableArray<MBPlatformAccessibility*>* updatedLinkList = [NSMutableArray arrayWithCapacity:p.linkedMBPlatformAccessibility.count];
+            [updatedLinkList addObjectsFromArray:p.linkedMBPlatformAccessibility];
+            [updatedLinkList addObject:p];
+            [updatedLinkList removeObject:linked];
+            linked.linkedMBPlatformAccessibility = updatedLinkList;
+        }
+    }
+    
+    [MBPlatformAccessibility sortArray:res];
+    self.mergedPlatformData = res;
+    return res;
+}
+/*
+-(void)cleanupLinkedPlatforms:(NSArray<MBPlatformAccessibility*>*)list{
+    for(NSInteger i=0; i<list.count; i++){
+        MBPlatformAccessibility* p = list[i];
+        NSMutableArray* linkedCopy = p.linkedPlatforms.mutableCopy;
+        for(int k=0; k<linkedCopy.count; k++){
+            //every linked platform must also be a track that has THIS track as linked (link must be in both directions!)
+            NSString* linkedTrack = linkedCopy[k];
+            BOOL foundMatch = [self findTrack:linkedTrack withLinked:p.name inList:list];
+            if(!foundMatch){
+                NSLog(@"removing %@ from %@ because it is not linked in the other direction",linkedTrack,p.name);
+                [linkedCopy removeObjectAtIndex:k];
+                k--;
+                //since we removed something we start all over again in the main loop
+                i = -1;
+            }
+        }
+        [linkedCopy sortUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
+            NSInteger n1 = obj1.integerValue;
+            NSInteger n2 = obj2.integerValue;
+            if(n1 == n2){
+                return [obj1 compare:obj2 options:NSCaseInsensitiveSearch];
+            } else if(n1 < n2) {
+                return NSOrderedAscending;
+            } else {
+                return NSOrderedDescending;
+            }
+        }];
+        p.linkedPlatforms = linkedCopy;
+    }
+}
+-(BOOL)findTrack:(NSString*)track withLinked:(NSString*)linked inList:(NSArray<MBPlatformAccessibility*>*)list{
+    for(MBPlatformAccessibility* p in list){
+        if([p.name isEqualToString:track]){
+            for(NSString* link in p.linkedPlatforms){
+                if([link isEqualToString:linked]){
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+    return false;
+}
+
+
+-(void)filterDuplicates:(NSMutableArray<MBPlatformAccessibility*>*)list{
+    //a duplicate is an identical SET of trackname+linked tracks
+    for(NSInteger i=0; i<list.count; i++){
+        MBPlatformAccessibility* p = list[i];
+        NSSet* set = [self setListForTracks:p];
+        //check if there is another identical set
+        for(NSInteger k=0; k<list.count; k++){
+            MBPlatformAccessibility* p2 = list[k];
+            if(p2 != p){
+                NSSet* set2 = [self setListForTracks:p2];
+                if([set isEqualToSet:set2]){
+                    [list removeObjectAtIndex:k];
+                    k--;
+                }
+            }
+        }
+    }
+}
+-(NSSet*)setListForTracks:(MBPlatformAccessibility*)p{
+    NSMutableSet* set = [[NSMutableSet alloc] init];
+    [set addObject:p.name];
+    [set addObjectsFromArray:p.linkedPlatforms];
+    return set;
+}*/
+
+-(MBPlatformAccessibility*)platformAccessibilityForPlatform:(NSString*)platform{
+    for(MBPlatformAccessibility* p in self.platformAccessibiltyData){
+        if([p.name isEqualToString:platform]){
+            return p;
+        }
+    }
+    return nil;
+}
+-(NSString*)linkedPlatformForPlatform:(NSString*)platform{
+    if(!self.mergedPlatformData){
+        //ensure that we have the merged track data
+        [self platformForTrackInfo];
+    }
+    MBPlatformAccessibility* p = [self platformAccessibilityForPlatform:platform];
+    if(p.linkedMBPlatformAccessibility.count == 1){
+        return p.linkedMBPlatformAccessibility.firstObject.name;
+    }
+//    if(p.linkedPlatforms.count == 1){
+//        return p.linkedPlatforms.firstObject;
+//    }
+    return nil;
+}
+-(NSArray<NSString*>*)linkedPlatformsForPlatform:(NSString*)platform{
+    if(!self.mergedPlatformData){
+        //ensure that we have the merged track data
+        [self platformForTrackInfo];
+    }
+    MBPlatformAccessibility* p = [self platformAccessibilityForPlatform:platform];
+//    return p.linkedPlatforms;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:p.linkedMBPlatformAccessibility.count];
+    for(MBPlatformAccessibility* link in p.linkedMBPlatformAccessibility){
+        [res addObject:link.name];
+    }
+    return res;
+}
+-(BOOL)platformIsHeadPlatform:(NSString*)platform{
+    MBPlatformAccessibility* p = [self platformAccessibilityForPlatform:platform];
+    if(p){
+        return p.headPlatform;
+    }
+    return false;
+}
+
+-(void)addLevelInformationToPlatformAccessibility{
+    //collect the information for "Informationen zu den Gleisen vor Ort":
+    NSArray* list = self.platformAccessibiltyData;
+    for(MBPlatformAccessibility* p in list){
+        NSString* levelTrack = [self levelForPlatform:p.name];
+        p.level = levelTrack;
+    }
+    //The code below assumes that linked platforms (in both directions) are always on the same level:
+    
+    //some platform pois may be missing, but if another platform has this platform as linked AND it has a level, then we can use that level for this platform
+    for(MBPlatformAccessibility* p in list){
+        if(p.level == nil){
+            for(MBPlatformAccessibility* p2 in list){
+                if(p2 != p && p2.level != nil && [p2.linkedPlatforms containsObject:p.name]){
+                    p.level = p2.level;
+                    break;
+                }
+            }
+        }
+    }
+    //finally, if the track itself is not used in a linked list, but it contains tracks in its linked lists that are known, then use that level
+    for(MBPlatformAccessibility* p in list){
+        if(p.level == nil){
+            for(NSString* pLinked in p.linkedPlatforms){
+                NSString* levelTrack = [self levelForPlatform:pLinked];
+                if(levelTrack){
+                    p.level = levelTrack;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+-(RIMapPoi *)poiForPlatform:(NSString *)platformNumber{
     for(RIMapPoi* poi in self.riPois){
         if([poi.title isEqualToString:platformNumber] && [poi.menusubcat isEqualToString:@"Bahngleise"]){
             return poi;
@@ -1198,9 +1425,21 @@
     return nil;
 }
 
--(void)setRiPois:(NSArray *)riPois{
-    _riPois = riPois;
-    self.riPoiCategories = [RIMapPoi generatePXRGroups:_riPois];
+-(NSString*)levelForPlatform:(NSString*)platform{
+    RIMapPoi* poi = [self poiForPlatform:platform];
+    if(poi && poi.levelcode.length > 0){
+        if(UIAccessibilityIsVoiceOverRunning()){
+            return [RIMapPoi levelCodeToDisplayString:poi.levelcode];
+        }
+        return [RIMapPoi levelCodeToDisplayStringShort:poi.levelcode];
+    }
+    return nil;
 }
+
++(BOOL)displayPlaformInfo{
+    return false;
+}
+
+
 
 @end

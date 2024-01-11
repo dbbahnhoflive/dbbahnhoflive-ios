@@ -178,7 +178,7 @@
     if([productsAtStop isKindOfClass:NSArray.class]){
         for(NSDictionary* dict in productsAtStop){
             if([dict isKindOfClass:NSDictionary.class]){
-                NSString* catCode = dict[@"catCode"];
+                NSString* catCode = dict[@"cls"];
                 if([catCode isKindOfClass:NSString.class]){
                     if(catCode.integerValue == product){
                         NSString* lineId = dict[@"name"];//was "lineId"

@@ -15,6 +15,14 @@
     return res;
 }
 
+-(BOOL)isEqual:(id)object{
+    if([object isKindOfClass:MBPlatformAccessibilityFeature.class]){
+        MBPlatformAccessibilityFeature* other = object;
+        return other.feature == self.feature && other.accType == self.accType;
+    }
+    return false;
+}
+
 
 +(NSArray<NSNumber*>*)featureOrder{
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:12];

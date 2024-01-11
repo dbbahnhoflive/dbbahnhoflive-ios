@@ -14,6 +14,7 @@
 #import "MBTimeTableViewCell.h"
 #import "MBUIHelper.h"
 #import "MBFavoriteButton.h"
+#import "MBVoiceOverHelper.h"
 
 @interface MBStationPickerTableViewCell ()
 
@@ -456,7 +457,11 @@
         line = [line stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
         
         UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-        accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@. %@ Uhr, %@",line,destLabel.text,timeLabel.text, ([timeLabel.text isEqualToString:expectedTimeLabel.text]? @"." : [NSString stringWithFormat:@"erwartet %@",expectedTimeLabel.text])];
+        accLabel.accessibilityLabel = [NSString stringWithFormat:@"%@ nach %@. %@, %@",
+                                       line,
+                                       destLabel.text,
+                                       [MBVoiceOverHelper timeForVoiceOver:timeLabel.text],
+                                       ([timeLabel.text isEqualToString:expectedTimeLabel.text]? @"." : [NSString stringWithFormat:@"erwartet %@",[MBVoiceOverHelper timeForVoiceOver:expectedTimeLabel.text]])];
         accLabel.hidden = NO;
     }
 }
@@ -558,7 +563,7 @@
             index += 1;
             //empty label with voiceover text
             UILabel *accLabel = [abfahrtDict objectForKey:@"accLabel"];
-            accLabel.accessibilityLabel = [event voiceOverString];
+            accLabel.accessibilityLabel = [event voiceOverStringWithStation:nil];
             [accLabel setGravityLeft:timeLabel.frame.origin.x];
             [accLabel setGravityTop:timeLabel.frame.origin.y];
             [accLabel setSize:CGSizeMake(self.size.width-2*timeLabel.frame.origin.x, 45)];

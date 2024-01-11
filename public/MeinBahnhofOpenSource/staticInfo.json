@@ -1,24 +1,24 @@
 {
 	"staticInfo": [{
-			"descriptionText": "<p>Die DB Information ist die zentrale Anlaufstelle für Auskünfte rund um Ihre Bahnreise, Touristeninformationen und Treffpunkt für alle Reisenden und Bahnhofsbesucher.</p>",
+			"descriptionText": "<p>Die DB Information ist die zentrale Anlaufstelle für Auskünfte rund um Ihre Bahnreise, touristische Informationen und Treffpunkt für alle Reisenden und Besuchenden.</p>",
 			"title": "DB Information",
 			"type": "db_information"
 		},
 
 		{
-			"descriptionText": "<p>Auf dem Bahnhof stehen Ihnen unsere mobilen Service-Mitarbeitenden mit Rat und Tat zur Seite.<br>Die mobilen Service-Mitarbeitenden unterstützen Sie mit aktuellen Informationen und beantworten Ihnen Fragen auf Ihrer Reise. Bei Abweichungen, wie beispielsweise Verspätungen, erhalten Sie Reisealternativen und weiterführende Details.<br>Darüber hinaus unterstützt der mobile Service mobilitätseingeschränkte Reisende beim Ein-, Um- oder Aussteigen. Hierzu erhalten sie weitere Informationen unter <a href=\"mobilitaetsservice\">Mobilitätsservice</a>.</p>",
-			"title": "Mobiler Service",
+			"descriptionText": "<p>Auf dem Bahnhof stehen Ihnen unsere mobilen Servicemitarbeitenden mit Rat und Tat zur Seite.<br>Die mobilen Servicemitarbeitenden unterstützen Sie mit aktuellen Informationen und beantworten Ihnen Fragen auf Ihrer Reise. Bei Abweichungen, wie beispielsweise Verspätungen, erhalten Sie Reisealternativen und weiterführende Details.<br>Darüber hinaus unterstützen die mobilen Servicemitarbeitenden mobilitätseingeschränkte Reisende beim Ein-, Um- oder Aussteigen. Hierzu erhalten sie weitere Informationen unter <a href=\"mobilitaetsservice\">Mobilitätsservice</a>.</p>",
+			"title": "Mobile Servicemitarbeitende",
 			"type": "mobiler_service"
 		},
 
 		{
-			"descriptionText": "<p>Die Bahnhofsmission bietet Rat und Informationen in Notsituationen und vermittelt Fachstellen für weitergehende Hilfen. Außerdem betreut sie allein reisende Kinder und mobilitätseingeschränkte Reisende.<br><a href=\"https://www.bahnhofsmission.de\">Hier</a> finden Sie eine Übersicht sämtlicher Bahnhofsmissionen in Deutschland und deren Leistungsangebote. Näheres erfahren Sie auch von den Service-Mitarbeitern an der DB Information vor Ort.</p>",
+			"descriptionText": "<p>Die Bahnhofsmission bietet Rat und Informationen in Notsituationen und vermittelt Fachstellen für weitergehende Hilfen. Außerdem betreut sie allein reisende Kinder und mobilitätseingeschränkte Reisende.<br><a href=\"https://www.bahnhofsmission.de\">Hier</a> finden Sie eine Übersicht sämtlicher Bahnhofsmissionen in Deutschland und deren Leistungsangebote. Näheres erfahren Sie auch von den Service-Mitarbeitenden an der DB Information vor Ort.</p>",
 			"title": "Bahnhofsmission",
 			"type": "bahnhofsmission"
 		},
 
 		{
-            "descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich bis spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-bahn.de\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
+            "descriptionText": "<p>Die Mobilitätsservice-Zentrale organisiert alles Notwendige, wenn Sie Hilfe beim Ein-, Um- oder Aussteigen benötigen. Damit wir Sie optimal betreuen können bitten wir Sie, sich spätestens bis <b>20:00 Uhr des Vortages</b> Ihrer Reise anzumelden. Bei Internationalen Reisen <b>spätestens 48 Stunden</b> im Voraus.</p><dbactionbutton href=\"https://msz-bahn.de\">Online-Formular</dbactionbutton><p><b><br>Weitere Kontaktmöglichkeiten</b></p><dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton><dbactionbutton href=\"mailto:msz@deutschebahn.com\">E-Mail</dbactionbutton>",
 			"title": "Mobilitätsservice",
 			"type": "mobilitaetsservice"
 		},
@@ -36,7 +36,7 @@
 		},
 
         {
-            "descriptionText": "<p>[STATUS]</p><p>Zu Informationen über die Barrierefreiheit des Bahnhofs oder bei weiteren Fragen wenden Sie Sich bitte an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>Die nachfolgend genannten Ausstattungsmerkmale dienen der barrierefreien Zugänglichkeit der Bahnsteige.",
+            "descriptionText": "<p>[STATUS]</p><p>Zu Informationen über die Barrierefreiheit des Bahnhofs oder bei weiteren Fragen wenden Sie sich bitte an die Mobilitätsservice-Zentrale unter <dbactionbutton href=\"tel:03065212888\">030 6521 2888</dbactionbutton></p>Die nachfolgend genannten Ausstattungsmerkmale dienen der barrierefreien Zugänglichkeit der Bahnsteige.",
             "title": "Barrierefreiheit",
             "type": "barrierefreiheit"
         },
@@ -48,7 +48,7 @@
         },
 
         {
-             "descriptionText": "<p>In unseren DB Lounges finden Reisende der 1.Klasse und bahn.bonus comfort-Kunden alles, was den Aufenthalt so angenehm wie möglich macht: elegante Sitzlandschaften, stilvolles Ambiente und aufmerksamen Service. Die Öffnungszeiten der DB Lounges finden Sie <a href=\"https://www.bahn.de/p/view/service/bahnhof/db_lounge.shtml\">hier</a>.</p>",
+             "descriptionText": "<p>In unseren DB Lounges finden Reisende der 1.Klasse und BahnBonus Kund:innen alles, was den Aufenthalt so angenehm wie möglich macht: elegante Sitzlandschaften, stilvolles Ambiente und aufmerksamen Service. Die Öffnungszeiten der DB Lounges finden Sie <a href=\"https://www.bahn.de/p/view/service/bahnhof/db_lounge.shtml\">hier</a>.</p>",
              "title": "DB Lounge",
              "type": "local_db_lounge"
          },
@@ -60,17 +60,17 @@
          },
          
          {
-             "descriptionText": "<p>Hallo, mein Name ist DB Smile. Ich bin Ihr digitaler Assistent und helfe bei Fragen zum Bahnhof.</p><dbactionbutton href=\"chatbot\">Chatten Sie mit mir</dbactionbutton><p>Ich bin <b>Montag bis Sonntag von 07:00 - 22:00 Uhr</b> in vollem Umfang für Sie da.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackchatbot\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p>",
+             "descriptionText": "<p>Hallo, mein Name ist DB Smile. Ich bin Ihr digitaler Assistent und helfe bei Fragen zum Bahnhof.</p><dbactionbutton href=\"chatbot\">Chatten Sie mit mir</dbactionbutton><p>Ich bin <b>Montag bis Sonntag von 07:00 bis 22:00 Uhr</b> in vollem Umfang für Sie da.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackchatbot\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 bis 22:00 Uhr</p>",
              "title": "Fragen & Feedback zum Bahnhof",
              "type": "chatbot"
          },
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Nutzerkonto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbieter eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/service/db-reinigungsteam\">bahnhof.de/service/db-reinigungsteam</a></p>",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.*</p><p><dbactionbutton href=\"whatsappfeedback\">WhatsApp öffnen</dbactionbutton></p><p>Dieser Service ist <b>kostenlos</b>. Es fällt ggf. das Datenentgelt Ihres Mobilfunkproviders an.</p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p><p><b>* Bitte beachten Sie</b>, dass die Benachrichtigung auf diesem Weg ein bestehendes Konto beim Dienst „WhatsApp“ voraussetzt und über den Dienst „MessengerPeople“ weitergeleitet wird. Diese Dienste und deren Datenverarbeitung werden ausschließlich durch die jeweiligen Anbietenden eigenverantwortlich angeboten, betrieben und ausgestaltet. Sofern Sie diese Dienste freiwillig und eigenständig nutzen, um uns eine Verschmutzung zu melden, sind die Erklärungen zum Datenschutz von „WhatsApp“ und „MessengerPeople GmbH“ zu beachten. Hinsichtlich der Verarbeitung Ihrer Daten bei der DB Station&Service AG im Zuge einer Verschmutzungsmeldung über diese Dienste lesen Sie bitte vorab auch aufmerksam unsere Datenschutzerklärung: <a href=\"https://www.bahnhof.de/service/db-reinigungsteam\">bahnhof.de/service/db-reinigungsteam</a></p>",
              "title": "Verschmutzung und Defekte melden",
              "type": "verschmutzung_mitwhatsapp"
          },
          {
-             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Nutzerkonto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 - 22:00 Uhr</p>",
+             "descriptionText": "<p><b>Verschmutzungen und Defekte melden</b></p><p>Ihnen ist eine Verunreinigung oder eine defekte Anlage an einem Bahnhof aufgefallen? Benachrichtigen Sie uns gerne direkt über <b>WhatsApp</b>.</p><p><i>Sie benötigen ein bestehendes Konto beim Dienst „WhatsApp“. Aktuell ist dieser Dienst nicht auf ihrem Gerät installiert.</i></p><p><b>Alternative Kontaktmöglichkeiten</b></p><dbactionbutton href=\"feedbackverschmutzung\">E-Mail</dbactionbutton><dbactionbutton href=\"tel:030586020930\">030 586020930</dbactionbutton><p>Montag bis Sonntag von 07:00 bis 22:00 Uhr</p>",
              "title": "Verschmutzung und Defekte melden",
              "type": "verschmutzung_ohnewhatsapp"
          },

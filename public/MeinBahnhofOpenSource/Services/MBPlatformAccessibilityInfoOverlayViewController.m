@@ -8,7 +8,6 @@
 #import "MBUIHelper.h"
 
 @interface MBPlatformAccessibilityInfoOverlayViewController ()
-@property(nonatomic,strong) UIScrollView* contentScrollView;
 
 @end
 
@@ -19,11 +18,7 @@
     // Do any additional setup after loading the view.
     
     self.title = @"Merkmale der Barrierefreiheit";
-    self.titleLabel.text = self.title;
 
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
-    [self.contentView addSubview:self.contentScrollView];
-    
     NSInteger y = 16;
     
     NSMutableArray* texts = [NSMutableArray arrayWithCapacity:12*2];
@@ -67,19 +62,8 @@
         y += bodyLabel.sizeHeight + 25;
 
     }
-    
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
+    [self updateContentScrollViewContentHeight:y];
 
-}
-
-
--(void)viewDidLayoutSubviews{
-    [super viewDidLayoutSubviews];
-    //resize view for content
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
 }
 
 @end

@@ -31,12 +31,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSString* daysDisplayString;
 @property(nonatomic,strong) NSArray<NSString*>* days;//list of all the weeksdays with these openTimes
 @property(nonatomic,strong) NSArray<NSString*>* openTimes;//list of hh:mm-hh:mm
+@property(nonatomic,strong) NSArray<NSString*>* openTimesVoiceOver;//list of "hh Uhr mm bis hh Uhr mm"
 
 -(BOOL)validForDay:(NSString*)weekday;
 +(BOOL)isValidWeekday:(NSString*)s;
 +(NSArray*)weekdayList;
 +(NSArray *)weekdayListShort;
--(NSString*)openTimesString;
+-(NSString*)openTimesStringForVoiceOver:(BOOL)voiceOver;
 @end
 
 NS_ASSUME_NONNULL_END

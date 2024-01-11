@@ -7,6 +7,7 @@
 #import "Event.h"
 #import "Stop.h"
 #import <UIKit/UIKit.h>
+#import "MBVoiceOverHelper.h"
 
 @implementation Event
 
@@ -348,10 +349,17 @@
 }
 
 
--(NSString*)voiceOverString{
-    return [Event voiceOverForEvent:self];
+-(NSString*)voiceOverStringWithStation:(MBStation*)station{
+    if(MBStation.displayPlaformInfo && station){
+        NSString* gl = self.actualPlatform;
+        NSString* linked = [station linkedPlatformForPlatform:gl];
+        BOOL head = [station platformIsHeadPlatform:gl];
+        return [Event voiceOverForEvent:self linkedPlatform:linked headPlatform:head];
+    } else {
+        return [Event voiceOverForEvent:self linkedPlatform:nil headPlatform:false];
+    }
 }
-+(NSString*)voiceOverForEvent:(Event*)event{
++(NSString*)voiceOverForEvent:(Event*)event linkedPlatform:(NSString*)linkedPLatform headPlatform:(BOOL)headPlatform{
     NSString* train = [event.stop formattedTransportType:event.lineIdentifier];
     if([train containsString:@"ICE"]){
         train = [train stringByReplacingOccurrencesOfString:@"ICE" withString:@"I C E"];
@@ -359,6 +367,12 @@
         train = [train stringByReplacingOccurrencesOfString:@"STR" withString:VOICEOVER_FOR_STR];
     }
     NSString* gleis = [NSString stringWithFormat:@"Gleis %@",event.actualPlatform];
+    if(linkedPLatform.length > 0){
+        gleis = [gleis stringByAppendingFormat:@", gegenüberliegend Gleis %@",linkedPLatform];
+    }
+    if(headPlatform){
+        gleis = [gleis stringByAppendingString:@", Kopfgleis"];
+    }
     NSString* msg = event.composedIrisMessage;
     if(!msg){
         msg = @"";
@@ -367,12 +381,12 @@
     if([Stop stopShouldHaveTrainRecord:event.stop]){
         trainOrder = @"Informationen zur Wagenreihung verfügbar.";
     }
-    NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@ Uhr, %@, %@; %@. %@",
+    NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@, %@, %@; %@. %@",
                 train,
                 event.departure ? @"nach" : @"von",
                 event.actualStation,
-                event.formattedTime,
-                ([event.formattedTime isEqualToString:event.formattedExpectedTime] ? @"" : [NSString stringWithFormat:@"Erwartet %@ Uhr",event.formattedExpectedTime]),
+                [MBVoiceOverHelper timeForVoiceOver:event.formattedTime],
+                     ([event.formattedTime isEqualToString:event.formattedExpectedTime] ? @"" : [NSString stringWithFormat:@"Erwartet %@",[MBVoiceOverHelper timeForVoiceOver:event.formattedExpectedTime]]),
                 gleis,
                 msg,
                 trainOrder

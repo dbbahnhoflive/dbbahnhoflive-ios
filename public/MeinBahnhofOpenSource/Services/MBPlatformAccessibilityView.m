@@ -14,10 +14,12 @@
 #import "MBLinkButton.h"
 #import "MBUIHelper.h"
 #import "MBStatusImageView.h"
+#import "MBDetailViewController.h"
 
 @interface MBPlatformAccessibilityView()<MBTimetableFilterViewControllerDelegate>
 @property(nonatomic,strong) MBStation* station;
 @property(nonatomic,strong) NSArray* trackList;
+@property(nonatomic,strong) NSArray<MBPlatformAccessibility*>* trackAccessibilityList;
 @property(nonatomic,strong) NSString* currentlySelectedPlatform;
 @property(nonatomic,strong) MBFilterButton* filterButton;
 
@@ -45,9 +47,38 @@
     return self;
 }
 
+-(BOOL)list:(NSArray*)list containsPlatformWithSameNameAndFeatures:(MBPlatformAccessibility*)p{
+    for(MBPlatformAccessibility* item in list){
+        if([item.name isEqualToString:p.name]){
+            if(p.features.count != item.features.count){
+                return false;
+            }
+            for(MBPlatformAccessibilityFeature* f in item.features){
+                if(![p.features containsObject:f]){
+                    return false;
+                }
+            }
+            //same features
+            return true;
+        }
+    }
+    return false;
+}
+
 -(void)createView{
     //self.backgroundColor = UIColor.redColor;
-    self.trackList = [MBPlatformAccessibility getPlatformList:self.station.platformAccessibility];
+    //here we show only tracks that have accessibility informatino
+    NSMutableArray* list = [NSMutableArray new];
+    for(MBPlatformAccessibility* p in self.station.platformAccessibility){
+        if(p.features){
+            //ensure that we don't add duplicates:
+            if(![self list:list containsPlatformWithSameNameAndFeatures:p]){
+                [list addObject:p];
+            }
+        }
+    }
+    self.trackAccessibilityList = list;
+    self.trackList = [MBPlatformAccessibility getPlatformList:list];
     
     self.infoLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 32, self.frame.size.width-50, 20)];
     self.infoLabel.font = UIFont.db_BoldSixteen;
@@ -109,23 +140,31 @@
     self.footerViews = footerViews;
     
     [self addShadowAt:0 toView:footerViews];
+    BOOL stationHasFacility = self.station.facilityStatusPOIs.count > 0;
     UILabel* facilityHintLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 20, self.frame.size.width-2*15, 20)];
     facilityHintLabel.numberOfLines = 0;
     facilityHintLabel.font = UIFont.db_RegularFourteen;
     facilityHintLabel.textColor = UIColor.db_333333;
-    facilityHintLabel.text = @"Bitte beachten Sie, dass die Stufenfreiheit vor Ort durch Aufzugsanlagen oder Rampen ermöglicht werden kann. Eine Übersicht der Aufzugsanlagen und deren aktuelle Verfügbarkeit finden Sie hier:";
+    facilityHintLabel.text = @"Bitte beachten Sie, dass die Stufenfreiheit vor Ort durch Aufzugsanlagen oder Rampen ermöglicht werden kann.";
+    if(stationHasFacility){
+        facilityHintLabel.text = [facilityHintLabel.text stringByAppendingString:@" Eine Übersicht der Aufzugsanlagen und deren aktuelle Verfügbarkeit finden Sie hier:"];
+    }
     CGSize size = [facilityHintLabel sizeThatFits:CGSizeMake(facilityHintLabel.frame.size.width, 1000)];
     [facilityHintLabel setSize:size];
     [self.footerViews addSubview:facilityHintLabel];
     
-    MBLinkButton* btn = [MBLinkButton boldButtonWithRedLink];
-    [btn setLabelText:@"Übersicht Aufzüge"];
-    [btn setGravityLeft:15];
-    [btn setGravityTop:CGRectGetMaxY(facilityHintLabel.frame)+10];
-    btn.accessibilityLabel = @"Zur Übersicht der Aufzüge wechseln";
-    [btn addTarget:self action:@selector(facilityBtnPressed) forControlEvents:UIControlEventTouchUpInside];
-    [self.footerViews addSubview:btn];
-    [self.footerViews setHeight:CGRectGetMaxY(btn.frame)];
+    if(stationHasFacility){
+        MBLinkButton* btn = [MBLinkButton boldButtonWithRedLink];
+        [btn setLabelText:@"Übersicht Aufzüge"];
+        [btn setGravityLeft:15];
+        [btn setGravityTop:CGRectGetMaxY(facilityHintLabel.frame)+10];
+        btn.accessibilityLabel = @"Zur Übersicht der Aufzüge wechseln";
+        [btn addTarget:self action:@selector(facilityBtnPressed) forControlEvents:UIControlEventTouchUpInside];
+        [self.footerViews addSubview:btn];
+        [self.footerViews setHeight:CGRectGetMaxY(btn.frame)];
+    } else {
+        [self.footerViews setHeight:CGRectGetMaxY(facilityHintLabel.frame)];
+    }
     [self addSubview:footerViews];
 
     if(self.initialSelectedPlatform && [self.trackList containsObject:self.initialSelectedPlatform]){
@@ -177,7 +216,7 @@
     self.currentlySelectedPlatform = track;
     [self.filterButton setStateActive:YES];
     MBPlatformAccessibility* p = nil;
-    for(MBPlatformAccessibility* platform in self.station.platformAccessibility){
+    for(MBPlatformAccessibility* platform in self.trackAccessibilityList){
         if([platform.name isEqualToString:track]){
             p = platform;
             break;
@@ -187,6 +226,9 @@
     [self configureViewForPlatform:p];
 }
 -(void)configureViewForPlatform:(MBPlatformAccessibility*)platform{
+    if([self.viewController isKindOfClass:MBDetailViewController.class]){
+        ((MBDetailViewController*)self.viewController).poiToSelectOnMap = [self.station poiForPlatform:platform.name];
+    }
     self.platformLabel.text = [NSString stringWithFormat:@"Gleis %@",platform.name];
     
     [self.platformViews makeObjectsPerformSelector:@selector(removeFromSuperview)];

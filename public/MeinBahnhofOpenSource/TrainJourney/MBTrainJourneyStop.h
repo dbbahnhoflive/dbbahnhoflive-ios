@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MBTrainJourneyStop : NSObject
 
--(MBTrainJourneyStop *)initWithEvent:(MBTrainJourneyEvent*)event;
+-(MBTrainJourneyStop *)initWithEvent:(MBTrainJourneyEvent*)event forDeparture:(BOOL)departure;
 
 @property(nonatomic) BOOL additional;
 @property(nonatomic) BOOL canceled;
@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic,strong) NSString* stationName;
 @property(nonatomic,strong) NSString* evaNumber;
+
+@property(nonatomic) BOOL isCurrentStation;
 
 //from arrival
 @property(nonatomic,strong) NSString* _Nullable platform;
@@ -30,7 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSDate* _Nullable departureTime;
 @property(nonatomic,strong) NSDate* _Nullable departureTimeSchedule;
 
+//string used for display of the platform
+@property(nonatomic,strong) NSString* platformDesignator;
+@property(nonatomic,strong) NSString* platformDesignatorVoiceOver;
+
+//additional strings for the platform type and linked platform
+@property(nonatomic,strong) NSArray<NSString*>* _Nullable linkedPlatformsForStop;
+@property(nonatomic,strong) NSString* _Nullable platformLevel;
+@property(nonatomic) BOOL headPlatform;
+-(BOOL)hasPlatformInfo;
 -(BOOL)platformChange;
+-(NSString*)platformForDisplay;
 
 @end
 

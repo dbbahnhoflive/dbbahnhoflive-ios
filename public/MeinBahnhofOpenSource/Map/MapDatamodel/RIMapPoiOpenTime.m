@@ -24,9 +24,9 @@
     return @[ kWeekDayMoShort,kWeekDayDiShort,kWeekDayMiShort,kWeekDayDoShort,kWeekDayFrShort,kWeekDaySaShort,kWeekDaySoShort ];
 }
 
--(NSString*)openTimesString{
+-(NSString*)openTimesStringForVoiceOver:(BOOL)voiceOver{
     NSMutableString* s = [NSMutableString new];
-    for(NSString* time in self.openTimes){
+    for(NSString* time in (voiceOver? self.openTimesVoiceOver : self.openTimes)){
         if(s.length > 0){
             [s appendString:@","];
         }

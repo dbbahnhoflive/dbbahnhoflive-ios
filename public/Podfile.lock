@@ -76,9 +76,9 @@ PODS:
   - nanopb/decode (2.30909.0)
   - nanopb/encode (2.30909.0)
   - PromisesObjC (2.2.0)
-  - Sentry (7.31.3):
-    - Sentry/Core (= 7.31.3)
-  - Sentry/Core (7.31.3)
+  - Sentry (7.31.5):
+    - Sentry/Core (= 7.31.5)
+  - Sentry/Core (7.31.5)
   - TBXML (1.5)
 
 DEPENDENCIES:
@@ -88,7 +88,7 @@ DEPENDENCIES:
   - GTMNSStringHTMLAdditions (= 0.2.1)
   - Mantle (= 2.2.0)
   - MBProgressHUD (= 1.2.0)
-  - Sentry (from `https://github.com/getsentry/sentry-cocoa.git`, tag `7.31.3`)
+  - Sentry (from `https://github.com/getsentry/sentry-cocoa.git`, tag `7.31.5`)
   - TBXML (= 1.5)
 
 SPEC REPOS:
@@ -112,12 +112,12 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Sentry:
     :git: https://github.com/getsentry/sentry-cocoa.git
-    :tag: 7.31.3
+    :tag: 7.31.5
 
 CHECKOUT OPTIONS:
   Sentry:
     :git: https://github.com/getsentry/sentry-cocoa.git
-    :tag: 7.31.3
+    :tag: 7.31.5
 
 SPEC CHECKSUMS:
   AFNetworking: 3bd23d814e976cd148d7d44c3ab78017b744cd58
@@ -134,9 +134,9 @@ SPEC CHECKSUMS:
   MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
-  Sentry: 08884c523575ec0f6690d94ed3ccb0246a1600bf
+  Sentry: 4c9babff9034785067c896fd580b1f7de44da020
   TBXML: 9f9dadb239f2f2af1dadb87fe43a0ce6e479379a
 
-PODFILE CHECKSUM: a71d73e8c6a60e81661370fc1074398d67e33c28
+PODFILE CHECKSUM: 479998e5c2b637abde0d9e19d852f6c0bc78c6e8
 
-COCOAPODS: 1.12.0
+COCOAPODS: 1.12.1

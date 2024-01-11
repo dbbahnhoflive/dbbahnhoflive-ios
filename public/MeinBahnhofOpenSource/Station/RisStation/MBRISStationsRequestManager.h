@@ -29,7 +29,7 @@
      success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success
 failureBlock:(void (^)(NSError *error))failure;
 
--(void)requestEvaIdsForStation:(MBStationFromSearch*)station success:(void (^)(NSArray<NSString*>* evaIds))success failureBlock:(void (^)(NSError *))failure;
+-(void)requestUpdateForStation:(MBStationFromSearch*)station success:(void (^)(MBStationFromSearch* stationFromSearch))success failureBlock:(void (^)(NSError *))failure;
 
 -(void)requestAccessibility:(NSString *)stationId success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure;
 @end

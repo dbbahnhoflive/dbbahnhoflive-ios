@@ -24,7 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 //a hafas-journey has no event and instead a HafasDeparture
 @property(nonatomic,strong) HafasDeparture* _Nullable hafasDeparture;
+@property(nonatomic,strong) NSString* _Nullable hafasEventText;
 
++(NSString*)timeStringForDate:(NSDate*)date;
 @end
 
 NS_ASSUME_NONNULL_END

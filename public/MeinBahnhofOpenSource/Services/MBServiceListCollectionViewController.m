@@ -163,7 +163,9 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 MBParkingTableViewController* vc = [[MBParkingTableViewController alloc] initWithStation:self.station];
                 [self.navigationController pushViewController:vc animated:NO];
             } else if(self.searchResult.isSteplessAccessSearch){
-                [self pushServiceViewForType:kServiceType_Barrierefreiheit];
+                MBService* service = [self findServiceWithType:kServiceType_Barrierefreiheit];
+                service.serviceConfiguration = self.searchResult.metaData;
+                [self pushService:service];
             } else if(self.searchResult.isWifiSearch){
                 [self pushServiceViewForType:kServiceType_WLAN];
             } else if(self.searchResult.isElevatorSearch){
@@ -182,6 +184,9 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
 
 -(void)pushServiceViewForType:(NSString*)serviceType{
     MBService* service = [self findServiceWithType:serviceType];
+    [self pushService:service];
+}
+-(void)pushService:(MBService*)service{
     MBDetailViewController* vc = [[MBDetailViewController alloc] initWithStation:self.station service:service];
     [self.navigationController pushViewController:vc animated:NO];
 }

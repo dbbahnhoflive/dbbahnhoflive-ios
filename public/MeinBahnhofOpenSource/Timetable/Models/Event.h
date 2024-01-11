@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #import "Message.h"
 
+#import "MBStation.h"
+
 #define PLATFORM_STRING_MISSING @"k.A."
 
 @class Stop;
@@ -124,7 +126,7 @@
 
 -(BOOL)sameDayEvent:(Event*)event;
 
--(NSString*)voiceOverString;
+-(NSString*)voiceOverStringWithStation:(MBStation*)station;
 
 -(NSArray<NSString*>*)stationListWithCurrentStation:(NSString*)currentStation;
 @end

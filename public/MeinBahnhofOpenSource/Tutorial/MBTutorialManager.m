@@ -36,8 +36,50 @@
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H1_Live title:@"Live Infos" text:@"Aktuelle Informationen zu Shops, Parkplätzen und mehr (an ausgewählten Bahnhöfen)." countdown:2],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H1_Tips title:@"Tipps & Hinweise" text:@"Unter Einstellungen können Sie Tipps & Hinweise deaktivieren." countdown:5],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H2_Departure title:@"Verbindungsdetails" text:@"Erhalten Sie alle Details zu Ihrer Verbindung, inkl. aktuellem Wagenreihungsplan." countdown:8],
+                                      [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H2_Platform_info title:@"Gegenüberliegende Gleise" text:@"Wählen Sie eine Verbindung aus, um weitere Gleisinformationen zu erhalten." countdown:0 ruleBlock:^BOOL(MBTutorial *t) {
+                                          if(![MBTutorialManager previousAppVersionIsSmallerThan:@"3.24.0"]){
+                                              //this is either a new installation or a later update (previous is <3.22.0, the version when this feature was added)
+                                              return false;
+                                          }
+                                          if(AppDelegate.appDelegate.selectedStation.platformAccessibility.count == 0){
+                                              return false;
+                                          }
+                                          NSString* const keyDate = @"MBTutorialViewType_H2_Platform_info_Count_Date";
+                                          NSString* const keyCount = @"MBTutorialViewType_H2_Platform_info_Count";
+                                          return [MBTutorialManager openCountCheckWithKeyDate:keyDate keyCount:keyCount showAgainAfterDay:5];
+                                      }],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_D1_ServiceStores_Details title:@"DB Services" text:@"Sie haben Fragen? Wir helfen Ihnen weiter." countdown:8],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_D1_Aufzuege title:@"Merkliste erstellen" text:@"Verwalten Sie Ihre relevante Aufzüge. Ganz einfach und übersichtlich." countdown:5],
+                                      [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H1_FacilityPush title:@"NEU: Mitteilungen Aufzüge" text:@"Erhalten Sie eine Nachricht, wenn Ihr Aufzug defekt oder wieder in Betrieb ist." countdown:0 ruleBlock:^BOOL(MBTutorial *t) {
+                                          if(![MBTutorialManager previousAppVersionIsSmallerThan:@"3.22.0"]){
+                                              //this is either a new installation or a later update (previous is <3.22.0, the version when this feature was added)
+                                              return false;
+                                          }
+                                          if(AppDelegate.appDelegate.selectedStation.facilityStatusPOIs.count == 0){
+                                              return false;
+                                          }
+                                          NSString* const keyDate = @"MBTutorialViewType_H1_FacilityPush_Count_Date";
+                                          NSString* const keyCount = @"MBTutorialViewType_H1_FacilityPush_Count";
+                                          NSString* const keyDisplayCount = @"MBTutorialViewType_H1_FacilityPush_Display_Count";
+                                          NSNumber* displayCount = [NSUserDefaults.standardUserDefaults objectForKey:keyDisplayCount];
+                                          if(displayCount != nil){
+                                              if(displayCount.integerValue >= 3){
+                                                  //this message was displayed 3 times, don't show again
+                                                  return false;
+                                              }
+                                          } else {
+                                              displayCount = @0;
+                                          }
+                                          BOOL did5DaysPass = [MBTutorialManager openCountCheckWithKeyDate:keyDate keyCount:keyCount showAgainAfterDay:5];
+                                          if(did5DaysPass){
+                                              //repeat this process after 5 days...
+                                              [NSUserDefaults.standardUserDefaults setObject:NSDate.date forKey:keyDate];
+                                              [NSUserDefaults.standardUserDefaults setObject:@1 forKey:keyCount];
+                                              [NSUserDefaults.standardUserDefaults setObject:@(displayCount.integerValue+1) forKey:keyDisplayCount];
+                                              return true;
+                                          }
+                                          return false;
+                                      }],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H1_FacilityPush title:@"NEU: Mitteilungen Aufzüge" text:@"Erhalten Sie eine Nachricht, wenn Ihr Aufzug defekt oder wieder in Betrieb ist." countdown:0 ruleBlock:^BOOL(MBTutorial *t) {
                                           if(![MBTutorialManager previousAppVersionIsSmallerThan:@"3.22.0"]){
                                               //this is either a new installation or a later update (previous is <3.22.0, the version when this feature was added)
@@ -95,7 +137,6 @@
     NSDate* lastDate = [def objectForKey:keyDate];
     if(!count){
         //the box is displayed the first time
-        count = @0;
         [def setObject:NSDate.date forKey:keyDate];
         [def setObject:@1 forKey:keyCount];
         return true;

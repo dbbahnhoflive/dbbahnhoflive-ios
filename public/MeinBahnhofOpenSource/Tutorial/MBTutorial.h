@@ -22,6 +22,7 @@ typedef NS_ENUM(NSUInteger, MBTutorialViewType)  {
     MBTutorialViewType_H1_FacilityPush,
     MBTutorialViewType_D1_FacilityPush,
     MBTutorialViewType_Zuglauf_StationLink,
+    MBTutorialViewType_H2_Platform_info,
 } ;
 
 @interface MBTutorial : NSObject

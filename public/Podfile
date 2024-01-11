@@ -9,7 +9,7 @@ def base_db_dependencies
     pod 'Mantle', '2.2.0'
     pod 'GoogleMaps', '6.2.1'
     pod 'MBProgressHUD', '1.2.0'
-    pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '7.31.3'
+    pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '7.31.5'
 end
 
 target 'MeinBahnhofOpenSource' do

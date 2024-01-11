@@ -140,6 +140,7 @@
 
     self.pageControl = [[UIPageControl alloc] init];
     self.pageControl.numberOfPages = NUMBER_OF_PAGES;
+    [self.pageControl addTarget:self action:@selector(pageControlChanged:) forControlEvents:UIControlEventValueChanged];
     
     [self.view addSubview:self.topImage];
     [self.view addSubview:self.topImage2];
@@ -375,6 +376,10 @@
         }];
     }];
     
+}
+
+-(void)pageControlChanged:(UIPageControl*)page{
+    [self pageTransitionTo:self.pageControl.currentPage];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView

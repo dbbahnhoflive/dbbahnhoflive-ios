@@ -25,7 +25,6 @@
 
 @interface MBStationInfrastructureViewController ()<MBMapViewControllerDelegate>
 
-@property(nonatomic,strong) UIScrollView* contentScrollView;
 @property(nonatomic,strong) NSArray<NSString*>* order;
 
 @property(nonatomic,strong) NSArray<NSString*>* keysDisplayedOnlyWhenAvailableForSomeCat;
@@ -139,17 +138,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.titleLabel.text = @"Bahnhofsausstattung";
+    self.title = @"Bahnhofsausstattung";
     
     [self calculateStatus];
-    
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
-    
+        
     int y = [self addStatusViewsForStateActive:YES y:0];//the active items are displayed first
     y = [self addStatusViewsForStateActive:NO y:y];
     
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.sizeWidth, y);
-    [self.contentView addSubview:self.contentScrollView];
+    [self updateContentScrollViewContentHeight:y];
 }
 
 +(BOOL)displaySomeEntriesOnlyWhenAvailable:(MBStation*)station{
@@ -435,35 +431,5 @@
 
 }
 
--(void)viewDidLayoutSubviews{
-    [super viewDidLayoutSubviews];
-    
-    //resize view for content
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
-
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
--(void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-}
-
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

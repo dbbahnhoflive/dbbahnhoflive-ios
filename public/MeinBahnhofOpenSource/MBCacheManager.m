@@ -30,7 +30,7 @@
     if(self){
         NSLog(@"setup cache manager with directory %@",[self applicationDocumentsDirectory]);
         NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
-        if([def integerForKey:SETTING_MBCACHE_VERSION] < MBCACHE_VERSION){
+        if([def integerForKey:SETTING_MBCACHE_VERSION] != MBCACHE_VERSION){
             [self deleteCache];
             NSLog(@"cache version changed, clear cache dir");
             [def setInteger:MBCACHE_VERSION forKey:SETTING_MBCACHE_VERSION];
@@ -47,8 +47,10 @@
 //cache for 24h = 60*60*24
 #define CACHE_TIME_RIS_EVA_UPDATE (60*60*24)
 #define CACHE_TIME_RIS_REQUEST (60*60*1)
+#define CACHE_TIME_RIS_OCCUPANCY (60*15)
 #define CACHE_TIME_RIMAP (60*60*1)
 #define CACHE_TIME_PARKING (60*60*1)
+#define CACHE_TIME_PARKING_CAPACITY (60*15)
 #define CACHE_TIME_EINKAUFSBAHNHOF (60*60*24)
 #define CACHE_TIME_TRAVELCENTER (60*60*24)
 #define CACHE_TIME_NEWS (60*5)
@@ -60,7 +62,10 @@
         case MBCacheResponseRISStationData:
         case MBCacheResponseRISStationServices:
         case MBCacheResponseRISLocker:
+        case MBCacheResponseRISPlatforms:
             return CACHE_TIME_RIS_REQUEST;
+        case MBCacheResponseRISOccupancy:
+            return CACHE_TIME_RIS_OCCUPANCY;
         case MBCacheResponseRISStopPlacesForEva:
             return CACHE_TIME_RIS_EVA_UPDATE;
         case MBCacheResponseRIMapStatus07API:
@@ -69,6 +74,8 @@
             return CACHE_TIME_RIMAP;
         case MBCacheResponseParking:
             return CACHE_TIME_PARKING;
+        case MBCacheResponseParkingCapacity:
+            return CACHE_TIME_PARKING_CAPACITY;
         case MBCacheResponseEinkaufsbahnhof:
             return CACHE_TIME_EINKAUFSBAHNHOF;
         case MBCacheResponseEinkaufsbahnhofOverview:
@@ -105,6 +112,12 @@
         case MBCacheResponseRISStopPlacesForEva:
             filename = @"ris_stopplaces_foreva.json";
             break;
+        case MBCacheResponseRISPlatforms:
+            filename = @"ris_platform.json";
+            break;
+        case MBCacheResponseRISOccupancy:
+            filename = @"ris_occupancy.json";
+            break;
         case MBCacheResponseRIMapStatus07API:
             filename = @"rimapstatus07.json";
             break;
@@ -116,6 +129,9 @@
             break;
         case MBCacheResponseParking:
             filename = @"parking_v2.json";
+            break;
+        case MBCacheResponseParkingCapacity:
+            filename = @"parking_capacity.json";
             break;
         case MBCacheResponseEinkaufsbahnhof:
             filename = @"einkauf.json";

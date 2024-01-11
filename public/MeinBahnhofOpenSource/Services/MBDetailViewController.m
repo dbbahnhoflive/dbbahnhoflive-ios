@@ -46,47 +46,18 @@
     self.title = self.service.title;
     self.trackingTitle = self.service.trackingKey;
 
-    if(self.serviceNeedsAdditionalData){
-        [self loadServiceData];
-    } else {
-        [self configureServiceView:self.service];
-    }
+    [self configureServiceView:self.service];
 }
 
 
 -(BOOL)serviceNeedsAdditionalData{
     return [self.service.type isEqualToString:kServiceType_Barrierefreiheit] && self.station.platformAccessibility == nil;
 }
--(void)loadServiceData{
-    self.act = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [self.view addSubview:self.act];
-    [self.act startAnimating];
-    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self.act);
-
-    dispatch_group_t group = dispatch_group_create();
-    dispatch_group_enter(group);
-    [[MBRISStationsRequestManager sharedInstance] requestAccessibility:self.station.mbId.stringValue success:^(NSArray<MBPlatformAccessibility *> *platformList) {
-        //NSLog(@"got platform acc: %@",platformList);
-        [self.station addPlatformAccessibility:platformList];
-        dispatch_group_leave(group);
-    } failureBlock:^(NSError *error) {
-        dispatch_group_leave(group);
-    }];
-    dispatch_group_notify(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.act stopAnimating];
-            [self.act removeFromSuperview];
-            self.act = nil;
-            [self configureServiceView:self.service];
-            UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self.view);
-        });
-    });
-}
 
 -(NSArray<NSString *> *)mapFilterPresets{
     if(self.service){
         if([self.service.type isEqualToString:kServiceType_Barrierefreiheit] ){
-            return @[PRESET_ELEVATORS];
+            return @[PRESET_ELEVATORS,PRESET_DB_TIMETABLE];
         } else if([self.service.type isEqualToString:kServiceType_SEV]){
             return @[PRESET_SEV];
         } else if([self.service.type isEqualToString:kServiceType_Locker]){
@@ -94,6 +65,10 @@
         }
     }
     return nil;
+}
+
+- (id)mapSelectedPOI{
+    return self.poiToSelectOnMap;
 }
 
 - (void) viewDidAppear:(BOOL)animated

@@ -19,6 +19,7 @@
 
 @property (nonatomic, strong) NSArray *levels;
 @property (nonatomic, assign) BOOL indoorNavigationEnabled;
+@property (nonatomic, strong) RIMapPoi* poiToSelectOnMap;
 
 - (instancetype) initWithStation:(MBStation*)station service:(MBService*)service;
 

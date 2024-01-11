@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_LOUNGE @"Bahnhofsinformation Info & Services DB Lounge"
 #define CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_TRAVELCENTER @"Bahnhofsinformation Info & Services DB Reisezentrum"
 #define CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MISSION @"Bahnhofsinformation Info & Services Bahnhofsmission"
-#define CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILE_SERVICE @"Bahnhofsinformation Info & Services Mobiler Service"
+#define CONTENT_SEARCH_KEY_STATIONINFO_SERVICES_MOBILE_SERVICE @"Bahnhofsinformation Info & Services Mobile Servicemitarbeitende"
 #define CONTENT_SEARCH_KEY_STATIONFINO_SERVICES_CHATBOT @"Bahnhofsinformation Info & Services Chatbot"
 
 //Station facilities
@@ -94,6 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSString* searchText;
 
 @property(nonatomic,strong) MBNews* couponItem;
+
+@property(nonatomic,strong) NSDictionary* metaData;
 
 
 //special type for past searches and search suggestions

@@ -72,7 +72,7 @@
 
 
 
--(void)requestJourneyDetails:(HafasDeparture *)departure completion:(void(^)(HafasDeparture *, NSError *))completion{
+-(void)requestJourneyDetails:(HafasDeparture *)departure forceReload:(BOOL)forceReload completion:(void(^)(HafasDeparture *, NSError *))completion{
     
     completion(nil,[NSError new]);
     

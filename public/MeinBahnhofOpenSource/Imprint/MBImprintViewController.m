@@ -91,6 +91,9 @@
     NSString *build   = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
     NSString *versionInfo = [NSString stringWithFormat:@"%@ (%@)", version, build];
     htmlString = [htmlString stringByReplacingOccurrencesOfString:@"{APP_VERSION}" withString:versionInfo];
+    
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:@"style_default.css" withString:[NSBundle.mainBundle pathForResource:@"style_default.css" ofType:nil]];
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:@"style_datenschutz.css" withString:[NSBundle.mainBundle pathForResource:@"style_datenschutz.css" ofType:nil]];
     return htmlString;
 }
 

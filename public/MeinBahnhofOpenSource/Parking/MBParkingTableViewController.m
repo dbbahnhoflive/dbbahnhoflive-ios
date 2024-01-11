@@ -167,7 +167,7 @@
                 // NSLog(@"request occupancy for id %@",num);
                 dispatch_group_enter(group);
                 
-                [[MBParkingOccupancyManager client] requestParkingOccupancy:num success:^(NSNumber *allocationCategory) {
+                [[MBParkingOccupancyManager client] requestParkingOccupancy:num forcedByUser:true success:^(NSNumber *allocationCategory) {
                     //update allocationCategory
                     parkingInfo.allocationCategory = allocationCategory;
                     

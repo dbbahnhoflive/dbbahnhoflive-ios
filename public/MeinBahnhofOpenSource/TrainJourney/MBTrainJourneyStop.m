@@ -9,12 +9,21 @@
 
 @implementation MBTrainJourneyStop
 
-
--(MBTrainJourneyStop *)initWithEvent:(MBTrainJourneyEvent *)event{
+-(instancetype)init{
     self = [super init];
     if(self){
-        self.journeyProgress = -1;
+        self.platformDesignator = @"Gl.";
+        self.platformDesignatorVoiceOver = @"Gleis";
+    }
+    return self;
+}
 
+-(MBTrainJourneyStop *)initWithEvent:(MBTrainJourneyEvent *)event forDeparture:(BOOL)departure{
+    self = [super init];
+    if(self){
+        self.platformDesignator = @"Gl.";
+        self.platformDesignatorVoiceOver = @"Gleis";
+        self.journeyProgress = -1;
         self.isTimeScheduleStop = event.isScheduleEvent;
         self.additional = event.additional;
         self.canceled = event.canceled;
@@ -22,6 +31,11 @@
         self.evaNumber = event.evaNumber;
         self.platform = event.platform;
         self.platformSchedule = event.platformSchedule;
+        if(departure && event.linkedDepartureForThisArrival){
+            //for the rare case when a train departs from another platform than it arrives: when we display a journey from the departure-board then use platforms information from the departure event.
+            self.platform = event.linkedDepartureForThisArrival.platform;
+            self.platformSchedule = event.linkedDepartureForThisArrival.platformSchedule;
+        }
 
         if(event.isArrival){
             self.arrivalTime = [MBTrainJourneyRequestManager.dateFormatter dateFromString:event.time];
@@ -39,10 +53,20 @@
 }
 
 -(BOOL)platformChange{
-    return self.platformSchedule.length > 0 && ![self.platform isEqualToString:self.platformSchedule];
+    return self.platformSchedule.length > 0 && self.platform.length > 0 && ![self.platform isEqualToString:self.platformSchedule];
 }
 
-
+-(NSString *)platformForDisplay{
+    NSString* platform = self.platform;
+    if(!platform){
+        platform = self.platformSchedule;
+    }
+    return platform;
+}
+-(BOOL)hasPlatformInfo{
+    return MBStation.displayPlaformInfo && ( self.linkedPlatformsForStop.count > 0 || self.headPlatform || self.platformLevel.length > 0
+    || self.isCurrentStation);
+}
 
 
 -(NSString *)description{

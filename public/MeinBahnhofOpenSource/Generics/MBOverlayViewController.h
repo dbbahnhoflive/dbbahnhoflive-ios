@@ -12,8 +12,12 @@
 @property(nonatomic,strong,readonly) UIView* headerView;
 @property(nonatomic,strong,readonly) UILabel* titleLabel;
 @property(nonatomic,strong,readonly) UIView* contentView;
+@property(nonatomic,strong,readonly) UIScrollView* contentScrollView;
 @property(nonatomic) BOOL overlayIsPresentedAsChildViewController;
 
+-(void)hideOverlayWithCompletion:(void(^)(void))actionBlock;
+-(void)updateContentScrollViewContentHeight:(NSInteger)y;
+-(BOOL)usesContentScrollView;
 -(void)hideOverlay;
 -(NSInteger)expectedContentHeight;
 @end

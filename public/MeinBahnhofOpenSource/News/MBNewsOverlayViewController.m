@@ -10,7 +10,6 @@
 #import "MBTrackingManager.h"
 
 @interface MBNewsOverlayViewController ()
-@property(nonatomic,strong) UIScrollView* contentScrollView;
 
 @property(nonatomic,strong) UILabel* newsHeadlineLabel;
 @property(nonatomic,strong) UILabel* newsSubtitleLabel;
@@ -25,10 +24,6 @@
     // Do any additional setup after loading the view.
     
     self.title = @"Ersatzverkehr beachten";
-    self.titleLabel.text = self.title;
-
-    self.contentScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight)];
-    [self.contentView addSubview:self.contentScrollView];
     
     NSInteger y = 16;
     
@@ -112,7 +107,7 @@
         y = CGRectGetMaxY(button.frame)+20;
     }
     
-    self.contentScrollView.contentSize = CGSizeMake(self.contentScrollView.frame.size.width, y);
+    [self updateContentScrollViewContentHeight:y];
 
 }
 
@@ -123,14 +118,7 @@
     [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 
--(void)viewDidLayoutSubviews{
-    [super viewDidLayoutSubviews];
-    //resize view for content
-    int totalHeight = MIN(self.view.sizeHeight-40, self.contentScrollView.contentSize.height+self.headerView.sizeHeight);
-    [self.contentView setHeight:totalHeight];
-    [self.contentView setGravityBottom:0];
-    self.contentScrollView.frame = CGRectMake(0, self.headerView.sizeHeight, self.contentView.sizeWidth, self.contentView.sizeHeight-self.headerView.sizeHeight);
-}
+
 
 
 @end

@@ -23,6 +23,9 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
     MBCacheResponseRISLocker = 15,
 
     MBCacheResponseRISStopPlacesForEva = 16,
+    MBCacheResponseRISPlatforms = 17,
+    MBCacheResponseRISOccupancy = 18,
+    MBCacheResponseParkingCapacity = 19,
 
 };
 

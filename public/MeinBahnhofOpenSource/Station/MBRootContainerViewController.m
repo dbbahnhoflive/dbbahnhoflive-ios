@@ -327,7 +327,7 @@
                         // NSLog(@"request occupancy for id %@",num);
                         dispatch_group_enter(group);
                         
-                        [[MBParkingOccupancyManager client] requestParkingOccupancy:num success:^(NSNumber *allocationCategory) {
+                        [[MBParkingOccupancyManager client] requestParkingOccupancy:num forcedByUser:false success:^(NSNumber *allocationCategory) {
                             // NSLog(@"got requestParkingOccupancy");
                             //update allocationCategory
                             parkingInfo.allocationCategory = allocationCategory;
@@ -434,6 +434,12 @@
             [self changeOpenRequests:-1];
         }];
 
+        [[MBRISStationsRequestManager sharedInstance] requestAccessibility:station.mbId.stringValue success:^(NSArray<MBPlatformAccessibility *> *platformList) {
+            //NSLog(@"got platform acc: %@",platformList);
+            [station addPlatformAccessibility:platformList];
+        } failureBlock:^(NSError *error) {
+        }];
+        
     });
 }
 

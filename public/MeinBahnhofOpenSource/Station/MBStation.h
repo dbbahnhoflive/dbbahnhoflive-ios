@@ -80,14 +80,17 @@
 
 -(void)updateStationWithDetails:(MBStationDetails*)details;
 -(void)parseOpeningTimesWithCompletion:(void (^)(void))completion;
--(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList;
--(NSArray<MBPlatformAccessibility*>*)platformAccessibility;
-
--(RIMapPoi*)poiForPlatform:(NSString*)platformNumber;
-
-+(NSString*)platformNumberFromPlatform:(NSString*)platform;
-
 
 -(NSString*)isAdditionalEvaId_MappedToMainEva:(NSString*)evaId;
 
+-(void)addPlatformAccessibility:(NSArray<MBPlatformAccessibility *> *)platformList;
+-(NSArray<MBPlatformAccessibility*>*)platformAccessibility;
+-(NSArray<MBPlatformAccessibility*>*)platformForTrackInfo;
+-(RIMapPoi*)poiForPlatform:(NSString*)platformNumber;
+-(NSString*)linkedPlatformForPlatform:(NSString*)platform;
+-(NSArray<NSString*>*)linkedPlatformsForPlatform:(NSString*)platform;
+-(BOOL)platformIsHeadPlatform:(NSString*)platform;
+-(NSString*)levelForPlatform:(NSString*)platform;
+-(void)addLevelInformationToPlatformAccessibility;
++(BOOL)displayPlaformInfo;
 @end

@@ -134,6 +134,10 @@ static NSDictionary* levelCodeToNumber = nil;
 }
 
 -(NSString *)allOpenTimes{
+    return [self allOpenTimesForVoiceOver:false];
+}
+
+-(NSString *)allOpenTimesForVoiceOver:(BOOL)voiceOver{
     NSMutableString* res = [[NSMutableString alloc] init];
     
     if(self.openingTimes.count > 0){
@@ -141,9 +145,15 @@ static NSDictionary* levelCodeToNumber = nil;
             if(res.length > 0){
                 [res appendString:@"\n"];
             }
-            [res appendString:ot.daysDisplayString];
+            if(voiceOver){
+                NSString* s = ot.daysDisplayString;
+                s = [s stringByReplacingOccurrencesOfString:@"-" withString:@" bis "];
+                [res appendString:s];
+            } else {
+                [res appendString:ot.daysDisplayString];
+            }
             [res appendString:@": "];
-            [res appendString:ot.openTimesString];
+            [res appendString:[ot openTimesStringForVoiceOver:voiceOver]];
         }
         return res;
     }
@@ -542,7 +552,42 @@ static NSDictionary* levelCodeToNumber = nil;
     }
     return @"";
 }
-
++(NSString*)levelCodeToDisplayStringShort:(NSString*)levelCode{
+    if([levelCode compare:@"b4" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"4. UG";
+    }
+    if([levelCode compare:@"b3" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"3. UG";
+    }
+    if([levelCode compare:@"b2" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"2. UG";
+    }
+    if([levelCode compare:@"b1" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"1. UG";
+    }
+    if([levelCode compare:@"l0" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"EG";
+    }
+    if([levelCode compare:@"l1" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"1. OG";
+    }
+    if([levelCode compare:@"l2" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"2. OG";
+    }
+    if([levelCode compare:@"l3" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"3. OG";
+    }
+    if([levelCode compare:@"l4" options:NSCaseInsensitiveSearch] == NSOrderedSame){
+        return @"4. OG";
+    }
+    return @"";
+}
++(NSArray<NSString*>*)levelList{
+    return @[@"4. Untergeschoss", @"3. Untergeschoss", @"2. Untergeschoss", @"1. Untergeschoss", @"Erdgeschoss", @"1. Obergeschoss", @"2. Obergeschoss", @"3. Obergeschoss", @"4. Obergeschoss"];
+}
++(NSArray<NSString*>*)levelListShort{
+    return @[@"4. UG", @"3. UG", @"2. UG", @"1. UG", @"EG", @"1. OG", @"2. OG", @"3. OG", @"4. OG"];
+}
 
 #define FAV_CAT_LEBENSMITTEL @"Lebensmittel"
 #define FAV_CAT_GASTRO @"Gastronomie"

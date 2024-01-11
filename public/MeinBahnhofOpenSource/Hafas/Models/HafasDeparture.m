@@ -33,10 +33,13 @@ static NSDateFormatter* dateTimeFormatter = nil;
              @"stop": @"stop",
              @"trainCategory": @"trainCategory",
              @"direction": @"direction",
+             @"partCancelled": @"partCancelled",
              @"journeyDetailRef": @"JourneyDetailRef",
              @"stopid": @"stopid",
              @"stopExtId": @"stopExtId",
-             @"product": @"Product"
+             @"product": @"ProductAtStop",
+             @"track": @"track",
+             @"rtTrack": @"rtTrack",
              };
 }
 
@@ -47,6 +50,18 @@ static NSDateFormatter* dateTimeFormatter = nil;
 -(void)cleanupName{
     self.name = [self removeSpacesFromString:self.name];
 }
+
+
+-(BOOL)trackChanged{
+    return self.track.length > 0 && self.rtTrack.length > 0 && ![self.track isEqualToString:self.rtTrack];
+}
+-(NSString*)displayTrack{
+    if(self.rtTrack.length > 0){
+        return self.rtTrack;
+    }
+    return self.track;
+}
+
 
 -(NSString *)journeyDetailId{
     if(self.journeyDetailRef){
@@ -99,43 +114,11 @@ static NSDateFormatter* dateTimeFormatter = nil;
 
 -(HAFASProductCategory)productCategory{
     HAFASProductCategory cat = HAFASProductCategoryNONE;
-    if(!self.product || self.product[@"catCode"] == nil){
+    if(!self.product || self.product[@"cls"] == nil){
         return cat;
     }
-    NSInteger catCode = [self.product[@"catCode"] integerValue];
-    switch(catCode){
-        case 0:
-            cat = HAFASProductCategoryICE;
-            break;
-        case 1:
-            cat = HAFASProductCategoryIC;
-            break;
-        case 2:
-            cat = HAFASProductCategoryIR;
-            break;
-        case 3:
-            cat = HAFASProductCategoryREGIO;
-            break;
-        case 4:
-            cat = HAFASProductCategoryS;
-            break;
-        case 5:
-            cat = HAFASProductCategoryBUS;
-            break;
-        case 6:
-            cat = HAFASProductCategorySHIP;
-            break;
-        case 7:
-            cat = HAFASProductCategoryU;
-            break;
-        case 8:
-            cat = HAFASProductCategoryTRAM;
-            break;
-        case 9:
-            cat = HAFASProductCategoryCAL;
-            break;
-    }
-    return cat;
+    NSInteger catCode = [self.product[@"cls"] integerValue];
+    return catCode;
 }
 -(NSString*)productLine{
     NSString* line = self.product[@"line"];

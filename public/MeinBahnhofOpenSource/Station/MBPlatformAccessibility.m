@@ -5,40 +5,79 @@
 
 #import "MBPlatformAccessibility.h"
 #import "NSDictionary+MBDictionary.h"
+#import "MBStation.h"
 
 @implementation MBPlatformAccessibility
 
 +(MBPlatformAccessibility * _Nullable)parseDict:(NSDictionary *)dict{
     MBPlatformAccessibility* res = [MBPlatformAccessibility new];
+    res.parentPlatform = [dict db_stringForKey:@"parentPlatform"];
     res.name = [dict db_stringForKey:@"name"];
     if(!res.name){
         return nil;
     }
     NSDictionary* accessibility = [dict db_dictForKey:@"accessibility"];
-    if(!accessibility){
-        return nil;
+    if(accessibility){
+        NSMutableArray<MBPlatformAccessibilityFeature*>* features = [NSMutableArray arrayWithCapacity:12];
+        res.features = features;
+        for(NSNumber* featureType in [MBPlatformAccessibilityFeature featureOrder]){
+            MBPlatformAccessibilityFeature* feature = [MBPlatformAccessibilityFeature featureForType:featureType.integerValue];
+            feature.accType = [self parseAccessibility:[accessibility db_stringForKey:feature.serverKey]];
+            if((feature.feature == MBPlatformAccessibilityFeatureType_boardingAid ||
+                feature.feature == MBPlatformAccessibilityFeatureType_automaticDoor)
+               && (feature.accType == MBPlatformAccessibilityType_UNKNOWN ||
+                   feature.accType == MBPlatformAccessibilityType_NOT_AVAILABLE ||
+                   feature.accType == MBPlatformAccessibilityType_NOT_APPLICABLE)
+               ){
+                //skip boardingAid and automaticDoor when not available, BAHNHOFLIVE-2400
+                continue;
+            }
+            [features addObject:feature];
+        }
     }
     
-    NSMutableArray<MBPlatformAccessibilityFeature*>* features = [NSMutableArray arrayWithCapacity:12];
-    res.features = features;
-    for(NSNumber* featureType in [MBPlatformAccessibilityFeature featureOrder]){
-        MBPlatformAccessibilityFeature* feature = [MBPlatformAccessibilityFeature featureForType:featureType.integerValue];
-        feature.accType = [self parseAccessibility:[accessibility db_stringForKey:feature.serverKey]];
-        if((feature.feature == MBPlatformAccessibilityFeatureType_boardingAid ||
-           feature.feature == MBPlatformAccessibilityFeatureType_automaticDoor)
-           && (feature.accType == MBPlatformAccessibilityType_UNKNOWN ||
-               feature.accType == MBPlatformAccessibilityType_NOT_AVAILABLE ||
-               feature.accType == MBPlatformAccessibilityType_NOT_APPLICABLE)
-        ){
-            //skip boardingAid and automaticDoor when not available, BAHNHOFLIVE-2400
-            continue;
+    
+    res.headPlatform = [dict db_boolForKey:@"headPlatform"];
+    NSArray* list = [dict db_arrayForKey:@"linkedPlatforms"];
+    NSMutableArray* linked = [NSMutableArray arrayWithCapacity:list.count];
+    NSString* thisTrack = res.name;
+    for(NSString* s in list){
+        if([s isKindOfClass:NSString.class] && s.length > 0){
+            if(![linked containsObject:s] && ![s isEqualToString:thisTrack]){
+                [linked addObject:s];
+            }
         }
-        [features addObject:feature];
     }
+    res.linkedPlatforms = linked;
+    
+    //if(res.features == nil && !res.headPlatform && res.linkedPlatforms.count == 0){
+        //no information available, ignore this
+        //return nil;
+    //}
+    
     return res;
 }
 
+-(NSString *)description{
+    return [NSString stringWithFormat:@"MBPlatformAccessibility<%@,linked=%@,level=%@, set=%@>",self.name,self.linkedPlatforms,self.level,self.platformSetWithNameAndLinked];
+}
 
++(void)sortArray:(NSMutableArray<MBPlatformAccessibility *> *)list{
+    [list sortUsingComparator:^NSComparisonResult(MBPlatformAccessibility* obj1, MBPlatformAccessibility* obj2) {
+        NSString* num1 = obj1.name;
+        NSString* num2 = obj2.name;
+        return [self sortObj1:num1 obj2:num2];
+    }];
+}
++(NSComparisonResult)sortObj1:(NSString*)num1 obj2:(NSString*)num2{
+    if(num1.integerValue == num2.integerValue){
+        return [num1 compare:num2];
+    } else if(num1.integerValue < num2.integerValue){
+        return NSOrderedAscending;
+    } else {
+        return NSOrderedDescending;
+    }
+}
 
 -(NSArray<MBPlatformAccessibilityFeature *> *)availableFeatures{
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:self.features.count];

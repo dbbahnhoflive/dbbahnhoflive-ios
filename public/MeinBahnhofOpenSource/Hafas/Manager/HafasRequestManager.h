@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, HAFASProductCategory) {
 -(void)requestNearbyStopsForCoordinate:(CLLocationCoordinate2D)coordinate filterOutDBStation:(BOOL)filterOutDBStation withCompletion:(void(^)(NSArray<MBOPNVStation*> *nearbyStations))completion;
 
 - (void)loadDeparturesForStopId:(NSString *)stationId timetable:(HafasTimetable*)timetable withCompletion:(void(^)(HafasTimetable *timetable))completion;
--(void)requestJourneyDetails:(HafasDeparture*)departure completion:(void(^)(HafasDeparture *, NSError *))completion;
+-(void)requestJourneyDetails:(HafasDeparture*)departure forceReload:(BOOL)forceReload completion:(void(^)(HafasDeparture *, NSError *))completion;
 
 - (void)manualRefresh:(HafasTimetable*)timetable withCompletion:(void (^)(HafasTimetable *))completion;
 

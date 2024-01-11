@@ -12,7 +12,7 @@
 #define CACHE_TIME_JOURNEY_REQUEST (60*5)
 #define CACHE_MIN_DISTANCE_TO_CURRENT_POSITION 100 // Metres
 
-#define CACHE_KEY_NEARBY_STATIONS @"bahnhoflive.nearby_stations_request_cache"
+#define CACHE_KEY_NEARBY_STATIONS @"bahnhoflive.nearby_stations_request_cache_v2.36"
 
 @interface HafasCacheManager : NSObject
 

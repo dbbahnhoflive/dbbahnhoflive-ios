@@ -66,6 +66,7 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 -(NSTimeInterval)isOpenTime;
 
 -(NSString*)allOpenTimes;
+-(NSString *)allOpenTimesForVoiceOver:(BOOL)voiceOver;
 -(BOOL)isTrack;
 -(BOOL)isLocker;
 -(UIImage*)iconImageForFlyout:(BOOL)forFlyout;
@@ -81,6 +82,9 @@ typedef NS_ENUM(NSInteger, ShopOpenState) {
 +(NSArray*)filterConfig;
 +(RIMapConfigItem*)configForMenuCat:(NSString*)cat subCat:(NSString*)subcat;
 +(NSString*)levelCodeToDisplayString:(NSString*)levelCode;
++(NSString*)levelCodeToDisplayStringShort:(NSString*)levelCode;
++(NSArray<NSString*>*)levelList;
++(NSArray<NSString*>*)levelListShort;
 
 +(NSString*)mapPXRToShopCategory:(RIMapPoi*)poi;
 +(NSArray*)mapShopCategoryToFilterPresets:(NSString*)shopCategory;

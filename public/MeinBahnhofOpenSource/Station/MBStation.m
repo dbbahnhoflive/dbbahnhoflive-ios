@@ -998,7 +998,7 @@
 
 
 -(BOOL)hasOccupancy{
-    return true;//[@"2514" isEqualToString:self.mbId.stringValue];//hamburg
+    return false;//[@"2514" isEqualToString:self.mbId.stringValue];//hamburg
 }
 -(BOOL)useOSM{
     //return true;

@@ -6,7 +6,6 @@
 
 #import "TimetableManager.h"
 //#import "Timetable.h"
-#import <AFNetworking/AFNetworking.h>
 
 @interface TimetableManager()
 

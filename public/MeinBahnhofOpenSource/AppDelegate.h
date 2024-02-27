@@ -26,5 +26,9 @@
 //Tracking
 -(BOOL)needsInitialPrivacyScreen;
 -(void)userFeedbackOnPrivacyScreen:(BOOL)enabledTracking;
+
++(CGFloat)statusBarHeight;
++(CGFloat)screenHeight;
++(double)SCALEFACTORFORSCREEN;
 @end
 

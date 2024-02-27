@@ -207,7 +207,7 @@
         self.tapGestureForTimetable = tap;
     }
     if (nil == self.spinner) {
-        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     }
     [self addSubview:self.spinner];
     [self.spinner centerViewVerticalInSuperView];

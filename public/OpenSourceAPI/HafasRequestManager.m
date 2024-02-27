@@ -5,7 +5,6 @@
 
 
 #import "HafasRequestManager.h"
-#import <AFNetworking/AFNetworking.h>
 #import "HafasCacheManager.h"
 #import "HafasStopLocation.h"
 #import "MBOPNVStation.h"

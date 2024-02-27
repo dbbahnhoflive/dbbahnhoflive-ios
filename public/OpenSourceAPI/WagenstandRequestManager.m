@@ -5,7 +5,6 @@
 
 
 #import "WagenstandRequestManager.h"
-#import <AFNetworking/AFNetworking.h>
 #import "Wagenstand.h"
 
 @interface WagenstandRequestManager()

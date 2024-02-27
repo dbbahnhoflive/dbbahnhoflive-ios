@@ -42,7 +42,7 @@
 }
 
 -(CLAuthorizationStatus)authStatus{
-    return [CLLocationManager authorizationStatus];
+    return self.locationManager.authorizationStatus;
 }
 
 
@@ -144,8 +144,8 @@
     return self.isAuthorized;
 }
 
-- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
-{
+-(void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager{
+    CLAuthorizationStatus status = manager.authorizationStatus;
     NSLog(@"didChangeAuthorizationStatus: %d",status);
     switch (status) {
         case kCLAuthorizationStatusNotDetermined:

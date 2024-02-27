@@ -20,12 +20,14 @@
 
 @property (nonatomic, assign) BOOL embeddedInController;
 @property (nonatomic, assign) BOOL departure;
+@property (nonatomic, assign) BOOL displayHafasTitle;
 
 @property (nonatomic, assign) BOOL dbOnly;
 @property (nonatomic, assign) BOOL oepnvOnly;
 @property (nonatomic, assign) BOOL includeLongDistanceTrains;
 @property (nonatomic) BOOL showFernverkehr;
 @property(nonatomic) BOOL trackToggleChange;
+@property (nonatomic) BOOL timetableOpenedFromOPNVOverlay;
 
 @property (nonatomic, strong) MBOPNVStation *hafasStation;
 @property (nonatomic, strong) HafasTimetable* hafasTimetable;

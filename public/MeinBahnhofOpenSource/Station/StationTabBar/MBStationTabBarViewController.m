@@ -10,6 +10,7 @@
 #import "MBMapViewController.h"
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
+#import "AppDelegate.h"
 
 @interface MBStationTabBarViewController () <MBStationTabBarViewDelegate>
 
@@ -115,7 +116,7 @@
         NSLog(@"no map button available when starting with voiceover");
     } else {
         self.mapViewButton = [[MBMapViewButton alloc] init];
-        [self.mapViewButton setSize:CGSizeMake((int)(self.mapViewButton.frame.size.width*SCALEFACTORFORSCREEN), (int)(self.mapViewButton.frame.size.height*SCALEFACTORFORSCREEN))];
+        [self.mapViewButton setSize:CGSizeMake((int)(self.mapViewButton.frame.size.width*AppDelegate.SCALEFACTORFORSCREEN), (int)(self.mapViewButton.frame.size.height*AppDelegate.SCALEFACTORFORSCREEN))];
         [self.mapViewButton addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:self.mapViewButton];
         [self updateMapButtonStatus];
@@ -238,8 +239,8 @@
                 [self.currentViewController removeFromParentViewController];
                 [self.currentViewController.view removeFromSuperview];
                 if (index == 2) {
-                    CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
-                    self.topSlack = @(statusBarFrame.size.height);
+                    CGFloat statusBarFrameHeight = AppDelegate.statusBarHeight;
+                    self.topSlack = @(statusBarFrameHeight);
                     [self.view setNeedsUpdateConstraints];
                 }
                 self.currentViewController = vc;

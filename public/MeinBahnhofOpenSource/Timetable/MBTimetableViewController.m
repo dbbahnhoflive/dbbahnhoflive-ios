@@ -131,10 +131,10 @@
     
     self.view.backgroundColor = [UIColor whiteColor];
     
-    if(self.station){
-        self.title = self.station.title;
-    } else if(self.hafasStation.name){
+    if(self.hafasStation.name && (self.displayHafasTitle || !self.station)){
         self.title = self.hafasStation.name;
+    } else if(self.station){
+        self.title = self.station.title;
     } else {
         self.title = @"Abfahrt und Ankunft";
     }
@@ -216,7 +216,7 @@
     if(self.mapMarkers.count > 0 && MBMapViewController.canDisplayMap){
         self.mapFloatingBtn = [[MBMapViewButton alloc] init];
         [self.mapFloatingBtn addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
-        [self.mapFloatingBtn setSize:CGSizeMake((int)(self.mapFloatingBtn.frame.size.width*SCALEFACTORFORSCREEN), (int)(self.mapFloatingBtn.frame.size.height*SCALEFACTORFORSCREEN))];
+        [self.mapFloatingBtn setSize:CGSizeMake((int)(self.mapFloatingBtn.frame.size.width*AppDelegate.SCALEFACTORFORSCREEN), (int)(self.mapFloatingBtn.frame.size.height*AppDelegate.SCALEFACTORFORSCREEN))];
         [self.view addSubview:self.mapFloatingBtn];
     }
 }
@@ -263,7 +263,7 @@
                 [(MBStationNavigationViewController *)self.navigationController hideNavbar:makeSmallTableHeader];
             }
         }
-        CGFloat statusHeight = [[UIApplication sharedApplication] statusBarFrame].size.height;
+        CGFloat statusHeight = AppDelegate.statusBarHeight;
         if (makeSmallTableHeader) {
             self.timetableView.contentInset = UIEdgeInsetsMake(statusHeight, 0, 0, 0);
         } else {
@@ -315,7 +315,9 @@
 
 - (void)setHafasStation:(MBOPNVStation *)hafasStation {
     _hafasStation = hafasStation;
-    self.title = hafasStation.name;
+    if(self.displayHafasTitle || !self.station){
+        self.title = hafasStation.name;
+    }
 }
 
 - (void) refreshData
@@ -342,7 +344,7 @@
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (!self.progressIndicator) {
-            self.progressIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+            self.progressIndicator = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
             self.progressIndicator.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
             self.progressIndicator.center = self.view.center;
         }
@@ -550,6 +552,9 @@
     }
 }
 -(MBStation *)stationForEvents{
+    if(self.hafasStation){
+        return nil;
+    }
     return self.station;
 }
 
@@ -754,7 +759,7 @@
         [self.requestMoreButton addTarget:self action:@selector(requestMorePressed:) forControlEvents:UIControlEventTouchUpInside];
     }
     if(!self.requestMoreProgress){
-        self.requestMoreProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        self.requestMoreProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
         self.requestMoreProgress.hidesWhenStopped = YES;
         [self.requestMoreProgress stopAnimating];
     }
@@ -1275,6 +1280,7 @@
         }
 
         MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
+        detailViewController.timetableOpenedFromOPNVOverlay = self.timetableOpenedFromOPNVOverlay;
         detailViewController.departure = true;
         NSString* stationEva = departure.stopExtId;
         if(!stationEva){
@@ -1285,7 +1291,9 @@
         detailViewController.originalHafasStation = self.hafasStation;
         detailViewController.station = self.station;
         detailViewController.hafasDeparture = departure;
-        if(departure.partCancelled){
+        if(departure.cancelled){
+            detailViewController.hafasEventText = CANCELLED_TEXT;
+        } else if(departure.partCancelled){
             detailViewController.hafasEventText = STOP_MISSING_TEXT;
         }
         detailViewController.showJourneyFromCurrentStation = true;
@@ -1306,6 +1314,7 @@
             return;
         }
         MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
+        detailViewController.timetableOpenedFromOPNVOverlay = self.timetableOpenedFromOPNVOverlay;
         detailViewController.departure = self.departure;
         detailViewController.station = self.station;
         detailViewController.event = event;

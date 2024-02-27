@@ -238,6 +238,8 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             serviceCell.staticServiceView.delegate = self;
             serviceCell.delegate = self;
             cell = serviceCell;
+        } else {
+            NSAssert(false, @"unexpected item in servicelist table %@",item);
         }
     }
     cell.selectionStyle = UITableViewCellSelectionStyleNone;

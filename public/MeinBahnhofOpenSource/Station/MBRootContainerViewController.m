@@ -138,15 +138,29 @@
 
 #pragma mark MBStationTabBarViewControllerDelegate
 - (void)goBackToSearchAnimated:(BOOL)animated{
-    [self goBackToSearchAnimated:animated clearBackHistory:true];
+    [self goBackToSearchAnimated:animated clearBackHistory:true completion:nil];
 }
-- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory{
+
+- (void)goBackToSearchAnimated:(BOOL)animated completion:(void (^)(void))completion{
+    [self goBackToSearchAnimated:animated clearBackHistory:true completion:completion];
+}
+- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory completion:(void (^)(void))completion{
     [[TimetableManager sharedManager] resetTimetable];
+    if(self.presentedViewController){
+        //remove any presented viewcontrollers and try again
+        [self dismissViewControllerAnimated:NO completion:^{
+            [self goBackToSearchAnimated:animated clearBackHistory:clearBackHistory completion:completion];
+        }];
+        return;
+    }
     [self.navigationController popViewControllerAnimated:animated];
     AppDelegate* app = (AppDelegate*) [UIApplication sharedApplication].delegate;
     if([app.navigationController.topViewController isKindOfClass:[MBStationSearchViewController class]]){
         MBStationSearchViewController* station = (MBStationSearchViewController*)app.navigationController.topViewController;
         [station freeStationAndClearBackHistory:clearBackHistory];
+    }
+    if(completion){
+        completion();
     }
 }
 
@@ -235,19 +249,21 @@
     BOOL requestNewsAndCoupons = NO;
     BOOL requestParking = YES;
     
-    _openRequests = 5;
+    _openRequests = 4;
     // - StationData (RIS:Station): Station.stationDetails
     // - RIMapStatus (Station.levels)
     // - MapPOIs
     // - FacilityStatus
-    // - Occupancy in station
+    if(station.hasOccupancy){
+        _openRequests = _openRequests+1;
+    }
     
     //the following are requested, but not required for H1 layout setup. Those marked with (*) show up in the Info-tab and search:
     // - RiMaps SEV (*)
     // - RIS:StationEquipments (locker) (*)
     // - Parking (*)
     // - ParkingOccupancy (*)
-    // - News
+    // - News (only if parameter requestNewsAndCoupons=true)
     
     if(station.hasStaticAdHocBox){
         station.newsList = [MBNews staticInfoData];
@@ -474,8 +490,6 @@
             //NSLog(@"no occupancy: %@",error);
             [self changeOpenRequests:-1];
         }];
-    } else {
-        [self changeOpenRequests:-1];
     }
 }
 

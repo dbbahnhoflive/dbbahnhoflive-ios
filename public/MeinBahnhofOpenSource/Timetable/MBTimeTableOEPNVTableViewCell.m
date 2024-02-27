@@ -105,7 +105,7 @@
     self.lineLabel.text = hafas.name;
     [self.lineLabel sizeToFit];
     self.destLabel.text = hafas.direction;
-    self.messageIcon.hidden = !hafas.partCancelled && !hafas.trackChanged;
+    self.messageIcon.hidden = !hafas.partCancelled && !hafas.trackChanged && !hafas.cancelled;
 //    [self.destLabel sizeToFit];//NO, this leads to autolayout failure!
     self.expectedTimeLabel.text = [hafas expectedDeparture];
     if([hafas delayInMinutes] >= 5){
@@ -148,7 +148,9 @@
             ([self.timeLabel.text isEqualToString:self.expectedTimeLabel.text] ? @"" : [NSString stringWithFormat:@"Erwartet %@",[MBVoiceOverHelper timeForVoiceOver:self.expectedTimeLabel.text]]),
             trackInfo
             ];
-    if(_hafas.partCancelled){
+    if(_hafas.cancelled){
+        res = [res stringByAppendingFormat:@" %@",CANCELLED_TEXT];
+    } else if(_hafas.partCancelled){
         res = [res stringByAppendingFormat:@" %@",STOP_MISSING_TEXT];
     }
     return res;

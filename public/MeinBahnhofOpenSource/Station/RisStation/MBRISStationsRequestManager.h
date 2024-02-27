@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import <AFNetworking/AFNetworking.h>
 #import "MBStationDetails.h"
 #import "MBStationFromSearch.h"
 #import "MBPlatformAccessibility.h"

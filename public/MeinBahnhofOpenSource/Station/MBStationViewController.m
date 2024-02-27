@@ -147,7 +147,7 @@
     // height: 120 points at 375 points width
     
     CGFloat topHeight = floor(self.view.bounds.size.width * 0.32);
-    topHeight -= [UIApplication sharedApplication].statusBarFrame.size.height;
+    topHeight -= AppDelegate.statusBarHeight;
     self.maxTopHeight = topHeight;
     self.currentTopHeight = topHeight;
     
@@ -886,6 +886,7 @@
         [self moveToServiceListControllerAndConfigureController:^(MBServiceListCollectionViewController * _Nonnull controller) {
             controller.openServiceNumberScreen = true;
         }];
+        return;
     } else if(kachel == self.settingKachel){
         MBSettingViewController* vc = [MBSettingViewController new];
         vc.currentStation = self.station;
@@ -897,6 +898,7 @@
         trackingActionKey = @"ausstattungs_merkmale";
     } else if(kachel == self.opnvKachel){
         [self openOPNV];
+        trackingActionKey = @"oepnv";
     }
     
     if (self.station) {

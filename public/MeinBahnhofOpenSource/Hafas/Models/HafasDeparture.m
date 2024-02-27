@@ -33,6 +33,7 @@ static NSDateFormatter* dateTimeFormatter = nil;
              @"stop": @"stop",
              @"trainCategory": @"trainCategory",
              @"direction": @"direction",
+             @"cancelled": @"cancelled",
              @"partCancelled": @"partCancelled",
              @"journeyDetailRef": @"JourneyDetailRef",
              @"stopid": @"stopid",

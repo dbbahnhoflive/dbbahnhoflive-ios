@@ -37,7 +37,7 @@
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H1_Tips title:@"Tipps & Hinweise" text:@"Unter Einstellungen können Sie Tipps & Hinweise deaktivieren." countdown:5],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H2_Departure title:@"Verbindungsdetails" text:@"Erhalten Sie alle Details zu Ihrer Verbindung, inkl. aktuellem Wagenreihungsplan." countdown:8],
                                       [MBTutorial tutorialWithIdentifier:MBTutorialViewType_H2_Platform_info title:@"Gegenüberliegende Gleise" text:@"Wählen Sie eine Verbindung aus, um weitere Gleisinformationen zu erhalten." countdown:0 ruleBlock:^BOOL(MBTutorial *t) {
-                                          if(![MBTutorialManager previousAppVersionIsSmallerThan:@"3.24.0"]){
+                                          if(![MBTutorialManager previousAppVersionIsSmallerThan:@"3.25.0"]){
                                               //this is either a new installation or a later update (previous is <3.22.0, the version when this feature was added)
                                               return false;
                                           }
@@ -159,7 +159,7 @@
             //dont' display after 5th day of usage
             return false;
         } else {
-            //<5: store new date and increase count
+            // <5: store new date and increase count
             count = @(count.integerValue+1);
             [def setObject:count forKey:keyCount];
             [def setObject:NSDate.date forKey:keyDate];

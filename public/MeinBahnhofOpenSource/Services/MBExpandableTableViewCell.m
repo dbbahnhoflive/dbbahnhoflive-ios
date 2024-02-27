@@ -70,7 +70,6 @@
         self.cellTitle.frame = CGRectMake(x, y-2, size.width, size.height);
     } else {
         self.cellTitle.frame = CGRectMake(x, y, self.backView.sizeWidth-(CGRectGetMaxX(self.cellIcon.frame)+33)-8, 24);
-        y = CGRectGetMaxY(self.cellTitle.frame)+2;
     }
 }
 

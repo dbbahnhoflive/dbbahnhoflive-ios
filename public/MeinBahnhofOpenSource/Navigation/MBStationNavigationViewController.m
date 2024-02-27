@@ -8,6 +8,7 @@
 #import "MBUIHelper.h"
 #import "FacilityStatusManager.h"
 #import "MBStationViewController.h"
+#import "AppDelegate.h"
 @import Firebase;//only used for debugging here
 
 @interface MBStationNavigationViewController ()
@@ -184,15 +185,15 @@
 }
 
 - (void)hideNavbar:(BOOL)hidden {
-    CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+    CGFloat statusBarFrameHeight = AppDelegate.statusBarHeight;
     CGFloat navBarHeight = self.navigationBar.frame.size.height;
     if (hidden) {
-        self.behindHeightConstraint.constant = statusBarFrame.size.height;
+        self.behindHeightConstraint.constant = statusBarFrameHeight;
         self.behindViewSmall = YES;
         // hide title
         self.navigationBarHidden = YES;
     } else {
-        self.behindHeightConstraint.constant = navBarHeight + 2.0 + statusBarFrame.size.height;
+        self.behindHeightConstraint.constant = navBarHeight + 2.0 + statusBarFrameHeight;
         self.behindViewSmall = NO;
         // show title
         self.navigationBarHidden = NO;

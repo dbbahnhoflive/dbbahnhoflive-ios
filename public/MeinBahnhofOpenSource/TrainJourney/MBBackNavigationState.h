@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) BOOL isOPNVStation;
 @property (nonatomic) BOOL isFromDeparture;
+@property (nonatomic) BOOL dontRestoreTrainJourney;
 
 @property(nonatomic,strong) Stop* _Nullable stop;
 @property(nonatomic,strong) HafasDeparture* _Nullable hafasDeparture;

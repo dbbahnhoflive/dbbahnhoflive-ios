@@ -181,6 +181,21 @@
     return vc.selectedStation;
 }
 
++(CGFloat)screenHeight{
+    return [AppDelegate appDelegate].window.frame.size.height;
+}
++(CGFloat)statusBarHeight{
+    CGFloat res =
+    [AppDelegate appDelegate].window.windowScene.statusBarManager.statusBarFrame.size.height; //UIApplication.sharedApplication.statusBarFrame.size.height;
+    if(res == 0){
+        res = 20;
+    }
+    return res;
+}
++(double)SCALEFACTORFORSCREEN{
+    return (self.screenHeight <= 568) ? 568./667. : 1. ;
+}
+
 +(AppDelegate *)appDelegate{
     return (AppDelegate*) [UIApplication sharedApplication].delegate;
 }
@@ -351,10 +366,6 @@
     [[MBGPSLocationManager sharedManager] stopAllUpdates];
 }
 
-- (void)application:(UIApplication *)application didChangeStatusBarFrame:(CGRect)oldStatusBarFrame
-{
-    //
-}
 
 
 

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -182,6 +182,8 @@
 		4293F0662846132A006C9F58 /* RIMapSEVManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4293F0652846132A006C9F58 /* RIMapSEVManager.m */; };
 		4293F06B28461400006C9F58 /* MBAFNetworkMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 4293F068284613FF006C9F58 /* MBAFNetworkMock.m */; };
 		4293F06C28461400006C9F58 /* MBTestHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 4293F069284613FF006C9F58 /* MBTestHelper.m */; };
+		429809812B3467E800EAE377 /* MBVoiceOverHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 429809802B3467E700EAE377 /* MBVoiceOverHelper.m */; };
+		429809842B34688400EAE377 /* MBPlatformOverlayInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 429809832B34688300EAE377 /* MBPlatformOverlayInfoViewController.m */; };
 		42A3612C2902A85700D4D25B /* DBSwitch.m in Sources */ = {isa = PBXBuildFile; fileRef = 42A3612B2902A85700D4D25B /* DBSwitch.m */; };
 		42B174332899253F00D21264 /* MBLocker.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B1742E2899253F00D21264 /* MBLocker.m */; };
 		42B174342899253F00D21264 /* MBISO8601DurationParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B174302899253F00D21264 /* MBISO8601DurationParser.m */; };
@@ -213,8 +215,6 @@
 		42B90209295C5BF700A42456 /* FahrzeugAusstattung.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B90203295C5BF700A42456 /* FahrzeugAusstattung.m */; };
 		42C0DF2C25A84C5C0035A897 /* MBTrackingConsentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C0DF2A25A84C5C0035A897 /* MBTrackingConsentViewController.m */; };
 		42CE438028BE5F4700C06516 /* MBService.m in Sources */ = {isa = PBXBuildFile; fileRef = 42CE437E28BE5F4600C06516 /* MBService.m */; };
-		42D320212B503A4F00E63D8C /* MBVoiceOverHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 42D3201F2B503A4E00E63D8C /* MBVoiceOverHelper.m */; };
-		42D320242B503A8600E63D8C /* MBPlatformOverlayInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42D320232B503A8500E63D8C /* MBPlatformOverlayInfoViewController.m */; };
 		42D85DE126F8A1F40017E479 /* MBStationListTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42D85DDF26F8A1F30017E479 /* MBStationListTableView.m */; };
 		42DAC5C6246D2AE90005CF64 /* MBParkingOccupancyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C5246D2AE90005CF64 /* MBParkingOccupancyManager.m */; };
 		42DAC5C8246D2AEF0005CF64 /* MBParkingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C7246D2AEF0005CF64 /* MBParkingManager.m */; };
@@ -577,6 +577,10 @@
 		4293F068284613FF006C9F58 /* MBAFNetworkMock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBAFNetworkMock.m; sourceTree = "<group>"; };
 		4293F069284613FF006C9F58 /* MBTestHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBTestHelper.m; sourceTree = "<group>"; };
 		4293F06A28461400006C9F58 /* MBTestHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBTestHelper.h; sourceTree = "<group>"; };
+		4298097F2B3467E700EAE377 /* MBVoiceOverHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBVoiceOverHelper.h; sourceTree = "<group>"; };
+		429809802B3467E700EAE377 /* MBVoiceOverHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBVoiceOverHelper.m; sourceTree = "<group>"; };
+		429809822B34688300EAE377 /* MBPlatformOverlayInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformOverlayInfoViewController.h; sourceTree = "<group>"; };
+		429809832B34688300EAE377 /* MBPlatformOverlayInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformOverlayInfoViewController.m; sourceTree = "<group>"; };
 		42A3612A2902A85700D4D25B /* DBSwitch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBSwitch.h; sourceTree = "<group>"; };
 		42A3612B2902A85700D4D25B /* DBSwitch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBSwitch.m; sourceTree = "<group>"; };
 		42B1742D2899253F00D21264 /* MBISO8601DurationParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBISO8601DurationParser.h; sourceTree = "<group>"; };
@@ -639,10 +643,6 @@
 		42C0DF2B25A84C5C0035A897 /* MBTrackingConsentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBTrackingConsentViewController.h; sourceTree = "<group>"; };
 		42CE437E28BE5F4600C06516 /* MBService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBService.m; sourceTree = "<group>"; };
 		42CE437F28BE5F4600C06516 /* MBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBService.h; sourceTree = "<group>"; };
-		42D3201F2B503A4E00E63D8C /* MBVoiceOverHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBVoiceOverHelper.m; sourceTree = "<group>"; };
-		42D320202B503A4F00E63D8C /* MBVoiceOverHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBVoiceOverHelper.h; sourceTree = "<group>"; };
-		42D320222B503A8500E63D8C /* MBPlatformOverlayInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformOverlayInfoViewController.h; sourceTree = "<group>"; };
-		42D320232B503A8500E63D8C /* MBPlatformOverlayInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformOverlayInfoViewController.m; sourceTree = "<group>"; };
 		42D85DDF26F8A1F30017E479 /* MBStationListTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBStationListTableView.m; sourceTree = "<group>"; };
 		42D85DE026F8A1F40017E479 /* MBStationListTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBStationListTableView.h; sourceTree = "<group>"; };
 		42DAC5C5246D2AE90005CF64 /* MBParkingOccupancyManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBParkingOccupancyManager.m; sourceTree = "<group>"; };
@@ -767,8 +767,8 @@
 		4261052F244EF10F00E0B05C /* Generics */ = {
 			isa = PBXGroup;
 			children = (
-				42D320202B503A4F00E63D8C /* MBVoiceOverHelper.h */,
-				42D3201F2B503A4E00E63D8C /* MBVoiceOverHelper.m */,
+				4298097F2B3467E700EAE377 /* MBVoiceOverHelper.h */,
+				429809802B3467E700EAE377 /* MBVoiceOverHelper.m */,
 				420DBB3E29E559140075CA9E /* MBStatusImageView.h */,
 				420DBB3D29E559130075CA9E /* MBStatusImageView.m */,
 				42F0CC332923DFF60052FD80 /* MBFavoriteButton.h */,
@@ -985,6 +985,8 @@
 		4261060C244EF10F00E0B05C /* Station */ = {
 			isa = PBXGroup;
 			children = (
+				429809822B34688300EAE377 /* MBPlatformOverlayInfoViewController.h */,
+				429809832B34688300EAE377 /* MBPlatformOverlayInfoViewController.m */,
 				423C89972A8BCB7E006932E8 /* ExternalTeaser */,
 				42B901FA295C5B6E00A42456 /* MBStationViewController.h */,
 				42B901F9295C5B6E00A42456 /* MBStationViewController.m */,
@@ -1011,8 +1013,6 @@
 				42610630244EF10F00E0B05C /* MBOPNVInStationOverlayViewController.m */,
 				42610621244EF10F00E0B05C /* MBStationInfrastructureViewController.h */,
 				4261063C244EF10F00E0B05C /* MBStationInfrastructureViewController.m */,
-				42D320222B503A8500E63D8C /* MBPlatformOverlayInfoViewController.h */,
-				42D320232B503A8500E63D8C /* MBPlatformOverlayInfoViewController.m */,
 				42610623244EF10F00E0B05C /* StationTabBar */,
 			);
 			path = Station;
@@ -1493,7 +1493,8 @@
 		4269353F23C5E3A100B01A81 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1520;
 				ORGANIZATIONNAME = "Scholz & Volkmer GmbH";
 				TargetAttributes = {
 					4269354623C5E3A100B01A81 = {
@@ -1713,7 +1714,7 @@
 				42610732244EF11000E0B05C /* MBAdContainer.m in Sources */,
 				42610711244EF11000E0B05C /* MBRootContainerViewController.m in Sources */,
 				42B90208295C5BF700A42456 /* Train.m in Sources */,
-				42D320242B503A8600E63D8C /* MBPlatformOverlayInfoViewController.m in Sources */,
+				429809842B34688400EAE377 /* MBPlatformOverlayInfoViewController.m in Sources */,
 				426106FF244EF11000E0B05C /* MBStationNavigationViewController.m in Sources */,
 				42B901F6295C5AA100A42456 /* RIMapPoi.m in Sources */,
 				42B1D889269C60520071D176 /* MBTrainOrderDisplayHelper.m in Sources */,
@@ -1721,7 +1722,7 @@
 				426106F9244EF11000E0B05C /* MBMapLevelPicker.m in Sources */,
 				426106EA244EF11000E0B05C /* MBSearchErrorView.m in Sources */,
 				426106AF244EF11000E0B05C /* MBUITrackableViewController.m in Sources */,
-				42D320212B503A4F00E63D8C /* MBVoiceOverHelper.m in Sources */,
+				429809812B3467E800EAE377 /* MBVoiceOverHelper.m in Sources */,
 				426106F3244EF11000E0B05C /* MBPoiFilterView.m in Sources */,
 				4261073A244EF11000E0B05C /* MBSwitch.m in Sources */,
 				426100DC244EEDA400E0B05C /* Constants.m in Sources */,
@@ -1882,7 +1883,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1935,7 +1936,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

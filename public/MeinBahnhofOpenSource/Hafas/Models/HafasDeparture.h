@@ -10,6 +10,7 @@
 @class HafasStopLocation;
 
 #define STOP_MISSING_TEXT @"Ein oder mehrere Halte fallen aus."
+#define CANCELLED_TEXT @"Fahrt fällt aus."
 
 
 @interface HafasDeparture : MTLModel <MTLJSONSerializing>
@@ -31,6 +32,7 @@
 @property (nonatomic, strong) NSString *rtTrack;
 
 @property (nonatomic) BOOL partCancelled;
+@property (nonatomic) BOOL cancelled;
 
 /// day of departure
 @property (nonatomic, strong) NSString *rtTime;

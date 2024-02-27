@@ -9,6 +9,7 @@
 #import "MBStationSearchViewController.h"
 #import "MBUrlOpening.h"
 #import "MBUIHelper.h"
+#import "AppDelegate.h"
 
 @interface OnboardingViewController()
 
@@ -192,7 +193,7 @@
 - (void) viewDidLayoutSubviews
 {
     CGFloat bottomSpacing = 15;
-    CGFloat screenHeight = [UIApplication sharedApplication].keyWindow.frame.size.height;
+    CGFloat screenHeight = AppDelegate.screenHeight;
     NSLog(@"screenHeight %f",screenHeight);
     //depending on the screen height we split the screen into the image (top) and text part, exactly with the same values used in the launch images.
     CGFloat topHeight = 750/2;

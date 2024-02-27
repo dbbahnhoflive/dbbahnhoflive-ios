@@ -4,7 +4,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AFNetworking/AFNetworking.h>
 #import "MBLocker.h"
 #import "MBRequestManager.h"
 

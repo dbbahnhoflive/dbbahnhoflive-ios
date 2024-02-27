@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MBNetworkFactory : NSObject
 
 +(AFHTTPSessionManager*)createRISSessionManager;
++(AFHTTPSessionManager*)createNetworkMockSessionManager;
 +(void)configureRISHeader:(AFHTTPSessionManager*)networkManager;
 
 @end

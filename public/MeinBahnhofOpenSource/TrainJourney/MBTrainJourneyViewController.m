@@ -297,7 +297,7 @@
 }
 
 -(void)updateLinkedPlatform:(MBTrainJourneyStop*)j{
-    if(MBStation.displayPlaformInfo && self.station.platformAccessibility.count > 0 && j.platformForDisplay.length > 0 && [self isStopCurrentStation:j] && self.stop){
+    if(MBStation.displayPlaformInfo && !self.hafasDeparture && self.station.platformAccessibility.count > 0 && j.platformForDisplay.length > 0 && [self isStopCurrentStation:j] && self.stop){
         NSString* gl = j.platformForDisplay;
         NSArray* linked = [self.station linkedPlatformsForPlatform:gl];
         BOOL head = [self.station platformIsHeadPlatform:gl];
@@ -420,6 +420,7 @@
 
 -(void)showFullJourney{
     MBTrainJourneyViewController* detailViewController = [MBTrainJourneyViewController new];
+    detailViewController.timetableOpenedFromOPNVOverlay = self.timetableOpenedFromOPNVOverlay;
     detailViewController.departure = self.departure;
     detailViewController.station = self.station;
     detailViewController.hafasStationThatOpenedThisJourney = self.hafasStationThatOpenedThisJourney;
@@ -620,6 +621,9 @@
                         state.title = self.station.title;
                         state.evaIds = self.station.stationEvaIds;
                         state.position = self.station.positionAsLatLng;
+                    }
+                    if(self.timetableOpenedFromOPNVOverlay){
+                        state.dontRestoreTrainJourney = true;
                     }
                     state.isFromDeparture = self.departure;
                     state.stop = self.stop;

@@ -17,7 +17,6 @@
 
 #define ISIPAD ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
 
-#define SCALEFACTORFORSCREEN (([UIApplication sharedApplication].keyWindow.frame.size.height <= 568) ? 568./667. : 1. )
 
 #define DEFAULT_CONFIRM_AREA_HEIGHT (92)
 

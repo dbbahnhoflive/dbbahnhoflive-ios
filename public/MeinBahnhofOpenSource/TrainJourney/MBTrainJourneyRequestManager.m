@@ -14,7 +14,7 @@
 @property (nonatomic,strong) NSDateFormatter* dateFormatter;
 @end
 
-#define kRISJourneyBaseURL @"/ris-journeys/v1/"
+#define kRISJourneyBaseURL @"/ris-journeys/v1"
 
 
 #define DEBUG_MODE NO
@@ -34,12 +34,13 @@
         sharedManager.dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"DE"];
         sharedManager.dateFormatter.timeZone = [NSTimeZone timeZoneWithName:@"Europe/Berlin"];
 
-        sharedManager.sessionManager = [[AFHTTPSessionManager alloc]
-                                                 initWithBaseURL:[NSURL URLWithString:[[Constants kDBAPI] stringByAppendingString: kRISJourneyBaseURL]]];
-        [MBNetworkFactory configureRISHeader:sharedManager.sessionManager];
-
+        sharedManager.sessionManager = [MBNetworkFactory createRISSessionManager];
     });
     return sharedManager;
+}
+
+-(NSString*)baseUrl{
+    return [[Constants kDBAPI] stringByAppendingString: kRISJourneyBaseURL];
 }
 
 +(NSDateFormatter *)dateFormatter{
@@ -155,7 +156,7 @@
     NSLog(@"load journey for stop %@, from eva %@, Kategorie %@, Fahrtnummer %@, Linie %@, Zeit %@",stop.stopId,stop.evaNumber,stop.transportCategory.transportCategoryType,stop.transportCategory.transportCategoryOriginalNumber, event.lineIdentifier,date);
 
     NSString* category = stop.transportCategory.transportCategoryType;
-    NSString* path = [NSString stringWithFormat:@"byrelation?number=%@",stop.transportCategory.transportCategoryOriginalNumber];
+    NSString* path = [NSString stringWithFormat:@"%@/byrelation?number=%@",self.baseUrl,stop.transportCategory.transportCategoryOriginalNumber];
     if(category){
         path = [path stringByAppendingFormat:@"&category=%@",category];
     }
@@ -269,7 +270,7 @@
 
 - (void)getJourneyDictForId:(NSString*)journeyID
          completionBlock:(void (^)(NSDictionary * _Nullable dict))completion{
-    [self.sessionManager GET:[NSString stringWithFormat:@"eventbased/%@",journeyID]
+    [self.sessionManager GET:[NSString stringWithFormat:@"%@/eventbased/%@",self.baseUrl,journeyID]
                   parameters:nil
                      headers:nil
                     progress:^(NSProgress * _Nonnull uploadProgress) {

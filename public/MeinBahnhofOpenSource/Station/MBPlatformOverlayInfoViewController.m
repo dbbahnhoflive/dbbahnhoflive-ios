@@ -97,11 +97,9 @@
     }
     NSString* trainText = [NSString stringWithFormat:@"%@%@%@%@%@ %@",voExtra1,time,voExtra2,delayString,divider,train];
     NSRange coloredRange = NSMakeRange(voExtra1.length+time.length+voExtra2.length, delayString.length);
-    UIColor* timeColor = UIColor.blackColor;
+    UIColor* timeColor = UIColor.db_mainColor;
     if(delay <= 5){
         timeColor = UIColor.db_green;
-    } else {
-        timeColor = UIColor.db_mainColor;
     }
 
     //second text line

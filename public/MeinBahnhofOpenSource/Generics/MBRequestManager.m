@@ -4,6 +4,11 @@
 //
 #import "MBRequestManager.h"
 #import "MBNetworkFactory.h"
+#import <AFNetworking/AFNetworking.h>
+
+@interface MBRequestManager()
+@property(nonatomic,strong) AFHTTPSessionManager* networkManager;
+@end
 
 @implementation MBRequestManager
 

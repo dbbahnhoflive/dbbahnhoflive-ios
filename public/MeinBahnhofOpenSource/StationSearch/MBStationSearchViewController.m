@@ -84,9 +84,6 @@ typedef NS_ENUM(NSUInteger, MBStationSearchType){
 #define kButtonTagCancel 999
 #define kButtonTagLocation 888
 
-#define BACKGROUND_IMAGE_HEIGHT ( ISIPAD ? 512-60 : (int)(188*SCALEFACTORFORSCREEN))
-#define SEARCHVIEW_CONTAINER_Y (ISIPAD ? 390-126 : 0)
-#define SEARCHVIEW_CONTAINER_Y_MIN (SEARCHVIEW_CONTAINER_Y)
 #define FOOTER_HEIGHT (ISIPAD ? 60 : 40)
 
 static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
@@ -311,7 +308,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (int)scaleForScreen:(CGFloat)v
 {
-    return (int)(v*SCALEFACTORFORSCREEN);
+    return (int)(v*AppDelegate.SCALEFACTORFORSCREEN);
 }
 
 - (void) loadView
@@ -360,7 +357,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
 
     self.logoImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"Hub_Icon"]];
-    if(SCALEFACTORFORSCREEN != 1.0){
+    if(AppDelegate.SCALEFACTORFORSCREEN != 1.0){
         self.logoImage.size = CGSizeMake([self scaleForScreen:self.logoImage.sizeWidth], [self scaleForScreen:self.logoImage.sizeHeight]);
     }
     [self.view addSubview:self.logoImage];
@@ -375,8 +372,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.logoText.frame = logoFrame;
     self.logoText.textColor = [UIColor whiteColor];
     self.logoText.textAlignment = NSTextAlignmentCenter;
-    NSMutableAttributedString* logotext = [[NSMutableAttributedString alloc] initWithString:@"Bahnhof live" attributes:@{NSFontAttributeName:[UIFont db_RegularWithSize:25.*SCALEFACTORFORSCREEN]}];
-    [logotext setAttributes:@{NSFontAttributeName:[UIFont db_BoldWithSize:25.*SCALEFACTORFORSCREEN]} range:NSMakeRange(0, @"Bahnhof".length)];
+    NSMutableAttributedString* logotext = [[NSMutableAttributedString alloc] initWithString:@"Bahnhof live" attributes:@{NSFontAttributeName:[UIFont db_RegularWithSize:25.*AppDelegate.SCALEFACTORFORSCREEN]}];
+    [logotext setAttributes:@{NSFontAttributeName:[UIFont db_BoldWithSize:25.*AppDelegate.SCALEFACTORFORSCREEN]} range:NSMakeRange(0, @"Bahnhof".length)];
     self.logoText.attributedText = logotext;
     self.logoText.accessibilityTraits = UIAccessibilityTraitHeader;
     [self.view addSubview:self.logoText];
@@ -406,7 +403,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     CGRect inputFrame = CGRectMake(15, 0, self.view.frame.size.width-2*15, [self scaleForScreen:60]);
     self.stationSearchInputField = [[MBInputField alloc] initWithFrame:inputFrame];
     self.stationSearchInputField.autocorrectionType = UITextAutocorrectionTypeNo;
-    self.stationSearchInputField.font = [UIFont db_RegularWithSize:14.*SCALEFACTORFORSCREEN];
+    self.stationSearchInputField.font = [UIFont db_RegularWithSize:14.*AppDelegate.SCALEFACTORFORSCREEN];
     self.stationSearchInputField.placeholder = @"Haltestellen finden. Bahnhöfe entdecken.";
     self.stationSearchInputField.accessibilityLanguage = @"de-DE";
     [self.view addSubview:self.stationSearchInputField];
@@ -469,7 +466,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self.searchErrorView addSubview:self.triangleErrorView];
 
     
-    self.loadActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.loadActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     [self.loadActivity stopAnimating];
     if([[NSBundle mainBundle] pathForResource:@"impressum" ofType:@"html"]){
         self.imprintButton = [MBLinkButton boldButtonWithRedLink];
@@ -831,20 +828,12 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
 }
 
-+(BOOL)isInOrAfter2024{
-    NSCalendar *gregorian = [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
-    NSInteger year = [gregorian component:NSCalendarUnitYear fromDate:NSDate.date];
-    return year >= 2024;
-}
 
 - (void)didTapOnImprintLink:(id)sender
 {
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
     imprintViewController.title = @"Impressum";
     imprintViewController.url = @"impressum";
-    if(MBStationSearchViewController.isInOrAfter2024){
-        imprintViewController.url = @"impressum2024";
-    }
     imprintViewController.openAsModal = YES;
     
     MBNavigationController *imprintNavigationController = [[MBNavigationController alloc] initWithRootViewController:imprintViewController];
@@ -863,9 +852,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     MBImprintViewController *imprintViewController =  [[MBImprintViewController alloc] init];
     imprintViewController.title = @"Datenschutz";
     imprintViewController.url = @"datenschutz";
-    if(MBStationSearchViewController.isInOrAfter2024){
-        imprintViewController.url = @"datenschutz2024";
-    }
 
     imprintViewController.openAsModal = YES;
     
@@ -1143,21 +1129,25 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self didSelectStation:station startWithDepartures:YES];
 }
 
--(void)popToSearchViewController{
+-(void)popToSearchViewControllerWithCompletion:(void (^)(void))completion{
     AppDelegate* app = (AppDelegate*) UIApplication.sharedApplication.delegate;
     if(MBRootContainerViewController.currentlyVisibleInstance){
-        [MBRootContainerViewController.currentlyVisibleInstance goBackToSearchAnimated:false clearBackHistory:false];
+        [MBRootContainerViewController.currentlyVisibleInstance goBackToSearchAnimated:false clearBackHistory:false completion:^{
+            completion();
+        }];
     } else {
         //the user is viewing a departure from H0
         [app.viewController.navigationController popToRootViewControllerAnimated:NO];
+        completion();
     }
 }
 
 -(void)openStationFromInternalLink:(MBStationFromSearch *)station  withBackState:(MBBackNavigationState*)state{
-    [self popToSearchViewController];
-    NSLog(@"adding to backNavigationList: %@",state);
-    [self.backNavigationList addObject:state];
-    [self didSelectStation:station];
+    [self popToSearchViewControllerWithCompletion:^{
+        NSLog(@"adding to backNavigationList: %@",state);
+        [self.backNavigationList addObject:state];
+        [self didSelectStation:station];
+    }];
 }
 -(BOOL)allowBackFromStation{
     return self.backNavigationList.count > 0;
@@ -1167,27 +1157,34 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     NSLog(@"go back to the station from backNavigationList: %@",state);
     if(state){
         [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-        self.trainJourneyToRestore = state;
+        if(state.dontRestoreTrainJourney){
+            self.trainJourneyToRestore = nil;
+        } else {
+            self.trainJourneyToRestore = state;
+        }
         [self.backNavigationList removeLastObject];
-        [self popToSearchViewController];
-        [(MBStationNavigationViewController *)self.navigationController hideNavbar:true];
-        [(MBStationNavigationViewController *)self.navigationController setShowRedBar:false];
-        [(MBStationNavigationViewController *)self.navigationController setHideEverything:true];
+        [self popToSearchViewControllerWithCompletion:^{
+            [(MBStationNavigationViewController *)self.navigationController hideNavbar:true];
+            [(MBStationNavigationViewController *)self.navigationController setShowRedBar:false];
+            [(MBStationNavigationViewController *)self.navigationController setHideEverything:true];
 
-        MBStationFromSearch* station = [[MBStationFromSearch alloc] init];
-        station.isOPNVStation = state.isOPNVStation;
-        station.isInternalLink = true;
-        station.isGoingBack = true;
-        station.isFreshStationFromSearch = true;//not really, but we need to safe the request here
-        station.coordinate = state.position;
-        station.eva_ids = state.evaIds;
-        station.title = state.title;
-        station.stationId = state.mbId;
-        [self didSelectStation:station startWithDepartures:true];
-        [MBProgressHUD hideHUDForView:self.view animated:NO];
+            MBStationFromSearch* station = [[MBStationFromSearch alloc] init];
+            station.isOPNVStation = state.isOPNVStation;
+            station.isInternalLink = true;
+            station.isGoingBack = true;
+            station.isFreshStationFromSearch = true;//not really, but we need to safe the request here
+            station.coordinate = state.position;
+            station.eva_ids = state.evaIds;
+            station.title = state.title;
+            station.stationId = state.mbId;
+            [self didSelectStation:station startWithDepartures:!state.dontRestoreTrainJourney];
+            [MBProgressHUD hideHUDForView:self.view animated:NO];
+
+        }];
     } else {
         //there is no station to go back to, return to search controller
-        [self popToSearchViewController];
+        [self popToSearchViewControllerWithCompletion:^{
+        }];
     }
 }
 
@@ -1418,7 +1415,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.triangleInputTextfieldView.hidden = YES;
 
     [UIView animateWithDuration:0.25 animations:^{
-        if(SCALEFACTORFORSCREEN != 1.0){
+        if(AppDelegate.SCALEFACTORFORSCREEN != 1.0){
             [self.stationSearchInputField setGravityTop:60];
         } else {
             CGFloat topSafeOffset = 0.0;

@@ -60,7 +60,7 @@
 -(void)showFacilities;
 -(void)cleanup;
 - (void)goBackToSearchAnimated:(BOOL)animated;
-- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory;
+- (void)goBackToSearchAnimated:(BOOL)animated clearBackHistory:(BOOL)clearBackHistory completion:(void (^)(void))completion;
 
 -(void)handleSearchResult:(MBContentSearchResult*)search;
 @end

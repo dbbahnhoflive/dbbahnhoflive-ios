@@ -29,15 +29,12 @@ static BOOL simulateSearchFailure = NO;
     static MBRISStationsRequestManager *sharedClient = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         sharedClient = [[self alloc] init];
         if(MBTestHelper.isTestRun){
-            sharedClient.sessionManager = [[MBAFNetworkMock alloc] initWithSessionConfiguration:configuration];
+            sharedClient.sessionManager = [MBNetworkFactory createNetworkMockSessionManager];
         } else {
-            sharedClient.sessionManager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
+            sharedClient.sessionManager = [MBNetworkFactory createRISSessionManager];
         }
-        [MBNetworkFactory configureRISHeader:sharedClient.sessionManager];
-
     });
     return sharedClient;
 }

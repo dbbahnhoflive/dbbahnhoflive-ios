@@ -167,7 +167,7 @@
         
         originTop += (timeLabel.frame.size.height + 8.0 + lineLabel.frame.size.height + 16.0);
     }
-    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     [self.departureContainer addSubview:self.spinner];
     [self.spinner startAnimating];
     

@@ -4,6 +4,7 @@
 //
 
 #import "MBNetworkFactory.h"
+#import "MBAFNetworkMock.h"
 #import "Constants.h"
 
 @implementation MBNetworkFactory
@@ -11,6 +12,12 @@
 +(AFHTTPSessionManager*)createRISSessionManager{
     NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
     AFHTTPSessionManager* networkManager = [[AFHTTPSessionManager alloc] initWithSessionConfiguration:configuration];
+    [self configureRISHeader:networkManager];
+    return networkManager;
+}
++(AFHTTPSessionManager*)createNetworkMockSessionManager{
+    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    AFHTTPSessionManager* networkManager = [[MBAFNetworkMock alloc] initWithSessionConfiguration:configuration];
     [self configureRISHeader:networkManager];
     return networkManager;
 }

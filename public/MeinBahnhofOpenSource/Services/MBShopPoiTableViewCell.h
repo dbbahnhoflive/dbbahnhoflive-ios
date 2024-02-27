@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MBShopPoiTableViewCell : MBExpandableTableViewCell
 
-@property(nonatomic,strong) RIMapPoi* poiItem;
+@property(nonatomic,strong) RIMapPoi* _Nullable poiItem;
 @property (nonatomic, strong)  MBShopDetailCellView * _Nullable shopDetailView;
 // only visible in expanded view, and when the shop contains contact information
 @property (nonatomic, strong) UIView *contactAddonView;

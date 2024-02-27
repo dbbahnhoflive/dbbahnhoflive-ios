@@ -128,7 +128,9 @@
                     }
                 }
                 
-                MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithFernverkehr:NO];                
+                MBTimetableViewController *timeVC = [[MBTimetableViewController alloc] initWithFernverkehr:NO];
+                timeVC.timetableOpenedFromOPNVOverlay = true;
+                timeVC.displayHafasTitle = true;
                 timeVC.mapMarkers = mapMarkersWithCurrentInFront;
                 timeVC.hafasTimetable = [[HafasTimetable alloc] init];
                 timeVC.hafasTimetable.opnvStationForFiltering = station;
@@ -136,6 +138,7 @@
                 timeVC.hafasTimetable.needsInitialRequest = YES;
                 timeVC.oepnvOnly = YES;
                 timeVC.hafasStation = station;
+                timeVC.station = self.station;
                 [vcWeak.navigationController pushViewController:timeVC animated:YES];
             };
             [linkBtn setBackgroundColor:[UIColor clearColor]];

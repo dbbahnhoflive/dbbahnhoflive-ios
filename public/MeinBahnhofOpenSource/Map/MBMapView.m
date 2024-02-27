@@ -64,7 +64,7 @@ static const NSInteger skyHighLevel = 13;//changed from 14
 
 - (id)sharedMapViewForFrame:(CGRect)frame withPosition:(GMSCameraPosition*)cameraPosition
 {
-    GMSMapView *mapView = [[GMSMapView alloc] initWithFrame:frame];
+    GMSMapView *mapView = [[GMSMapView alloc] init];
     mapView.camera = cameraPosition;
     mapView.accessibilityElementsHidden = false;//enable this line to make markers accessible
     mapView.frame = frame;

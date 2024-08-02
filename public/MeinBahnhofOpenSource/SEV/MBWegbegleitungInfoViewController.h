@@ -4,14 +4,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MBStationCollectionViewCell.h"
+#import "MBStation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define WEGBEGLEITUNG_LINK @"https://db.de/wegbegleitung"
-
-@interface MBAccompanimentTeaserView : MBStationCollectionViewCell
-
+@interface MBWegbegleitungInfoViewController : UIViewController
+-(instancetype)initWithStation:(MBStation*)station;
+@property(nonatomic,strong) MBStation* station;
 @end
 
 NS_ASSUME_NONNULL_END

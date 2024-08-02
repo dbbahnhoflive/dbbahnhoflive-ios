@@ -172,8 +172,17 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 MBFacilityStatusViewController *facilityVC = [[MBFacilityStatusViewController alloc] init];
                 facilityVC.station = self.station;
                 [self.navigationController pushViewController:facilityVC animated:NO];
-            } else if(self.searchResult.isSEVSearch){
-                [self pushServiceViewForType:kServiceType_SEV];
+            } else if(self.searchResult.isSEVSearch || self.searchResult.isSEVAccompanimentSearch){
+                //[self pushServiceViewForType:kServiceType_SEV];
+                NSIndexPath* servicePath = [self indexPathForServiceCategoryType:kServiceType_SEV];
+                if(self.searchResult.isSEVSearch){
+                    self.searchResult.service = [self findServiceWithType:kServiceType_SEV];
+                } else {
+                    self.searchResult.service = [self findServiceWithType:kServiceType_SEV_AccompanimentService];
+                }
+                if(servicePath){
+                    [self collectionView:self.collectionView didSelectItemAtIndexPath:servicePath];
+                }
             } else if(self.searchResult.isLockerSearch){
                 [self pushServiceViewForType:kServiceType_Locker];
             }
@@ -266,8 +275,11 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         }];
     }
     
-    if(self.openChatBotScreen || self.openServiceNumberScreen){
+    if(self.openChatBotScreen || self.openServiceNumberScreen || self.openWegbegleitungScreen){
         NSString* serviceName = kServiceType_Chatbot;
+        if(self.openWegbegleitungScreen){
+            serviceName = kServiceType_SEV_AccompanimentService;
+        }
         
         BOOL displayAsSingleScreen = NO;
         if(displayAsSingleScreen){
@@ -280,10 +292,14 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 self.searchResult = [MBContentSearchResult searchResultForChatbot];
             } else if(self.openServiceNumberScreen) {
                 self.searchResult = [MBContentSearchResult searchResultForServiceNumbers];
+            } else if(self.openWegbegleitungScreen){
+                MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT];
+                self.searchResult = res;
             }
         }
         self.openServiceNumberScreen = NO;
         self.openChatBotScreen = NO;
+        self.openWegbegleitungScreen = NO;
     }
     [self handleSearchResult];
 }
@@ -442,12 +458,8 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         [infoServices addObject:aufzuegeItem];
     }
 
-    if(self.station.hasSEVStations){
-        MBService* sevService = [MBStaticStationInfo serviceForType:kServiceType_SEV withStation:_station];
-        MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": kServiceType_SEV,
-                                                                            @"title": @"Ersatzverkehr",
-                                                                            @"services": @[sevService],
-                                                                            @"position": @"9"} error:nil];
+    if(self.station.hasSEVStations || self.station.hasAccompanimentService){
+        MBMenuItem* sevItem = [MBServiceListCollectionViewController createMenuItemErsatzverkehrWithStation:self.station];
         [infoServices addObject:sevItem];
     }
     if(self.station.lockerList.count > 0){
@@ -493,6 +505,32 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         }
         return result;
     }];
+}
+
++(MBMenuItem*)createMenuItemErsatzverkehrWithStation:(MBStation*)station{
+    if(station.hasSEVStations && station.hasAccompanimentService){
+        MBService* sevService = [MBStaticStationInfo serviceForType:kServiceType_SEV withStation:station];
+        sevService.title = @"Haltestelleninformation";
+        MBService* accService = [MBStaticStationInfo serviceForType:kServiceType_SEV_AccompanimentService withStation:station];
+        accService.title = @"DB Wegbegleitung";
+        MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": kServiceType_SEV,
+                                                                            @"title": @"Ersatzverkehr",
+                                                                            @"services": @[sevService,accService],
+                                                                            @"position": @"9"} error:nil];
+        return sevItem;
+    } else {
+        //single service
+        NSString* type = kServiceType_SEV;
+        if(station.hasAccompanimentService){
+        //    type = kServiceType_SEV_AccompanimentService;
+        }
+        MBService* sevService = [MBStaticStationInfo serviceForType:type withStation:station];
+        MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": type,
+                                                                            @"title": @"Ersatzverkehr",
+                                                                            @"services": @[sevService],
+                                                                            @"position": @"9"} error:nil];
+        return sevItem;
+    }
 }
 
 #pragma mark MBMapViewControllerDelegate
@@ -622,7 +660,7 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 vc = vclist;
                 trackingTitle = vclist.trackingTitle;
             } else {
-                id service = services.firstObject;
+                MBService* service = services.firstObject;
                 if([service isKindOfClass:MBService.class]){
                     MBDetailViewController*dv = [[MBDetailViewController alloc] initWithStation:self.station service:service];
                     trackingTitle = dv.trackingTitle;

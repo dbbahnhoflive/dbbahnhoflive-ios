@@ -4,20 +4,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Mantle/Mantle.h>
 
-@interface Train : MTLModel <MTLJSONSerializing>
+@interface Train : NSObject
 
-@property (nonatomic, copy) NSDictionary *destination;
+@property (nonatomic, copy) NSString *destination;
 @property (nonatomic, copy) NSArray *sections;
 
 @property (nonatomic, strong) NSString *number;
 @property (nonatomic, strong) NSString *type;
 
 - (NSString *)destinationStation;
-- (NSArray *)destinationVia;
 
 - (NSString *)sectionRangeAsString;
-- (NSString *) destinationViaAsString;
 
 @end

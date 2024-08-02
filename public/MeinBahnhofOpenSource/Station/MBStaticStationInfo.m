@@ -79,7 +79,12 @@
             NSString* headerText = station.sevPois.count > 1 ? @"An diesem Bahnhof finden Sie folgende Ersatzhaltestellen" : @"An diesem Bahnhof finden Sie folgende Ersatzhaltestelle";
             NSMutableString* text = [NSMutableString string];
             if(station.hasStaticAdHocBox){
-                [text appendString:@"<p>Aufgrund von Bauarbeiten kommt es zwischen Würzburg und Nürnberg vom 26. Mai bis zum 11. September 2023 zu Einschränkungen im Zugverkehr.</p><p>Ein Ersatzverkehr mit Bussen ist teilweise eingerichtet.</p>"];
+                //BAHNHOFLIVE-2519
+                NSString* timeframe = @"15.07. – 14.12.2024";
+                if(UIAccessibilityIsVoiceOverRunning()){
+                    timeframe = @"Vom 15. Juli bis zum 14. Dezember 2024";
+                }
+                [text appendFormat:@"<p><b>%@</b></p><p>Aufgrund von Bauarbeiten an der Riedbahn kommt es von Juli bis Dezember 2024 zu Einschränkungen im Zugverkehr auf der Strecke zwischen Frankfurt (Main) Hauptbahnhof und Mannheim Hauptbahnhof. Darüber hinaus sind auch die Nebenverbindungen der Riedbahn, der Main-Neckar-Bahn sowie die Linien auf der Strecke Mainz – Mannheim betroffen. Ein Ersatzverkehr mit Bussen ist eingerichtet.</p>",timeframe];
             }
             if(!skipTitle){
                 [text appendFormat:@"<p>%@:</p>",headerText];
@@ -109,15 +114,28 @@
             if(station.hasARTeaser){
                 [text appendString:kPlaceholderARService];
             }
-            if(station.hasAccompanimentService){
-                // we need an image here... either we use some special tags like <imagewithtext img=\"wegbegleitung_icon\"> or the whole part must be layouted separatly in MBService (see the part after checking for kServiceType_SEV)
-                
-                [text appendFormat:@"<p><b>DB Wegbegleitung – Unterstützung per Videoanruf für blinde und sehbeeinträchtigte Reisende</b><br><br>Während des Ersatzverkehrs an den Bahnhöfen zwischen Würzburg und Nürnberg begleitet unser geschultes Personal Sie sicher vom Gleis zur Ersatzhaltestelle und zurück.<br>Sie können uns unter folgendem Link einfach per Videoanruf kontaktieren und Unterstützung erhalten. <dbactionbutton href=\"%@\">DB Wegbegleitung öffnen</dbactionbutton><br> </p>",WEGBEGLEITUNG_LINK];
-            }
             if(station.hasStaticAdHocBox){
-                [text appendString:@"<p>Die Sanierung erfolgt in zwei Abschnitten. Zunächst wird die Strecke zwischen Rottendorf und Neustadt (Aisch) Bahnhof vom 26. Mai bis 05. August 2023 für den Zugverkehr komplett gesperrt. Anschließend erfolgt eine Sperrung der Strecke zwischen Neustadt (Aisch) Bahnhof und Fürth (Bay) Hauptbahnhof vom 06. August bis 11. September 2023. Durch die Sperrung in dem zweiten genannten Zeitraum erfolgt auf der Strecke Markt Erlbach – Siegelsdorf – Fürth (Bay) Hauptbahnhof zudem ebenfalls kein Zugverkehr.</p><p>Darüber hinaus entfallen über beide Bauphasen die meisten Züge der Linie RB80 zwischen Würzburg Hauptbahnhof und Marktbreit.</p><p>Weiterhin kommt es in den späten Abend- und frühen Morgenstunden zwischen Nürnberg Hauptbahnhof und Würzburg Hauptbahnhof über den gesamten Zeitraum hinweg zu Zugausfällen.</p><p>Weiterführende Informationen finden Sie unter bahnhof.de.</p>"];
+                //BAHNHOFLIVE-2519
+                [text appendString:@"<p>Weiterführende Informationen finden Sie unter</p>"];
+                [text appendFormat:@"<dbactionbutton href=\"%@\"  type=\"extern\">bahnhof.de/entdecken/bauarbeiten-riedbahn</dbactionbutton>",@"https://bahnhof.de/entdecken/bauarbeiten-riedbahn"];
             }
             service.title = @"Ersatzverkehr";
+            service.descriptionText = text;
+        } else if([type isEqualToString:kServiceType_SEV_AccompanimentService]){
+            //BAHNHOFLIVE-2519
+            service.title = @"DB Wegbegleitung";
+            NSMutableString* text = [NSMutableString new];
+            [text appendString:@"<p>Blinde und stark sehbeeinträchtigte Reisende können sich an Bahnhöfen mit Ersatzverkehr sicher und schnell durch unser geschultes Personal per Videoanruf zur Ersatzhaltestelle und zurück begleiten lassen. Dies ist ein Service der DB Regio AG.</p>"];
+            if(station.hasAccompanimentServiceActive){
+                [text appendString:@"<p>Der Service ist <b>täglich von 07:00 Uhr bis 19:00 Uhr</b> erreichbar.</p>"];
+                [text appendFormat:@"<dbactionbutton href=\"%@\">Video-Anruf starten</dbactionbutton>",kActionWegbegleitung];
+                [text appendString:@"<p>Bitte beachten Sie: Dieser Service richtet sich an sinneseingeschränkte Reisende. Für allgemeine Fragen zu Ihrer Reise wenden Sie sich bitte an das Reisezentrum oder Bahn-Mitarbeitenden vor Ort.</p>"];
+            } else {
+                [text appendString:@"<p>Dieser Service steht Ihnen für die Zeit der Baumaßnahmen ab dem 15. Juli bis 14. Dezember 2024 täglich von 07:00 Uhr bis 19:00 Uhr zur Verfügung.</p>"];
+            }
+            [text appendFormat:@"<dbactionbutton href=\"%@\" type=\"intern\">So funktioniert der Service</dbactionbutton>",kActionWegbegleitung_info];
+            [text appendFormat:@"<dbactionbutton href=\"%@\" type=\"extern\">Impressum</dbactionbutton>",@"https://wegbegleitung.deutschebahn.com/bahnhof-live/static/imprint"];
+            [text appendFormat:@"<dbactionbutton href=\"%@\" type=\"extern\">Rechtliche Hinweise</dbactionbutton>",@"https://wegbegleitung.deutschebahn.com/bahnhof-live/static/legal-notice"];
             service.descriptionText = text;
         } else if([type isEqualToString:kServiceType_Locker]){
             service.title = @"Schließfächer";

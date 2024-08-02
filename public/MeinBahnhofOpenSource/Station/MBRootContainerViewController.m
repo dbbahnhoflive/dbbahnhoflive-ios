@@ -277,7 +277,11 @@
                 [self.rootDelegate willStartLoadingData];
             });
         }
-
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[TimetableManager sharedManager] reloadTimetableWithEvaIds:station.stationEvaIds];
+        });
+        
         [[MBRISStationsRequestManager sharedInstance] requestStationData:requestId forcedByUser:forcedByUser success:^(MBStationDetails *response) {
             
             [station updateStationWithDetails:response ];

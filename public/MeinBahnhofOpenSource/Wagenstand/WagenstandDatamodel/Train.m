@@ -9,31 +9,16 @@
 
 @implementation Train
 
-+ (NSDictionary*) JSONKeyPathsByPropertyKey
-{
-    return @{
-             @"destination": @"destination",
-             @"sections": @"sections"
-             };
-}
-
 - (NSString *)destinationStation
 {
-    return [self.destination objectForKey:@"destinationName"];
-}
-
-- (NSArray *)destinationVia
-{
-    return [self.destination objectForKey:@"destinationVia"];
-}
-
-- (NSString *) destinationViaAsString
-{
-    return [self.destinationVia componentsJoinedByString:@", "];
+    return self.destination;
 }
 
 - (NSString *)sectionRangeAsString;
 {
+    if(self.sections.count == 0 || ((NSString*)self.sections.firstObject).length == 0 || ((NSString*)self.sections.lastObject).length == 0){
+        return @"";
+    }
     if(UIAccessibilityIsVoiceOverRunning()){
         return [NSString stringWithFormat:@"Abschnitt %@ bis Abschnitt %@",[self.sections firstObject], [self.sections lastObject]];
     }

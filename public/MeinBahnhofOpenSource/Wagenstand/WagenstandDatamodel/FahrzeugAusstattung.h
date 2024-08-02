@@ -11,7 +11,6 @@
 //new api
 @property(nonatomic,strong) NSString* anzahl;
 @property(nonatomic,strong) NSString* ausstattungsart;
-@property(nonatomic,strong) NSString* bezeichnung;
 @property(nonatomic,strong) NSString* status;
 
 //older api, still used for bistro

@@ -20,6 +20,7 @@
 
 @property(nonatomic) BOOL isOPNVStation;
 @property(nonatomic) BOOL isFreshStationFromSearch;
+@property(nonatomic) BOOL hasEvaIdsUpdatedViaGroupsApi;
 @property(nonatomic) BOOL isInternalLink;
 
 //true when the app returns with back to a previous station

@@ -64,7 +64,6 @@
 		426106C9244EF11000E0B05C /* poi_search.json in Resources */ = {isa = PBXBuildFile; fileRef = 42610581244EF10F00E0B05C /* poi_search.json */; };
 		426106CB244EF11000E0B05C /* MBWagenstandHeaderRedesigned.m in Sources */ = {isa = PBXBuildFile; fileRef = 42610585244EF10F00E0B05C /* MBWagenstandHeaderRedesigned.m */; };
 		426106CC244EF11000E0B05C /* WaggonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 42610589244EF10F00E0B05C /* WaggonCell.m */; };
-		426106CE244EF11000E0B05C /* WagenstandHeaderTrainCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4261058B244EF10F00E0B05C /* WagenstandHeaderTrainCell.m */; };
 		426106CF244EF11000E0B05C /* SectionIndicatorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4261058D244EF10F00E0B05C /* SectionIndicatorView.m */; };
 		426106D2244EF11000E0B05C /* IndicatorWaggonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42610594244EF10F00E0B05C /* IndicatorWaggonView.m */; };
 		426106D5244EF11000E0B05C /* MBTrainPositionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4261059A244EF10F00E0B05C /* MBTrainPositionViewController.m */; };
@@ -214,6 +213,10 @@
 		42B90208295C5BF700A42456 /* Train.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B90202295C5BF700A42456 /* Train.m */; };
 		42B90209295C5BF700A42456 /* FahrzeugAusstattung.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B90203295C5BF700A42456 /* FahrzeugAusstattung.m */; };
 		42C0DF2C25A84C5C0035A897 /* MBTrackingConsentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C0DF2A25A84C5C0035A897 /* MBTrackingConsentViewController.m */; };
+		42C78F452C29C2570029B067 /* SEVWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C78F3E2C29C2570029B067 /* SEVWebViewController.m */; };
+		42C78F462C29C2570029B067 /* MBWegbegleitungInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C78F402C29C2570029B067 /* MBWegbegleitungInfoViewController.m */; };
+		42C78F472C29C2570029B067 /* SEVWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C78F422C29C2570029B067 /* SEVWebView.m */; };
+		42C78F482C29C2570029B067 /* MBExpandableHeaderButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 42C78F432C29C2570029B067 /* MBExpandableHeaderButton.m */; };
 		42CE438028BE5F4700C06516 /* MBService.m in Sources */ = {isa = PBXBuildFile; fileRef = 42CE437E28BE5F4600C06516 /* MBService.m */; };
 		42D85DE126F8A1F40017E479 /* MBStationListTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42D85DDF26F8A1F30017E479 /* MBStationListTableView.m */; };
 		42DAC5C6246D2AE90005CF64 /* MBParkingOccupancyManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42DAC5C5246D2AE90005CF64 /* MBParkingOccupancyManager.m */; };
@@ -333,7 +336,6 @@
 		42610585244EF10F00E0B05C /* MBWagenstandHeaderRedesigned.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBWagenstandHeaderRedesigned.m; sourceTree = "<group>"; };
 		42610588244EF10F00E0B05C /* MBTrainPositionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBTrainPositionViewController.h; sourceTree = "<group>"; };
 		42610589244EF10F00E0B05C /* WaggonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaggonCell.m; sourceTree = "<group>"; };
-		4261058B244EF10F00E0B05C /* WagenstandHeaderTrainCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WagenstandHeaderTrainCell.m; sourceTree = "<group>"; };
 		4261058C244EF10F00E0B05C /* HeadCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeadCell.h; sourceTree = "<group>"; };
 		4261058D244EF10F00E0B05C /* SectionIndicatorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SectionIndicatorView.m; sourceTree = "<group>"; };
 		4261058E244EF10F00E0B05C /* SymbolTagView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymbolTagView.h; sourceTree = "<group>"; };
@@ -346,7 +348,6 @@
 		4261059C244EF10F00E0B05C /* SymbolTagView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SymbolTagView.m; sourceTree = "<group>"; };
 		4261059D244EF10F00E0B05C /* SectionIndicatorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SectionIndicatorView.h; sourceTree = "<group>"; };
 		4261059E244EF10F00E0B05C /* HeadCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeadCell.m; sourceTree = "<group>"; };
-		4261059F244EF10F00E0B05C /* WagenstandHeaderTrainCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WagenstandHeaderTrainCell.h; sourceTree = "<group>"; };
 		426105A1244EF10F00E0B05C /* IndicatorWaggonView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndicatorWaggonView.h; sourceTree = "<group>"; };
 		426105A3244EF10F00E0B05C /* WagenstandPushHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WagenstandPushHeader.m; sourceTree = "<group>"; };
 		426105A6244EF10F00E0B05C /* MBNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBNavigationController.m; sourceTree = "<group>"; };
@@ -641,6 +642,14 @@
 		42B90205295C5BF700A42456 /* Waggon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Waggon.h; sourceTree = "<group>"; };
 		42C0DF2A25A84C5C0035A897 /* MBTrackingConsentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBTrackingConsentViewController.m; sourceTree = "<group>"; };
 		42C0DF2B25A84C5C0035A897 /* MBTrackingConsentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBTrackingConsentViewController.h; sourceTree = "<group>"; };
+		42C78F3D2C29C2570029B067 /* MBExpandableHeaderButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBExpandableHeaderButton.h; sourceTree = "<group>"; };
+		42C78F3E2C29C2570029B067 /* SEVWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SEVWebViewController.m; sourceTree = "<group>"; };
+		42C78F3F2C29C2570029B067 /* SEVWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SEVWebView.h; sourceTree = "<group>"; };
+		42C78F402C29C2570029B067 /* MBWegbegleitungInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBWegbegleitungInfoViewController.m; sourceTree = "<group>"; };
+		42C78F412C29C2570029B067 /* MBWegbegleitungInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBWegbegleitungInfoViewController.h; sourceTree = "<group>"; };
+		42C78F422C29C2570029B067 /* SEVWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SEVWebView.m; sourceTree = "<group>"; };
+		42C78F432C29C2570029B067 /* MBExpandableHeaderButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBExpandableHeaderButton.m; sourceTree = "<group>"; };
+		42C78F442C29C2570029B067 /* SEVWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SEVWebViewController.h; sourceTree = "<group>"; };
 		42CE437E28BE5F4600C06516 /* MBService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBService.m; sourceTree = "<group>"; };
 		42CE437F28BE5F4600C06516 /* MBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBService.h; sourceTree = "<group>"; };
 		42D85DDF26F8A1F30017E479 /* MBStationListTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBStationListTableView.m; sourceTree = "<group>"; };
@@ -872,8 +881,6 @@
 				4261059E244EF10F00E0B05C /* HeadCell.m */,
 				42610599244EF10F00E0B05C /* WaggonCell.h */,
 				42610589244EF10F00E0B05C /* WaggonCell.m */,
-				4261058B244EF10F00E0B05C /* WagenstandHeaderTrainCell.m */,
-				4261059F244EF10F00E0B05C /* WagenstandHeaderTrainCell.h */,
 				42610596244EF10F00E0B05C /* MBWagenstandHeaderRedesigned.h */,
 				42610585244EF10F00E0B05C /* MBWagenstandHeaderRedesigned.m */,
 				4261059D244EF10F00E0B05C /* SectionIndicatorView.h */,
@@ -1346,6 +1353,14 @@
 		4293F05F2846122F006C9F58 /* SEV */ = {
 			isa = PBXGroup;
 			children = (
+				42C78F3D2C29C2570029B067 /* MBExpandableHeaderButton.h */,
+				42C78F432C29C2570029B067 /* MBExpandableHeaderButton.m */,
+				42C78F412C29C2570029B067 /* MBWegbegleitungInfoViewController.h */,
+				42C78F402C29C2570029B067 /* MBWegbegleitungInfoViewController.m */,
+				42C78F3F2C29C2570029B067 /* SEVWebView.h */,
+				42C78F422C29C2570029B067 /* SEVWebView.m */,
+				42C78F442C29C2570029B067 /* SEVWebViewController.h */,
+				42C78F3E2C29C2570029B067 /* SEVWebViewController.m */,
 				4293F06428461316006C9F58 /* RIMapSEVManager.h */,
 				4293F0602846122F006C9F58 /* RIMapSEV.h */,
 				4293F0612846122F006C9F58 /* RIMapSEV.m */,
@@ -1494,7 +1509,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 1530;
 				ORGANIZATIONNAME = "Scholz & Volkmer GmbH";
 				TargetAttributes = {
 					4269354623C5E3A100B01A81 = {
@@ -1627,6 +1642,7 @@
 				426106E0244EF11000E0B05C /* MBFacilityDeleteAllTableViewCell.m in Sources */,
 				42B901F0295C5AA100A42456 /* RIMapFilterEntry.m in Sources */,
 				4264F06727B554BC00979599 /* MBOSMOpenInterval.m in Sources */,
+				42C78F472C29C2570029B067 /* SEVWebView.m in Sources */,
 				42F0CC312923DF820052FD80 /* MBPushManager.m in Sources */,
 				426106B9244EF11000E0B05C /* UIFont+DBFont.m in Sources */,
 				426106E8244EF11000E0B05C /* MBStationSearchViewController.m in Sources */,
@@ -1666,6 +1682,7 @@
 				4222D780266124DB009AA359 /* MBPlatformAccessibilityView.m in Sources */,
 				42F58DAA26835AB500EA469E /* MBPlatformAccessibilityFeature.m in Sources */,
 				426106D2244EF11000E0B05C /* IndicatorWaggonView.m in Sources */,
+				42C78F462C29C2570029B067 /* MBWegbegleitungInfoViewController.m in Sources */,
 				4220FBB329687CB8004F2328 /* MBShopPoiTableViewCell.m in Sources */,
 				42610702244EF11000E0B05C /* MBCouponCategory.m in Sources */,
 				4222D7842661251A009AA359 /* MBFilterButton.m in Sources */,
@@ -1690,10 +1707,10 @@
 				426106B4244EF11000E0B05C /* MBInputField.m in Sources */,
 				423C89A02A8BCBB6006932E8 /* MBStationARTeaserCollectionViewCell.m in Sources */,
 				42B90206295C5BF700A42456 /* Wagenstand.m in Sources */,
+				42C78F482C29C2570029B067 /* MBExpandableHeaderButton.m in Sources */,
 				426106BA244EF11000E0B05C /* MBUIViewController.m in Sources */,
 				4293F0662846132A006C9F58 /* RIMapSEVManager.m in Sources */,
 				426106EC244EF11000E0B05C /* MBPoiFilterContentView.m in Sources */,
-				426106CE244EF11000E0B05C /* WagenstandHeaderTrainCell.m in Sources */,
 				4261072F244EF11000E0B05C /* MBCacheManager.m in Sources */,
 				4293F05E28461206006C9F58 /* MBUrlOpening.m in Sources */,
 				42610720244EF11000E0B05C /* HafasTimetable.m in Sources */,
@@ -1756,6 +1773,7 @@
 				4261071A244EF11000E0B05C /* POIFilterTableCell.m in Sources */,
 				426106C8244EF11000E0B05C /* MBContentSearchTableViewCell.m in Sources */,
 				42B1743B2899255B00D21264 /* MBRequestManager.m in Sources */,
+				42C78F452C29C2570029B067 /* SEVWebViewController.m in Sources */,
 				4261072D244EF11000E0B05C /* MBParkingExpandableTableViewCell.m in Sources */,
 				42610742244EF11000E0B05C /* Event.m in Sources */,
 				42F0CC342923DFF60052FD80 /* MBFavoriteButton.m in Sources */,

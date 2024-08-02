@@ -115,7 +115,7 @@ static NSDateFormatter *formatter = nil;
             if (arrivalEvent) {
                 arrivalEvent.stop = stop;
                 stop.arrivalEvent = arrivalEvent;
-                [arrivalEvent updateComposedIrisWithStop:stop];
+                //[arrivalEvent updateComposedIrisWithStop:stop];
             }
         }
         
@@ -124,7 +124,7 @@ static NSDateFormatter *formatter = nil;
             if (departureEvent) {
                 departureEvent.stop = stop;
                 stop.departureEvent = departureEvent;
-                [departureEvent updateComposedIrisWithStop:stop];
+                //[departureEvent updateComposedIrisWithStop:stop];
             }
         }
         

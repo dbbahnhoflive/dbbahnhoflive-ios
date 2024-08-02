@@ -50,6 +50,7 @@
 @property(nonatomic,strong) NSDate* dateForTrainPosition;
 @property(nonatomic,strong) UIRefreshControl* refreshControl;
 
+@property(nonatomic) BOOL isSEV;
 @end
 
 @implementation MBTrainJourneyViewController
@@ -90,14 +91,14 @@
     self.messageTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.view addSubview:self.messageTextLabel];
 
-    BOOL isSEV = false;
+    self.isSEV = false;
     if(self.hafasDeparture){
         NSString* train = self.hafasDeparture.name;
-        isSEV = [train.uppercaseString containsString:@"SEV"];
+        self.isSEV = [train.uppercaseString containsString:@"SEV"];
         self.title = [NSString stringWithFormat:@"Haltestellen %@ nach %@", train,self.hafasDeparture.stopLocationTitles.lastObject];
     } else {
         NSString* train = [self.event.stop formattedTransportType:self.event.lineIdentifier];
-        isSEV = [train.uppercaseString containsString:@"SEV"] || self.journey.isSEVJourney;
+        self.isSEV = [train.uppercaseString containsString:@"SEV"] || self.journey.isSEVJourney;
         if(self.event.departure){
             self.title = [NSString stringWithFormat:@"Zuglauf %@ nach %@", train,self.event.actualStation];
         } else {
@@ -105,17 +106,17 @@
         }
     }
     
-    if(self.showJourneyMessageAndTrainLinks && isSEV){
+    if(self.showJourneyMessageAndTrainLinks && self.isSEV && self.station.sevPois.count > 0){
         self.sevButton = [MBLinkButton buttonWithRedLink];
         self.sevButton.labelFont = [UIFont db_BoldFourteen];
         [self.sevButton addTarget:self action:@selector(openSEV) forControlEvents:UIControlEventTouchUpInside];
         [self.sevButton setLabelText:@"Übersicht Ersatzverkehr"];
         [self.view addSubview:self.sevButton];
-        if(self.station.hasAccompanimentService){
-            self.accompanimentButton = [MBLinkButton boldButtonWithSmallRedExternalLink];
-            [self.accompanimentButton addTarget:self action:@selector(openAccompaniment) forControlEvents:UIControlEventTouchUpInside];
-            [self.accompanimentButton setLabelText:@"DB Wegbegleitung"];
-            [self.view addSubview:self.accompanimentButton];
+        if(self.station.hasAccompanimentServiceActive){
+//            self.accompanimentButton = [MBLinkButton boldButtonWithSmallRedExternalLink];
+//            [self.accompanimentButton addTarget:self action:@selector(openAccompaniment) forControlEvents:UIControlEventTouchUpInside];
+//            [self.accompanimentButton setLabelText:@"DB Wegbegleitung"];
+//            [self.view addSubview:self.accompanimentButton];
         }
     }
 
@@ -146,7 +147,7 @@
 }
 
 -(void)openSEV{
-    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Ersatzverkehr"];
+    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
     MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
     [root handleSearchResult:res];
 }
@@ -530,6 +531,9 @@
     return NO;
 }
 -(NSArray<NSString *> *)mapFilterPresets{
+    if(self.isSEV && self.station.sevPois.count > 0){
+        return @[ PRESET_SEV ];
+    }
     if(self.hafasDeparture){
         return @[ PRESET_LOCAL_TIMETABLE ];
     }

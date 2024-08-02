@@ -73,8 +73,8 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             self.trackingTitle = @"barrierefreiheit";
         } else if([menuItem.type isEqualToString:kServiceType_WLAN]){
             self.trackingTitle = @"wlan";
-        } else if([menuItem.type hasPrefix:kServiceType_SEV]){
-            self.trackingTitle = @"schienenersatzverkehr";
+        } else if([menuItem.type isEqualToString:kServiceType_SEV]){
+            self.trackingTitle = @"schienenersatzverkehr";//note: we also track the items in SEV view like d1:schienenersatzverkehr:haltestelleninformation when its opened
         } else if([menuItem.type isEqualToString:kServiceType_Locker]){
             self.trackingTitle = @"locker";
         } else if([menuItem.type isEqualToString:kServiceType_Rating]){
@@ -159,8 +159,15 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
     [super viewWillDisappear:animated];
     [[MBTutorialManager singleton] hideTutorials];
 }
--(void)viewWillAppear:(BOOL)animated{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    if (nil != self.navigationController) {
+        if ([self.navigationController isKindOfClass:[MBStationNavigationViewController class]]) {
+            [(MBStationNavigationViewController *)self.navigationController hideNavbar:NO];
+            [(MBStationNavigationViewController *)self.navigationController showBackgroundImage:NO];
+            [(MBStationNavigationViewController *)self.navigationController setShowRedBar:YES];
+        }
+    }
     if (self.type == MBServiceType_Info) {
         [[MBTutorialManager singleton] displayTutorialIfNecessary:MBTutorialViewType_D1_ServiceStores_Details withOffset:60];
     }
@@ -271,6 +278,12 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
         if([tableCell isKindOfClass:MBServiceCell.class]){
             MBServiceCell* serviceCell = (MBServiceCell*) tableCell;
             if(serviceCell.serviceItem) {
+                if([serviceCell.serviceItem.type isEqualToString:kServiceType_SEV_AccompanimentService]){
+                    [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"schienenersatzverkehr",@"wegbegleitung"]];
+                } else if([serviceCell.serviceItem.type isEqualToString:kServiceType_SEV]){
+                    [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"schienenersatzverkehr",@"haltestelleninformation"]];
+                }
+                
                 if (self.type == MBServiceType_Info) {
                     [[MBTutorialManager singleton] markTutorialAsObsolete:MBTutorialViewType_D1_ServiceStores_Details];
                 }
@@ -348,6 +361,19 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
                         return @[ PRESET_INFO_MISSION ];
                     } else if([service.type isEqualToString:kServiceType_LocalLostFound]){
                         return @[ PRESET_LOSTFOUND ];
+                    } else if([service.type isEqualToString:kServiceType_SEV] || [service.type isEqualToString:kServiceType_SEV_AccompanimentService]){
+                        return @[PRESET_SEV];
+                    }
+                }
+            } else {
+                //nothing selected, is this the SEV-Menü? (first item is sev)
+                if(self.subItems.count > 0){
+                    id item = [self.subItems objectAtIndex:0];
+                    if([item isKindOfClass:[MBService class]]){
+                        MBService* service = (MBService*)item;
+                        if([service.type isEqualToString:kServiceType_SEV] || [service.type isEqualToString:kServiceType_SEV_AccompanimentService]){
+                            return @[PRESET_SEV];
+                        }
                     }
                 }
             }

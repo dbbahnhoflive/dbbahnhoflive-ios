@@ -7,39 +7,46 @@
 #import "FahrzeugAusstattung.h"
 #import "Waggon.h"
 
+//no longer used:
 #define STATUS_DEFEKT @"DEFEKT"
 #define STATUS_OFFEN @"OFFEN"
 #define STATUS_GESCHLOSSEN @"GESCHLOSSEN"
-#define STATUS_VERFUEGBAR @"VERFUEGBAR"
-#define STATUS_NICHTVERFUEGBAR @"NICHTVERFUEGBAR"
-#define STATUS_RESERVIERT @"RESERVIERT"
 #define STATUS_NICHTBEDIENT @"NICHTBEDIENT"
-#define STATUS_UNDEFINIERT @"UNDEFINIERT"
 
+//new status:
+#define STATUS_VERFUEGBAR @"AVAILABLE"//
+#define STATUS_NICHTVERFUEGBAR @"NOT_AVAILABLE"//
+#define STATUS_RESERVIERT @"RESERVED"//
+#define STATUS_UNDEFINIERT @"UNDEFINED"//
+
+//no longer used
 #define ART_ABTEILBUSINESS @"ABTEILBUSINESS"
 #define ART_ABTEILFAHRRAD @"ABTEILFAHRRAD"
 #define ART_ABTEILFAHRRADRESPFLICHT @"ABTEILFAHRRADRESPFLICHT"
-#define ART_ABTEILKLEINKIND @"ABTEILKLEINKIND"
 #define ART_ABTEILROLLSTUHL @"ABTEILROLLSTUHL"
-#define ART_KLIMA @"KLIMA"
-#define ART_PLAETZE1 @"PLAETZE1"
-#define ART_PLAETZE2 @"PLAETZE2"
-#define ART_PLAETZECC @"PLAETZECC"
-#define ART_PLAETZEFAHRRAD @"PLAETZEFAHRRAD"
 #define ART_PLAETZEFAHRRADRESPFLICHT @"PLAETZEFAHRRADRESPFLICHT"
-#define ART_PLAETZEROLLSTUHL @"PLAETZEROLLSTUHL"
-#define ART_PLAETZESTEH @"PLAETZESTEH"
-#define ART_PLAETZEWL @"PLAETZEWL"
-#define ART_PLAETZEWR @"PLAETZEWR"
-#define ART_ROLLSTUHLTOILETTE @"ROLLSTUHLTOILETTE"
-#define ART_RUHE @"RUHE"
-#define ART_TOILETTE @"TOILETTE"
-#define ART_WLAN @"WLAN"
 #define ART_HANDYBEREICH @"HANDYBEREICH"
-#define ART_BISTRO @"BISTRO"
-#define ART_PLAETZEBAHNCOMFORT @"PLAETZEBAHNCOMFORT"
-#define ART_FAMILIE @"FAMILIE"
-#define ART_PLAETZESCHWERBEH @"PLAETZESCHWERBEH"
+
+//new types:
+#define ART_ABTEILKLEINKIND @"CABIN_INFANT"//
+#define ART_KLIMA @"AIR_CONDITION"//
+#define ART_PLAETZEFAHRRAD @"BIKE_SPACE"//
+#define ART_PLAETZEROLLSTUHL @"WHEELCHAIR_SPACE"//
+#define ART_ROLLSTUHLTOILETTE @"TOILET_WHEELCHAIR"//
+#define ART_RUHE @"ZONE_QUIET"//
+#define ART_TOILETTE @"TOILET"//
+#define ART_WLAN @"WIFI"//
+#define ART_BISTRO @"BISTRO"//
+#define ART_FAMILIE @"ZONE_FAMILY"//
+#define ART_PLAETZESCHWERBEH @"SEATS_SEVERELY_DISABLED"//
+#define ART_PLAETZEBAHNCOMFORT @"SEATS_BAHN_COMFORT"//
+
+//not implemented new types:
+//#define ART_INFO @"INFO"
+//BOARDING_AID (Einstiegshilfe)
+//ZONE_MULTI_PURPOSE (Mehrzweckbereich)
+//SEATS_LUFTHANSA_EXPRESS_RAIL (Plätze für LH-Codeshare)
+//SEATS_BAHN_BONUS (Plätze für Bahn.Bonus-Kunden) //NOTE: defined in documentation, but not used in API. API uses SEATS_BAHN_COMFORT.
 
 @implementation FahrzeugAusstattung
 
@@ -95,12 +102,11 @@ static NSDictionary* staticConfig = nil;
                                   @"icons": @[@"wagenaustattung_mobilitaetseingeschraenkt-1-nicht-verfuegbar", @"wagenaustattung_mobilitaetseingeschraenkt-2-nicht-verfuegbar"]
                                   },
 
-                         /*[@"INFO" stringByAppendingString:STATUS_UNDEFINIERT]: @{
+                         /*[ART_INFO stringByAppendingString:STATUS_UNDEFINIERT]: @{
                                  @"text": @"Informationen",
-                                 @"icons": @[@"wagenaustattung_businessabteil-nicht-verfuegbar"]
+                                 @"icons": @[@"wagenaustattung_businessabteil-nicht-verfuegbar"]//icon missing
                                  },
                           */
-
                          [ART_ABTEILFAHRRAD stringByAppendingString:STATUS_DEFEKT]: @{
                                  @"text": @"Fahrradabteil defekt",
                                  @"icons": @[@"wagenaustattung_fahrrad-nicht-verfuegbar"]

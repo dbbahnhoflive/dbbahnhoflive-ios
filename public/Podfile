@@ -2,14 +2,14 @@ platform :ios, '14.0'
 use_frameworks!
 
 def base_db_dependencies
-  pod 'Firebase/Messaging', '10.20.0'
+  pod 'Firebase/Messaging', '10.25.0'
   pod 'TBXML', '1.5'
   pod 'AFNetworking', '4.0.1'
   pod 'GTMNSStringHTMLAdditions', '0.2.1'
   pod 'Mantle', '2.2.0'
-  pod 'GoogleMaps', '8.3.1'
+  pod 'GoogleMaps', '8.4.0'
   pod 'MBProgressHUD', '1.2.0'
-  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.19.0'
+  pod 'Sentry', :git => 'https://github.com/getsentry/sentry-cocoa.git', :tag => '8.26.0'
 end
 
 target 'MeinBahnhofOpenSource' do

@@ -305,7 +305,7 @@
     return nil;
 }
 
--(void)updateComposedIrisWithStop:(Stop *)stop{
+-(void)updateComposedIrisWithStop:(Stop *)stop  departure:(BOOL)departure{
     self.shouldShowRedWarnIcon = NO;
     NSMutableArray *extraMessage;
     extraMessage = [[self buildEventIrisMessages] mutableCopy];
@@ -322,8 +322,14 @@
     }
     
     self.hasOnlySplitMessage = extraMessage.count == 0;
-    if (stop.referenceSplitMessage) {
-        [extraMessage addObject:stop.referenceSplitMessage];
+    if(departure){
+        if(stop.departureEvent.referenceSplitMessage){
+            [extraMessage addObject:stop.departureEvent.referenceSplitMessage];
+        }
+    } else {
+        if(stop.arrivalEvent.referenceSplitMessage){
+            [extraMessage addObject:stop.arrivalEvent.referenceSplitMessage];
+        }
     }
     
     NSString* divider = @" +++ ";

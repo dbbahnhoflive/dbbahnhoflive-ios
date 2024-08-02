@@ -244,6 +244,9 @@
     if(!self.station.hasSEVStations){
         [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
     }
+    if(!self.station.hasAccompanimentService){
+        [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT];
+    }
     if(self.station.lockerList.count == 0){
         [self.searchTags removeObjectForKey:CONTENT_SEARCH_KEY_STATIONINFO_LOCKER];
     } else {

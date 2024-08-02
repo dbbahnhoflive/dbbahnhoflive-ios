@@ -19,6 +19,7 @@
                                failureBlock:(void (^)(NSError *error))failure;
 
 -(void)searchStationByEva:(NSString *)evaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure;
+-(void)searchStationByStada:(NSString *)stadaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure;
 
 - (void)searchStationByName:(NSString*)text
         success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success
@@ -28,7 +29,8 @@
      success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success
 failureBlock:(void (^)(NSError *error))failure;
 
--(void)requestUpdateForStation:(MBStationFromSearch*)station success:(void (^)(MBStationFromSearch* stationFromSearch))success failureBlock:(void (^)(NSError *))failure;
-
 -(void)requestAccessibility:(NSString *)stationId success:(void (^)(NSArray<MBPlatformAccessibility*>* platformList))success failureBlock:(void (^)(NSError *))failure;
+
+-(void)requestStationGroups:(NSString *)evaId forcedByUser:(BOOL)forcedByUser success:(void (^)(NSArray<NSString*> *response))success failureBlock:(void (^)(NSError *))failure;
+
 @end

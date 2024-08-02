@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define CONTENT_SEARCH_KEY_STATIONINFO @"Bahnhofsinformation"
 
 #define CONTENT_SEARCH_KEY_STATIONINFO_SEV @"Bahnhofsinformation Ersatzverkehr"
+#define CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT @"Bahnhofsinformation Ersatzverkehr DB Wegbegleitung"
 #define CONTENT_SEARCH_KEY_STATIONINFO_LOCKER @"Bahnhofsinformation Schließfächer"
 #define CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR @"Bahnhofsinformation Aufzüge"
 #define CONTENT_SEARCH_KEY_STATIONINFO_PARKING @"Bahnhofsinformation Parkplätze"
@@ -148,6 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)isSteplessAccessSearch;
 -(BOOL)isWifiSearch;
 -(BOOL)isSEVSearch;
+-(BOOL)isSEVAccompanimentSearch;
 -(BOOL)isLockerSearch;
 -(BOOL)isElevatorSearch;
 

@@ -8,8 +8,9 @@
 
 #define WAGENSTAND_TYPETRAIN @"traintype"
 #define WAGENSTAND_TRAINNUMBER @"trainnumber"
-#define WAGENSTAND_EVAS_NR @"evasNr"
-#define WAGENSTAND_TIME @"time"
+#define WAGENSTAND_EVA_NR @"evaNr"
+#define WAGENSTAND_DATE_FOR_REQUEST @"date_request"
+#define WAGENSTAND_DEPARTURE @"departure"
 
 @class Wagenstand;
 
@@ -19,6 +20,6 @@
 
 
 -(void)loadISTWagenstandWithWagenstand:(Wagenstand*)wagenstand completionBlock:(void (^)(Wagenstand *istWagenstand))completion;
--(void)loadISTWagenstandWithTrain:(NSString*)trainNumber type:(NSString*)trainType departure:(NSString*)departure evaIds:(NSArray*)evaIds completionBlock:(void (^)(Wagenstand *istWagenstand))completion;
+-(void)loadISTWagenstandWithTrain:(NSString*)trainNumber type:(NSString*)trainType date:(NSString*)date evaId:(NSString*)evaId departure:(BOOL)departure completionBlock:(void (^)(Wagenstand *istWagenstand))completion;
 
 @end

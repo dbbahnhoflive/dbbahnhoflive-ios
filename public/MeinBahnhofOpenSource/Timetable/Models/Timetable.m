@@ -30,6 +30,7 @@ static NSDate* initialSetupDate = nil;
 
 - (void) initializeTimetableFromData:(NSData*)data evaNumber:(NSString *)evaNumber
 {
+    //NSLog(@"initializeTimetableFromData %@",evaNumber);
     NSArray *stops = [TimetableParser parseTimeTableFromData:data evaNumber:evaNumber];
     
     if (!self.stops) {
@@ -41,11 +42,14 @@ static NSDate* initialSetupDate = nil;
 
     self.arrivalStops = [self sortArrivalStops];
     self.departureStops = [self sortDepartureStops];
+    //NSLog(@"initializeTimetableFromData done %@",evaNumber);
 }
 
 - (NSMutableSet* _Nullable) updateTimetableFromData:(NSData*)data evaNumber:(NSString *)evaNumber
 {
+    //NSLog(@"updateTimetableFromData %@",evaNumber);
     if (!self.stops || self.stops.count == 0) {
+        //NSLog(@"updateTimetableFromData done %@",evaNumber);
         return nil;
     }
     
@@ -151,7 +155,8 @@ static NSDate* initialSetupDate = nil;
     //if([evaNumber isEqualToString:@"8011160"]){
     //    [missingTrainIds addObject:@"123"];
     //}
-    
+    //NSLog(@"updateTimetableFromData done %@",evaNumber);
+
     return missingTrainIds;
 }
 
@@ -219,7 +224,7 @@ static NSDate* initialSetupDate = nil;
     if (newEvent.wings.count > 0) {
         oldEvent.wings = newEvent.wings;
     }
-    [oldEvent updateComposedIrisWithStop:oldEvent.stop];
+    //[oldEvent updateComposedIrisWithStop:oldEvent.stop];
 }
 
 - (void) clearTimetable;

@@ -22,9 +22,6 @@
 
 @property (nonatomic) BOOL isOpenedFromTimetable;
 @property (nonatomic, strong) Wagenstand *wagenstand;
-@property (nonatomic, strong) NSString *waggonNumber;
-
-@property (nonatomic, strong) NSDictionary* queryValues;
 
 
 +(void) showWagenstandForUserInfo:(NSDictionary *)userInfo fromViewController:(MBUIViewController*)vc;

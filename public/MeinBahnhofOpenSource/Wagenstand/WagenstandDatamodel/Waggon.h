@@ -4,12 +4,11 @@
 //
 
 
-#import <Mantle/Mantle.h>
 #import "SymbolTagView.h"
 
 @class Train;
 
-@interface Waggon : MTLModel <MTLJSONSerializing>
+@interface Waggon : NSObject
 
 @property (nonatomic, copy) NSString *differentDestination;
 @property (nonatomic, assign) NSInteger length;

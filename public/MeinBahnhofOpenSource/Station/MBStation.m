@@ -16,6 +16,7 @@
 #import "UIImage+MBImage.h"
 #import "RIMapSEV.h"
 #import "RIMapConfigItem.h"
+#import "MBRISStationsRequestManager.h"
 
 @interface MBStation()
 
@@ -732,7 +733,7 @@
 #if TARGET_IPHONE_SIMULATOR
     NSInteger size = self.adHocBoxStations.count;
     NSLog(@"testing size of adhoc tables, expecting %ld",(long)size);
-    if(size != self.additionalEvaIdsMapping_StadaToEvas.count){
+    /*if(size != self.additionalEvaIdsMapping_StadaToEvas.count){
         NSAssert(false, @"entry missmatch");
     }
     if(size != self.mainEvaIdForStadaAdditions.count){
@@ -747,7 +748,7 @@
         if(additionalEva[number] == nil){
             NSAssert(false, @"missing additional eva %@",number);
         }
-    }
+    }*/
     for(NSString* number in self.accompanimentStations){
         if(![self.adHocBoxStations containsObject:number]){
             NSAssert(false, @"all accompaniment stations should have adhoc %@",number);
@@ -757,6 +758,7 @@
 }
 -(BOOL)hasARTeaser{
     if(self.hasStaticAdHocBox && !UIAccessibilityIsVoiceOverRunning()){
+        /*
         NSString* stationId = self.mbId.stringValue;
         NSString* startDateString;
         if([stationId isEqualToString:@"6945"]){
@@ -766,85 +768,176 @@
         } else {
             return false;
         }
-        if([NSUserDefaults.standardUserDefaults boolForKey:@"DisableStartdateChecks"]){
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
             return true;
         }
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
         NSDate* startDate = [dateFormatter dateFromString: startDateString];
         return startDate.timeIntervalSinceNow < 0;
+         */
     }
     return false;
 }
 
 -(NSArray*)adHocBoxStations{
-    //BAHNHOFLIVE-2353 and BAHNHOFLIVE-2414
+    //BAHNHOFLIVE-2519
+    NSArray* data = self.sevStationsData;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:data.count];
+    for(NSArray* entry in data){
+        [res addObject:entry[1]];
+    }
+    return res;
+}
+
+-(void)testSEVStationsDataIntegrity{
+    NSLog(@"testSEVStationsDataIntegrity");
+    NSMutableString* res = [NSMutableString new];
+    for(NSArray* list in self.sevStationsData){
+        NSString* name = list[0];
+        NSString* stada = list[1];
+        //sleep(2);
+        [MBRISStationsRequestManager.sharedInstance searchStationByStada:stada success:^(MBStationFromSearch *station) {
+            [res appendFormat:@"%@, %@, %@\n",name,stada,station.eva_ids.firstObject];
+            if([station.title isEqualToString:name]){
+                NSLog(@"MATCH: stada %@ was returned as \"%@\", evaId %@",stada,station.title,station.eva_ids);
+                //match
+            } else {
+                NSLog(@"FAIL: stada %@ was returned as \"%@\" and not \"%@\", evaIds %@",stada,station.title, name, station.eva_ids);
+            }
+        } failureBlock:^(NSError * error) {
+            NSLog(@"FAIL: for %@: %@",name,error);
+        }];
+    }
+    NSLog(@"final list: \n%@",res);
+}
+
+-(NSArray<MBStationFromSearch*>*)sevStationsMatchingSearchString:(NSString*)text{
+    NSString* inputLowercase = text.lowercaseString;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:20];
+    for(NSArray* list in self.sevStationsData){
+        NSString* name = list[0];
+        if([name.lowercaseString containsString:inputLowercase]){
+            NSString* stada = list[1];
+            MBStationFromSearch* s = [[MBStationFromSearch alloc] init];
+            s.title = name;
+            s.stationId = [NSNumber numberWithLongLong:stada.longLongValue];
+            [res addObject:s];
+        }
+    }
+    return res;
+}
+
+-(NSArray<NSArray*>*)sevStationsData{
+    //BAHNHOFLIVE-2519
     return @[
-        @"6945",
-        @"6946",
-        @"6808",
-        @"2206",
-        @"4720",
-        @"3973",
-        @"5400",
-        @"1181",
-        @"927",
-        @"3212",
-        @"3001",
-        @"3968",
-        @"4443",
-        @"8195",
-        @"1591",
-        @"2466",
-        @"5060",
-        @"5841",
-        @"1988",
-        @"1991",
-        @"1984",
-        @"4593",
-        @"3970",
-        @"1676",
-        @"13",
-        @"7961",
-        @"6775",
-        @"3569",
-        @"2558",
-        @"3556",
-        @"5102",
+        //title, StadaID, Wegbegleitung
+        @[@"Alsheim", @"66", @true,],
+        @[@"Bensheim", @"488", @true,],
+        @[@"Bensheim-Auerbach", @"489", @true,],
+        @[@"Biblis", @"614", @true,],
+        @[@"Bickenbach (Bergstr)", @"618", @true,],
+        @[@"Biebesheim", @"619", @true,],
+        @[@"Bobenheim", @"716", @true,],
+        @[@"Bobstadt", @"721", @true,],
+        @[@"Bodenheim", @"739", @true,],
+        @[@"Bürstadt", @"1002", @true,],
+        @[@"Bürstadt (Ried)", @"7177", @true,],
+        @[@"Darmstadt Hbf", @"1126", @true,],
+        @[@"Darmstadt Süd", @"1129", @true,],
+        @[@"Darmstadt-Eberstadt", @"1131", @true,],
+        @[@"Dienheim", @"8252", @true,],
+        @[@"Frankenthal Hbf", @"1848", @true,],
+        @[@"Frankenthal Süd", @"8210", @true,],
+        @[@"Frankfurt am Main Flughafen Fernbahnhof", @"7982", @true,],
+        @[@"Frankfurt (Main) Flughafen Regionalbahnhof", @"1849", @true,],
+        @[@"Frankfurt (Main) Hbf", @"1866", @true,],
+        @[@"Frankfurt am Main Stadion", @"1854", @true,],
+        @[@"Frankfurt am Main Gateway Gardens", @"8268", @true,],
+        @[@"Frankfurt (Main) Niederrad", @"1876", @true,],
+        @[@"Gernsheim", @"2097", @true,],
+        @[@"Groß Gerau", @"2299", @true,],
+        @[@"Groß Gerau-Dornberg", @"2300", @true,],
+        @[@"Groß Gerau-Dornheim", @"1278", @true,],
+        @[@"Groß Rohrheim", @"2316", @true,],
+        @[@"Guntersblum", @"2419", @true,],
+        @[@"Hähnlein-Alsbach", @"2471", @true,],
+        @[@"Heddesheim/Hirschberg", @"2362", @true,],
+        @[@"Hemsbach", @"2684", @true,],
+        @[@"Heppenheim (Bergstr)", @"2693", @true,],
+        @[@"Hofheim (Ried)", @"2826", @true,],
+        @[@"Ladenburg", @"3490", @true,],
+        @[@"Lampertheim", @"3500", @true,],
+        @[@"Langen (Hess)", @"3524", @true,],
+        @[@"Laudenbach (Bergstr)", @"3578", @true,],
+        @[@"Lorsch", @"3786", @true,],
+        @[@"Ludwigshafen (Rhein) Hbf", @"3837", @true,],
+        @[@"Ludwigshafen (Rhein) Mitte", @"7385", @true,],
+        @[@"Ludwigshafen-Oggersheim", @"3839", @true,],
+        @[@"Mainz Hbf", @"3898", @true,],
+        @[@"Mainz Römisches Theater", @"3900", @true,],
+        @[@"Mainz-Laubenheim", @"3905", @true,],
+        @[@"Mannheim-Handelshafen", @"3929", @false,],
+        @[@"Mannheim Hbf", @"3925", @true,],
+        @[@"Mannheim-Käfertal", @"3930", @false,],
+        @[@"Mannheim-Luzenberg", @"3931", @true,],
+        @[@"Mannheim-Neckarstadt", @"3933", @true,],
+        @[@"Mannheim-Waldhof", @"3936", @true,],
+        @[@"Mettenheim", @"4082", @true,],
+        @[@"Mörfelden", @"4174", @true,],
+        @[@"Nackenheim", @"4293", @true,],
+        @[@"Neu Isenburg", @"4351", @true,],
+        @[@"Nierstein", @"4551", @true,],
+        @[@"Oppenheim", @"4772", @true,],
+        @[@"Osthofen", @"4808", @true,],
+        @[@"Pfungstadt", @"8264", @true,],
+        @[@"Riedrode", @"5272", @true,],
+        @[@"Riedstadt-Goddelau", @"2161", @true,],
+        @[@"Riedstadt-Wolfskehlen", @"3608", @true,],
+        @[@"Stockstadt (Rhein)", @"6035", @true,],
+        @[@"Weinheim-Sulzbach", @"8290", @true,],
+        @[@"Walldorf (Hess)", @"6503", @true,],
+        @[@"Weinheim (Bergstr) Hbf", @"6622", @true,],
+        @[@"Weinheim-Lützelsachsen", @"3873", @true,],
+        @[@"Wiesloch-Walldorf", @"6759", @false,],
+        @[@"Worms Hbf", @"6887", @true,],
+        @[@"Zeppelinheim", @"6999", @true,],
+        @[@"Zwingenberg (Bergstr)", @"7075", @true,],
     ];
 }
+-(NSArray*)accompanimentStationsData{
+    NSArray* data = self.sevStationsData;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:data.count];
+    for(NSArray* entry in data){
+        if(((NSNumber*)entry.lastObject).boolValue){
+            [res addObject:entry];
+        }
+    }
+    return res;
+}
+-(NSArray<NSString*>*)accompanimentStationsTitles{
+    NSArray* data = self.accompanimentStationsData;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:data.count];
+    for(NSArray* entry in data){
+        [res addObject:entry.firstObject];
+    }
+    [res sortUsingComparator:^NSComparisonResult(NSString*  _Nonnull obj1, NSString*  _Nonnull obj2) {
+        return [obj1 compare:obj2];
+    }];
+    return res;
+}
 -(NSArray*)accompanimentStations{
-    return @[
-        @"6945",
-        @"6946",
-        @"6808",
-        @"2206",
-        @"4720",
-        @"3973",
-        @"4443",
-        @"8195",
-        @"1591",
-        @"2466",
-        @"5841",
-        @"1988",
-        @"1991",
-        @"1984",
-        @"4593",
-        @"3970",
-        @"1676",
-        @"13",
-        @"7961",
-        @"6775",
-        @"3569",
-        @"2558",
-        @"3556",
-        @"5102"
-    ];
+    NSArray* data = self.accompanimentStationsData;
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:data.count];
+    for(NSArray* entry in data){
+        [res addObject:entry[1]];
+    }
+    return res;
 }
 -(NSDictionary*)additionalEvaIdsMapping_StadaToEvas{
     //stadaId -> additional evaids
     return @{
-        @"6945" : @"8089299",
+        /*@"6945" : @"8089299",
         @"6946" : @"220219",
         @"6808" : @"8071200",
         @"2206" : @[@"8071316", @"8071317"],
@@ -875,13 +968,13 @@
         @"2558" : @"678496",
         @"3556" : @[@"8071320", @"8071321"],
         @"5102" : @"460390",
-
+*/
     };
 }
 -(NSDictionary<NSString*,NSString*>*)mainEvaIdForStadaAdditions{
     //stadaId->main evaId
     return @{
-        @"6945" : @"8000260",
+        /*@"6945" : @"8000260",
         @"6946" : @"8006582",
         @"6808" : @"8006488",
         @"2206" : @"8002333",
@@ -911,7 +1004,7 @@
         @"3569" : @"8003567",
         @"2558" : @"8002596",
         @"3556" : @"8003552",
-        @"5102" : @"8004923",
+        @"5102" : @"8004923",*/
     };
 }
 -(NSString*)isAdditionalEvaId_MappedToMainEva:(NSString*)evaId{
@@ -950,33 +1043,66 @@
 }
 
 -(BOOL)hasStaticAdHocBox{
-    //BAHNHOFLIVE-2353
+    //BAHNHOFLIVE-2519
     NSString* stationId = self.mbId.stringValue;
+    return [self hasStaticAdHocBox:stationId];
+}
+-(BOOL)hasStaticAdHocBox:(NSString*)stationId{
     BOOL isAffectedStation =
            [self.adHocBoxStations containsObject:stationId];
     if(isAffectedStation){
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-        NSDate* endDate = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
-        return endDate.timeIntervalSinceNow > 0;
+        NSDate* startDate = [dateFormatter dateFromString: @"2024-07-07 23:59:59 GMT+02:00"];
+        BOOL afterStartDate = startDate.timeIntervalSinceNow < 0;//we are after the start date
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"] || [NSUserDefaults.standardUserDefaults boolForKey:@"VorErsatzverkehr"]){
+            return true;
+        }
+        if(afterStartDate){
+            NSDate* endDate = [dateFormatter dateFromString: @"2024-12-14 23:59:59 GMT+02:00"];
+            return endDate.timeIntervalSinceNow > 0;
+        }
     }
     return false;
 }
 -(BOOL)hasAccompanimentService{
     NSString* stationId = self.mbId.stringValue;
-    //24 stations from BAHNHOFLIVE-2414
-    BOOL isAffectedStation =
-           [self.accompanimentStations containsObject:stationId];
+    BOOL isAffectedStation = [self.accompanimentStations containsObject:stationId];
     if(isAffectedStation){
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"VorErsatzverkehr"]){
+            return true;
+        }
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
+            return true;
+        }
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
         [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-        NSDate* startDate = [dateFormatter dateFromString: @"2023-08-06 00:00:01 GMT+02:00"];
+        NSDate* startDate = [dateFormatter dateFromString: @"2024-07-08 00:00:01 GMT+02:00"];
         BOOL afterStartDate = startDate.timeIntervalSinceNow < 0;//we are after the start date
-        if([NSUserDefaults.standardUserDefaults boolForKey:@"DisableStartdateChecks"]){
-            afterStartDate = true;
-        }
         if(afterStartDate){
-            NSDate* endDate = [dateFormatter dateFromString: @"2023-09-11 23:59:59 GMT+02:00"];
+            NSDate* endDate = [dateFormatter dateFromString: @"2024-12-14 23:59:59 GMT+02:00"];
+            return endDate.timeIntervalSinceNow > 0;
+        }
+    }
+    return false;
+}
+-(BOOL)hasAccompanimentServiceActive{
+    //BAHNHOFLIVE-2519
+    BOOL isAffectedStation = self.hasAccompanimentService;
+    if(isAffectedStation){
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
+            return true;
+        }
+        if([NSUserDefaults.standardUserDefaults boolForKey:@"VorErsatzverkehr"]){
+            return false;
+        }
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+        
+        NSDate* startDate = [dateFormatter dateFromString: @"2024-07-15 00:00:01 GMT+02:00"];
+        BOOL afterStartDate = startDate.timeIntervalSinceNow < 0;//we are after the start date
+        if(afterStartDate){
+            NSDate* endDate = [dateFormatter dateFromString: @"2024-12-14 23:59:59 GMT+02:00"];
             return endDate.timeIntervalSinceNow > 0;
         }
     }
@@ -1080,6 +1206,9 @@
     return [@[@"5274", @"5530", @"6192", @"519", @"6762", @"4424", @"8309", @"424", @"2698", @"4399", @"6235"] containsObject:stationId];//BAHNHOFLIVE-2094
 }
 
+-(void)updateEvaIds:(NSArray<NSString *> *)evaIds{
+    self.eva_ids = evaIds;
+}
 
 -(void)updateStationWithDetails:(MBStationDetails *)details{
     self.stationDetails = details;
@@ -1133,6 +1262,7 @@
 -(NSArray *)stationEvaIds{
     //prefer RIS:Station, fallback to rimaps
     if(_eva_ids){
+        /*
         if([self hasStaticAdHocBox]){
             NSArray* additional = [self additionalEvasForStationId:self.mbId.stringValue];
             if(additional.count > 0){
@@ -1146,7 +1276,7 @@
                 }
                 return res;
             }
-        }
+        }*/
         return _eva_ids;
     }
     switch(self.mbId.integerValue){

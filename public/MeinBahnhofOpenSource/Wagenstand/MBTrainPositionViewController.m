@@ -95,12 +95,7 @@ static NSString *kHeadCell = @"HeadCell";
     UIView *updateTimestampView = [[UIView alloc] initWithFrame:CGRectMake(0,0,self.view.sizeWidth,40)];
     self.updateTimestampView = updateTimestampView;
     UILabel *updateTimestampLabel = [[UILabel alloc] init];
-    if(!self.wagenstand.isISTData){
-        //soll-data has two lines text
-        [updateTimestampView setHeight:60];
-        updateTimestampLabel.numberOfLines = 0;
-        [updateTimestampLabel setSize:CGSizeMake(self.view.sizeWidth-2*15, 40)];
-    }
+    
     self.updateTimestampLabel = updateTimestampLabel;
     self.updateTimestampLabel.isAccessibilityElement = NO;
     updateTimestampLabel.font = [UIFont db_RegularTwelve];
@@ -108,17 +103,12 @@ static NSString *kHeadCell = @"HeadCell";
     [self updateReloadTime];
     [updateTimestampView addSubview:updateTimestampLabel];
     
-    if(self.wagenstand.isISTData){
-        UIImageView* reloadImg = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"ReloadBtn"]];
-        [updateTimestampView addSubview:reloadImg];
-        [reloadImg centerViewVerticalInSuperView];
-        [reloadImg setGravityLeft:20-5];
-        [updateTimestampLabel centerViewVerticalInSuperView];
-        [updateTimestampLabel setRight:reloadImg withPadding:7];
-    } else {
-        [updateTimestampLabel centerViewVerticalInSuperView];
-        [updateTimestampLabel setGravityLeft:15];
-    }
+    UIImageView* reloadImg = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"ReloadBtn"]];
+    [updateTimestampView addSubview:reloadImg];
+    [reloadImg centerViewVerticalInSuperView];
+    [reloadImg setGravityLeft:20-5];
+    [updateTimestampLabel centerViewVerticalInSuperView];
+    [updateTimestampLabel setRight:reloadImg withPadding:7];
     [self updateReloadTime];//update again to set correct text for accessibility!
     
     [self.view addSubview:self.updateTimestampView];
@@ -184,36 +174,37 @@ static NSString *kHeadCell = @"HeadCell";
 
 -(void)updateReloadTime
 {
-    if(self.wagenstand.isISTData){
-        NSDateFormatter* df = [[NSDateFormatter alloc] init];
-        [df setDateFormat:@"dd.MM.YY, HH:mm"];
-        NSDate* date = [NSDate date];
-        NSString* dateString = [df stringFromDate:date];
-        NSString* staticPart = @"Wagenreihungsplan Stand: ";
-        NSMutableAttributedString* str = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@%@",staticPart, dateString ] attributes:@{NSFontAttributeName:[UIFont db_RegularTwelve]}];
-        [str addAttributes:@{NSFontAttributeName:[UIFont db_BoldTwelve]} range:NSMakeRange(staticPart.length,str.length-staticPart.length)];
-        self.updateTimestampLabel.attributedText = str;
-    } else {
-        //soll data
-        NSString* text = @"Dargestellte Wagenreihung gemäß Fahrplan. Bitte achten Sie auf aktuelle Informationen am Gleis.";
-        NSString* boldPart = @"aktuelle Informationen am Gleis.";
-        NSMutableAttributedString* str = [[NSMutableAttributedString alloc] initWithString:text attributes:@{NSFontAttributeName:[UIFont db_RegularTwelve]}];
-        [str addAttributes:@{NSFontAttributeName:[UIFont db_BoldTwelve]} range:NSMakeRange(text.length-boldPart.length,boldPart.length)];
-        self.updateTimestampLabel.attributedText = str;
-    }
+    NSDateFormatter* df = [[NSDateFormatter alloc] init];
+    [df setDateFormat:@"dd.MM.YY, HH:mm"];
+    NSDate* date = [NSDate date];
+    NSString* dateString = [df stringFromDate:date];
+    NSString* staticPart = @"Wagenreihungsplan Stand: ";
+    NSMutableAttributedString* str = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@%@",staticPart, dateString ] attributes:@{NSFontAttributeName:[UIFont db_RegularTwelve]}];
+    [str addAttributes:@{NSFontAttributeName:[UIFont db_BoldTwelve]} range:NSMakeRange(staticPart.length,str.length-staticPart.length)];
+    self.updateTimestampLabel.attributedText = str;
     [self.updateTimestampLabel sizeToFit];
 
 }
 
 -(void)updateTitle{
-    if(UIAccessibilityIsVoiceOverRunning()){
-        self.title = [NSString stringWithFormat:@"Wagenreihung %@ Uhr, Gl. %@",self.wagenstand.time,self.wagenstand.platform];
-    } else {
-        self.title = [NSString stringWithFormat:@"Wagenreihung %@ | Gl. %@",self.wagenstand.time,self.wagenstand.platform];
+    NSMutableString* titleString = [NSMutableString new];
+    [titleString appendString:@"Wagenreihung"];
+    if(self.wagenstand.plan_time.length > 0){
+        if(UIAccessibilityIsVoiceOverRunning()){
+            [titleString appendFormat:@" %@ Uhr",self.wagenstand.plan_time];
+        } else {
+            [titleString appendFormat:@" %@",self.wagenstand.plan_time];
+        }
     }
-    if (self.waggonNumber.length > 0) {//I think this is no longer used...
-        self.title = [self.title stringByAppendingString:[NSString stringWithFormat:@", Wagen %@", self.waggonNumber]];
+    if(self.wagenstand.platform.length > 0){
+        if(UIAccessibilityIsVoiceOverRunning()){
+            [titleString appendString:@", Gleis "];
+        } else {
+            [titleString appendString:@" | Gl. "];
+        }
+        [titleString appendString:self.wagenstand.platform];
     }
+    self.title = titleString;
 }
 
 -(void)refreshData
@@ -269,7 +260,7 @@ static NSString *kHeadCell = @"HeadCell";
 
 -(void)findPendingNotificationWithCompletion:(void (^)(UNNotificationRequest *))completion{
     NSString* trainNumber = [Wagenstand getTrainNumberForWagenstand:_wagenstand];
-    NSString* time = [Wagenstand getDateAndTimeForWagenstand:_wagenstand];
+    NSString* time = _wagenstand.request_date;
     //iterate over registered notifications and check if we need to cancel one
 
     UNUserNotificationCenter* notificationCenter = UNUserNotificationCenter.currentNotificationCenter;
@@ -278,7 +269,7 @@ static NSString *kHeadCell = @"HeadCell";
             NSDictionary* userInfo = request.content.userInfo;
             if([[userInfo objectForKey:@"type"] isEqualToString:@"wagenstand"] &&
                [[userInfo objectForKey:WAGENSTAND_TRAINNUMBER] isEqualToString:trainNumber] &&
-               [[userInfo objectForKey:WAGENSTAND_TIME] isEqualToString:time]){
+               [[userInfo objectForKey:WAGENSTAND_DATE_FOR_REQUEST] isEqualToString:time]){
                 dispatch_async(dispatch_get_main_queue(), ^{
                     completion(request);
                 });
@@ -293,11 +284,11 @@ static NSString *kHeadCell = @"HeadCell";
 
 -(void)updateLocalNotif{
     NSString* trainNumber  =[Wagenstand getTrainNumberForWagenstand:_wagenstand];
-    NSString* plantime = _wagenstand.time;
-    NSString* time = _wagenstand.expectedTime;
+    NSString* request_date = _wagenstand.request_date;
+    NSString* time = _wagenstand.expected_time;
     if(!time){
         //fallback to planed time
-        time = plantime;
+        time = _wagenstand.plan_time;
     }
     NSLog(@"pushSwitch changed status to %d, must register/remove local notification for train %@ at %@", self.pushHeader.pushSwitch.on, trainNumber, time);
     
@@ -354,11 +345,12 @@ static NSString *kHeadCell = @"HeadCell";
             content.userInfo = @{
                 @"type":@"wagenstand",
                 WAGENSTAND_TRAINNUMBER:trainNumber,
-                WAGENSTAND_TIME:plantime,
+                WAGENSTAND_DATE_FOR_REQUEST:request_date,
                 WAGENSTAND_TYPETRAIN:trainType,
                 @"stationNumber":stationNumber,
                 @"stationName":stationName,
-                WAGENSTAND_EVAS_NR:self.wagenstand.evaIds,
+                WAGENSTAND_EVA_NR:self.wagenstand.evaId,
+                WAGENSTAND_DEPARTURE:@(self.wagenstand.departure),
                 @"body":content.body,
             };
             
@@ -369,7 +361,7 @@ static NSString *kHeadCell = @"HeadCell";
             uuidString = [identifier stringByAppendingString:uuidString];
             UNNotificationRequest* request = [UNNotificationRequest requestWithIdentifier:uuidString content:content trigger:trigger];
             [notificationCenter addNotificationRequest:request withCompletionHandler:^(NSError * _Nullable error) {
-                NSLog(@"added notif %@, error %@",uuidString,error);
+                NSLog(@"added notif %@ with %@ at %@, error %@",uuidString,content.userInfo,fireDate,error);
             }];
         }
     }];
@@ -562,13 +554,6 @@ static NSString *kHeadCell = @"HeadCell";
 {
     [super viewDidAppear:animated];
     
-    //scroll to specific waggon if user has queried for one
-    if (self.waggonNumber.length > 0) {
-        NSInteger index = [self.wagenstand indexOfWaggonForWaggonNumber:self.waggonNumber];
-        [self.wagenstandTable scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        [self scrollViewDidScroll:self.wagenstandTable];
-    }
-    
     self.navigationController.interactivePopGestureRecognizer.enabled = YES;
     
     
@@ -631,9 +616,7 @@ static NSString *kHeadCell = @"HeadCell";
         }
     }
 
-    NSString* dateAndTime = [Wagenstand makeDateStringForTime:userInfo[WAGENSTAND_TIME]];
-    // NSLog(@"request ist with evas %@",userInfo[WAGENSTAND_EVAS_NR]);
-    [[WagenstandRequestManager sharedManager] loadISTWagenstandWithTrain:userInfo[WAGENSTAND_TRAINNUMBER] type:userInfo[WAGENSTAND_TYPETRAIN] departure:dateAndTime evaIds:userInfo[WAGENSTAND_EVAS_NR] completionBlock:^(Wagenstand *istWagenstand) {
+    [[WagenstandRequestManager sharedManager] loadISTWagenstandWithTrain:userInfo[WAGENSTAND_TRAINNUMBER] type:userInfo[WAGENSTAND_TYPETRAIN] date:userInfo[WAGENSTAND_DATE_FOR_REQUEST] evaId:userInfo[WAGENSTAND_EVA_NR] departure:((NSNumber*)userInfo[WAGENSTAND_DEPARTURE]).boolValue completionBlock:^(Wagenstand *istWagenstand) {
         
         if(istWagenstand){
             MBTrainPositionViewController *wagenstandDetailViewController = [[MBTrainPositionViewController alloc] init];

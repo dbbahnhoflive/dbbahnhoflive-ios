@@ -1329,7 +1329,7 @@
 }
 
 -(void)showJourneyAlert{
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Die Verbindung  wurde nicht geladen. Bitte prüfen Sie ihre Netzverbindung und versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Hinweis" message:@"Die Verbindung wurde nicht geladen. Bitte prüfen Sie ihre Netzverbindung und versuchen Sie es später erneut." preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Abbrechen" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:true completion:nil];
 }

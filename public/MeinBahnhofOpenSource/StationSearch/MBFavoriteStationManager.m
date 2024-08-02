@@ -38,6 +38,7 @@
 }
 -(void)storeFavorites{
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
+    
     [def setObject:self.favoriteStations forKey:SETTING_FAVORITE_STATIONS];
 }
 -(void)addStation:(MBStationFromSearch*)dict{
@@ -90,6 +91,26 @@
     //NSLog(@"isFavorite, no: %@",dict.dictRepresentation);
     return NO;
 }
+
+-(void)updateStation:(MBStationFromSearch *)dict{
+    if([self isFavorite:dict] && [self hasValidId:dict]){
+        for(int i=0; i<self.favoriteStations.count; i++){
+            NSDictionary* station = self.favoriteStations[i];
+            if(dict.stationId && [station[@"id"] isEqualToNumber:dict.stationId]){
+                [self.favoriteStations replaceObjectAtIndex:i withObject:dict.dictRepresentation];
+            } else if(dict.eva_ids.count > 0 && station[@"eva_ids"]){
+                NSArray* eva_ids = station[@"eva_ids"];
+                if([self sameEvaId:dict.eva_ids.firstObject anotherEvaId:eva_ids.firstObject]){
+                    [self.favoriteStations replaceObjectAtIndex:i withObject:dict.dictRepresentation];
+                }
+            }
+        }
+        [self storeFavorites];
+    } else {
+        NSLog(@"nothing to update in favorites");
+    }
+}
+
 
 -(BOOL)sameEvaId:(NSString*)eva1 anotherEvaId:(NSString*)eva2{
     return [eva1 isEqualToString:eva2]

@@ -22,10 +22,13 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
 
     MBCacheResponseRISLocker = 15,
 
-    MBCacheResponseRISStopPlacesForEva = 16,
+    MBCacheResponseRISStopPlacesForEva = 16,//deprecated
     MBCacheResponseRISPlatforms = 17,
     MBCacheResponseRISOccupancy = 18,
     MBCacheResponseParkingCapacity = 19,
+
+    MBCacheResponseRISGroups = 20,
+    MBCacheResponseRISStopPlacesByKeyForStada = 21,
 
 };
 

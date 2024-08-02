@@ -4,13 +4,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MBStationCollectionViewCell.h"
+#import "SEVWebView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define WEGBEGLEITUNG_LINK @"https://db.de/wegbegleitung"
+@interface SEVWebViewController : UIViewController
 
-@interface MBAccompanimentTeaserView : MBStationCollectionViewCell
++(BOOL)wegbegleitungIsActiveTime;
 
 @end
 

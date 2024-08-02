@@ -6,6 +6,8 @@
 #import <UIKit/UIKit.h>
 #import "MBDetailViewDelegate.h"
 #import "MBLabel.h"
+#import "MBStatusImageView.h"
+#import "RIMapPoi.h"
 
 @interface MBExpandableTableViewCell : UITableViewCell
 @property (nonatomic) BOOL displayMultilineTitle;
@@ -21,6 +23,12 @@
 @property (nonatomic, strong) MBLabel* cellTitle;
 @property (nonatomic, strong) MBLabel* cellSubTitle;
 @property (nonatomic, strong) UIImageView *cellIcon;
+
+//optional in second line:
+@property (nonatomic, strong) UILabel *opencloseLabel;
+@property (nonatomic, strong) MBStatusImageView *opencloseImage;
+-(void)configureCellForItemWithOpenState:(ShopOpenState)openState;
+-(void)configureCellForItemWithOpenState:(ShopOpenState)openState openText:(NSString*)openText closeText:(NSString*)closeText;
 
 // back view is a bit smaller than the cell
 @property (nonatomic, strong) UIView *backView;

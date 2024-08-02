@@ -15,6 +15,9 @@
 #import "MBUIHelper.h"
 #import "MBTrackingManager.h"
 
+#import "MBServiceListCollectionViewController.h"
+#import "MBServiceListTableViewController.h"
+
 @interface MBNewsContainerView()
 
 @property(nonatomic,strong) UIButton* touchAreaButton;
@@ -138,7 +141,7 @@
 }
 
 -(BOOL)endlessAnimation{
-    return !UIAccessibilityIsVoiceOverRunning();
+    return false;//!UIAccessibilityIsVoiceOverRunning() && !UIAccessibilityIsReduceMotionEnabled();
 }
 
 -(void)didBecomeActive{
@@ -155,11 +158,17 @@
     [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 -(void)touchAreaButtonPressed:(id)sender{
-    //STATIC FIX BAHNHOFLIVE-2353
-    
-    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:@"Bahnhofsinformation Ersatzverkehr"];
+    //STATIC FIX BAHNHOFLIVE-2519
+    [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"ersatzverkehrteaser"]];
+    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
     MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
-    [root handleSearchResult:res];
+    //[root handleSearchResult:res];
+    MBMenuItem* sevItem = [MBServiceListCollectionViewController createMenuItemErsatzverkehrWithStation:root.station];
+    MBServiceListTableViewController* vclist = [[MBServiceListTableViewController alloc] initWithItem:sevItem station:root.station];
+    res.service = sevItem.services.firstObject;
+    vclist.searchResult = res;
+    [root.stationContainerNavigationController  pushViewController:vclist animated:true];
+
 
 /*
     if(self.news.newsType == MBNewsTypeOffer && self.containerVC.station.hasShops){
@@ -195,7 +204,7 @@
             break;
         case MBNewsTypeMajorDisruption:
         case MBNewsTypeDisruption:
-            iconName = @"NEV_Icon";//@"news_malfunction";//BAHNHOFLIVE-2353
+            iconName = @"SEV_Icon";//@"news_malfunction";//BAHNHOFLIVE-2353
             break;
         case MBNewsTypeProductsServices:
             iconName = @"news_neuambahnhof";

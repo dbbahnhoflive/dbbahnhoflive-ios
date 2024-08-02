@@ -37,10 +37,10 @@
 }
 
 +(NSString*)dbFastaKey{
-    return @"15d020725ecb768ea41a5925a26bf50e";
+    return @"6a00a0833a04b35f074b2a307d9a99f4";
 }
 +(NSString*)dbFastaClient{
-    return @"1c5f5114b79924f8d34d50cb601d4dd6";
+    return @"8e4ed585d11c6e8fc8b39d61553f24ea";
 }
 
 

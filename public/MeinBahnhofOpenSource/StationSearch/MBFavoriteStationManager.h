@@ -14,6 +14,7 @@
 -(void)addStation:(MBStationFromSearch*)dict;
 -(void)removeStation:(MBStationFromSearch*)dict;
 -(BOOL)isFavorite:(MBStationFromSearch*)dict;
+-(void)updateStation:(MBStationFromSearch*)station;
 
 -(NSArray<MBStationFromSearch*>*)favoriteStationsList;
 

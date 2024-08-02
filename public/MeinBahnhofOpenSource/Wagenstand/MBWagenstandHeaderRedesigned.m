@@ -44,7 +44,10 @@
     NSString* destination = train.destinationStation;
     NSString* track = @"";
     if(train.sections.count > 0){
-        track = [NSString stringWithFormat:@" (%@)",[train sectionRangeAsString]];
+        NSString* s = [train sectionRangeAsString];
+        if(s.length > 0){
+            track = [NSString stringWithFormat:@" (%@)",s];
+        }
     }
     self.destinationTrackLabel.text = [destination stringByAppendingString:track];
     

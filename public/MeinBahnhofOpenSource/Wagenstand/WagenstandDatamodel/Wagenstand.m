@@ -6,6 +6,7 @@
 
 #import "Wagenstand.h"
 #import "FahrzeugAusstattung.h"
+#import "NSDictionary+MBDictionary.h"
 
 @interface Wagenstand()
 
@@ -131,170 +132,149 @@
     return -1;
 }
 
-+ (NSDictionary *)JSONKeyPathsByPropertyKey {
-    
-    return @{
-             @"days": @"days",
-             @"name": @"name",
-             @"time": @"time",
-             @"traintypes": @"traintypes",
-             @"trainNumbers": @"trainNumbers",
-             @"additionalText": @"additionalText",
-             @"subtrains": @"subtrains",
-             @"waggons": @"waggons"
-             };
-    
-}
 
--(void)parseISTJSON:(NSDictionary*)istFormation{
-    NSDictionary* halt = istFormation[@"halt"];
-    NSString* abfahrtszeit = halt[@"abfahrtszeit"];
-    if(abfahrtszeit.length > @"yyyy-MM-ddT".length){
-        abfahrtszeit = [abfahrtszeit substringFromIndex:@"yyyy-MM-ddT".length];//expecting HH:MM after date
-    } else {
-        abfahrtszeit = @"";
-    }
-    if (abfahrtszeit.length > 5) {
-        abfahrtszeit = [abfahrtszeit substringToIndex:5];
-    }
+-(void)parseRISTransport:(NSDictionary*)risTransport{
+    NSDictionary* platform = [risTransport db_dictForKey:@"platform"];
+    _platform = [platform db_stringForKey:@"platform"];
     
-    _time = abfahrtszeit;
-    _platform = halt[@"gleisbezeichnung"];//is this really the departure platform?
     NSMutableArray* trainTypes = [NSMutableArray arrayWithCapacity:2];
     NSMutableArray* trainNumbers = [NSMutableArray arrayWithCapacity:2];
     
     NSMutableArray* trains = [NSMutableArray arrayWithCapacity:2];
     NSMutableArray* waggons = [NSMutableArray arrayWithCapacity:30];
-    
-    NSArray* allFahrzeuggruppe = istFormation[@"allFahrzeuggruppe"];
-    
+
+    NSArray* groups = [risTransport db_arrayForKey:@"groups"];
     //NOTE: IST returns IC/EC trains in multiple dictionaries inside allFahrzeuggruppe even though
     //      they all have the same destination station. We merge them together here:
-    if(allFahrzeuggruppe.count > 0){
-        NSMutableArray* mergedFahrzeuggruppe = [NSMutableArray arrayWithCapacity:allFahrzeuggruppe.count];
-        NSDictionary* firstTrain = allFahrzeuggruppe.firstObject;
+    if(groups.count > 0){
+        NSMutableArray* mergedFahrzeuggruppe = [NSMutableArray arrayWithCapacity:groups.count];
+        NSDictionary* firstTrain = groups.firstObject;
         NSMutableDictionary* firstTrainMutable = [firstTrain mutableCopy];
         [mergedFahrzeuggruppe addObject:firstTrainMutable];
-        for(NSInteger i = 1; i<allFahrzeuggruppe.count; i++){
-            
-            NSString* stationFirstTrain = firstTrainMutable[@"zielbetriebsstellename"];
-            NSString* numberFirstTrain = firstTrainMutable[@"verkehrlichezugnummer"];
+        for(NSInteger i = 1; i<groups.count; i++){
 
-            NSDictionary* followingTrain = allFahrzeuggruppe[i];
-            NSString* stationFollowingTrain = followingTrain[@"zielbetriebsstellename"];
-            NSString* numberFollowingTrain = followingTrain[@"verkehrlichezugnummer"];
-            if(stationFirstTrain && numberFirstTrain && stationFollowingTrain && numberFollowingTrain &&  [stationFirstTrain isEqualToString:stationFollowingTrain] && [numberFirstTrain isEqualToString:numberFollowingTrain]){
-                //same station, same number, merge these
-                NSMutableArray* allFahrzeug = [firstTrainMutable[@"allFahrzeug"] mutableCopy];
-                NSArray* allFahrzeugSecondTrain = followingTrain[@"allFahrzeug"];
+            NSDictionary* destinationFirstTrain = [firstTrainMutable db_dictForKey:@"destination"];
+            NSNumber* startJourneyNumber = [[firstTrainMutable db_dictForKey:@"journeyRelation"] db_numberForKey:@"startJourneyNumber"];
+
+            NSDictionary* followingTrain = groups[i];
+            NSDictionary* destinationFollowingTrain = [followingTrain db_dictForKey:@"destination"];
+            NSNumber* startJourneyNumberFollowingTrain = [[followingTrain db_dictForKey:@"journeyRelation"] db_numberForKey:@"startJourneyNumber"];
+
+            if(destinationFirstTrain.count > 0 && destinationFollowingTrain.count > 0 && [destinationFirstTrain isEqualToDictionary:destinationFollowingTrain] && [startJourneyNumber isEqualToNumber:startJourneyNumberFollowingTrain]){
+                //same destination, merge these
+                NSMutableArray* allFahrzeug = [firstTrainMutable[@"vehicles"] mutableCopy];
+                NSArray* allFahrzeugSecondTrain = followingTrain[@"vehicles"];
                 [allFahrzeug addObjectsFromArray:allFahrzeugSecondTrain];
-                firstTrainMutable[@"allFahrzeug"] = allFahrzeug;
-                //we added the allFahrzeug, but ignore the train!
+                firstTrainMutable[@"vehicles"] = allFahrzeug;
+                //we added the vehicles, but ignore the train!
             } else {
                 //station or number has changed
                 firstTrainMutable = [followingTrain mutableCopy];
-                [mergedFahrzeuggruppe addObject:firstTrainMutable];                
+                [mergedFahrzeuggruppe addObject:firstTrainMutable];
             }
         }
-        allFahrzeuggruppe = mergedFahrzeuggruppe;
+        groups = mergedFahrzeuggruppe;
     }
     
     //is this train inverted (F-A)?
-    NSDictionary* firstTrain = allFahrzeuggruppe.firstObject;
-    NSArray* wagonsInFirstTrain = firstTrain[@"allFahrzeug"];
-    NSDictionary* firstFahrzeug = wagonsInFirstTrain.firstObject;
-    NSString* firstSection = firstFahrzeug[@"fahrzeugsektor"];
-    NSDictionary* lastTrain = allFahrzeuggruppe.lastObject;
-    NSArray* wagonsInLastTrain = lastTrain[@"allFahrzeug"];
-    NSDictionary* lastFahrzeug = wagonsInLastTrain.lastObject;
-    NSString* lastSection = lastFahrzeug[@"fahrzeugsektor"];
     BOOL invertLists = NO;
+    NSDictionary* firstgroup = groups.firstObject;
+    NSDictionary* lastgroup = groups.lastObject;
+    NSArray* firstvehicles = [firstgroup db_arrayForKey:@"vehicles"];
+    NSArray* lastvehicles = [lastgroup db_arrayForKey:@"vehicles"];
+    NSDictionary* firstvehicle = firstvehicles.firstObject;
+    NSDictionary* lastvehicle = lastvehicles.lastObject;
+    NSDictionary* platformPositionFirst = [firstvehicle db_dictForKey:@"platformPosition"];
+    NSDictionary* platformPositionLast = [lastvehicle db_dictForKey:@"platformPosition"];
+    NSString* firstSection = [platformPositionFirst db_stringForKey:@"sector"];
+    NSString* lastSection = [platformPositionLast db_stringForKey:@"sector"];;
     NSLog(@"sectors from %@-%@",firstSection,lastSection  );
     if([firstSection compare:lastSection] == NSOrderedDescending){
         NSLog(@"need to invert direction");
         invertLists = YES;
         self.trainWasReversed = YES;
+        groups = groups.reverseObjectEnumerator.allObjects;
     }
-    
-    NSArray* fahrzeugGruppeList = allFahrzeuggruppe;
-    if(invertLists){
-        fahrzeugGruppeList = allFahrzeuggruppe.reverseObjectEnumerator.allObjects;
-    }
-    for(NSDictionary* fahrzeuggruppe in fahrzeugGruppeList){
+
+    for(NSDictionary* group in groups){
+        NSDictionary* journeyRelation = [group db_dictForKey:@"journeyRelation"];
         Train* train = [[Train alloc] init];
-        train.type = istFormation[@"zuggattung"];//looks like we don't have a type for a fahrzeuggruppe...
-        NSString* verkehrlichezugnummer = fahrzeuggruppe[@"verkehrlichezugnummer"];
-        if(verkehrlichezugnummer.length > 0){
-            train.number = verkehrlichezugnummer;
-        } else {
-            train.number = istFormation[ @"zugnummer" ];
-        }
+        train.type = [journeyRelation db_stringForKey:@"startCategory"];
+        train.number = [journeyRelation db_numberForKey:@"startJourneyNumber"].stringValue;
         
         [trainTypes addObject:train.type];
         [trainNumbers addObject:train.number];
+
+        NSDictionary* destination = [group db_dictForKey:@"destination"];
+        train.destination = [destination db_stringForKey:@"name"];
         
-        train.destination = @{ @"destinationName" : fahrzeuggruppe[@"zielbetriebsstellename"] };
-        //missing destinationVia (NSArray with NSString)
         NSMutableSet* sections = [NSMutableSet setWithCapacity:10];
-        NSArray* fahrzeugList = fahrzeuggruppe[@"allFahrzeug"];
-        if(invertLists){
-            fahrzeugList = fahrzeugList.reverseObjectEnumerator.allObjects;
-        }
         
+        NSArray* vehicles = [group db_arrayForKey:@"vehicles"];
+        if(invertLists){
+            vehicles = vehicles.reverseObjectEnumerator.allObjects;
+        }
         BOOL previousWasWaggon = NO;
-        for(NSDictionary* fahrzeug in fahrzeugList){
-            [sections addObject: fahrzeug[@"fahrzeugsektor"] ];
-            
+        for(NSDictionary* vehicle in vehicles){
             Waggon* additionalTrain = nil;
-            
             Waggon* waggon = [[Waggon alloc] init];
             waggon.train = train;
             
-            waggon.number = fahrzeug[@"wagenordnungsnummer"];
-            waggon.sections = @[ fahrzeug[@"fahrzeugsektor"] ];//only a single section on IST-API!
-            waggon.length = 2;//or 1?
-            NSString* kategorie = fahrzeug[@"kategorie"];
-            if([kategorie isEqualToString:@"TRIEBKOPF"]
-               || [kategorie isEqualToString:@"TRIEBWAGENBAUREIHE628928"]
-               || [kategorie isEqualToString:@"LOK"]
+            NSDictionary* platformPosition = [vehicle db_dictForKey:@"platformPosition"];
+            NSString* sector = [platformPosition db_stringForKey:@"sector"];
+            if(sector == nil){
+                sector = @"";
+            }
+            waggon.sections = @[ sector ];
+            waggon.number = [vehicle db_numberForKey:@"wagonIdentificationNumber"].stringValue;
+            [sections addObject:sector];
+
+            waggon.length = 2;
+            waggon.type = @"2";
+            NSDictionary* type = [vehicle db_dictForKey:@"type"];
+            NSString* category = [type db_stringForKey:@"category"];
+            if(   [category isEqualToString:@"POWERCAR"]
+               || [category isEqualToString:@"LOCOMOTIVE"]
                ){
-                
-                waggon.type = @"q";//head
                 waggon.length = 1;//we only have only have one icon with small size
-                if([kategorie isEqualToString:@"LOK"]){
+                waggon.type = @"q";//head
+                if([category isEqualToString:@"LOCOMOTIVE"]){
                     waggon.type = @"s";
                 }
                 previousWasWaggon = NO;
-            } else if([kategorie isEqualToString:@"DOPPELSTOCKSTEUERWAGENERSTEKLASSE"]
-                      || [kategorie isEqualToString:@"DOPPELSTOCKSTEUERWAGENZWEITEKLASSE"]//MAIK
-                      || [kategorie isEqualToString:@"DOPPELSTOCKSTEUERWAGENERSTEZWEITEKLASSE"]
-                      || [kategorie isEqualToString:@"STEUERWAGENERSTEKLASSE"]
-                      || [kategorie isEqualToString:@"STEUERWAGENZWEITEKLASSE"]
-                      || [kategorie isEqualToString:@"STEUERWAGENERSTEZWEITEKLASSE"]){
-                //need to split this into 2 objects
+            } else if([category isEqualToString:@"CONTROLCAR_FIRST_CLASS"]
+                      || [category isEqualToString:@"CONTROLCAR_ECONOMY_CLASS"]
+                      || [category isEqualToString:@"CONTROLCAR_FIRST_ECONOMY_CLASS"]
+                      || [category isEqualToString:@"DOUBLECONTROLCAR_ECONOMY_CLASS"]
+                      || [category isEqualToString:@"DOUBLECONTROLCAR_FIRST_ECONOMY_CLASS"]
+                      || [category isEqualToString:@"DOUBLEDECK_CONTROLCAR_FIRST_ECONOMOY_CLASS"] //Typo in v2.
+                      || [category isEqualToString:@"DOUBLEDECK_CONTROLCAR_FIRST_ECONOMY_CLASS"] //for future fixes
+                      || [category isEqualToString:@"DOUBLEDECK_CONTROLCAR_FIRST_CLASS"]
+                      || [category isEqualToString:@"DOUBLEDECK_CONTROLCAR_ECONOMY_CLASS"]
+                      ){
+                //need to split this into 2 objects: this waggon is the controlcar and we add another passenger car
+                waggon.type = @"q";//head
+                waggon.length = 1;
                 if(!previousWasWaggon){
-                    waggon.type = @"q";//head
-                    waggon.length = 1;
                     [waggons addObject:waggon];
-
                 } else {
-                    waggon.type = @"q";//head
-                    
-                    waggon.length = 1;
-                    additionalTrain = waggon;
+                    additionalTrain = waggon;//added after the waggon!
                 }
+                
+                Waggon* previousWaggon = waggon;
 
                 //create second waggon
                 waggon = [[Waggon alloc] init];
                 waggon.train = train;
-                waggon.number = fahrzeug[@"wagenordnungsnummer"];
-                waggon.sections = @[ fahrzeug[@"fahrzeugsektor"] ];//only a single section on IST-API!
+                waggon.number = previousWaggon.number;
+                waggon.sections = previousWaggon.sections;
                 waggon.length = 1;
 
-                if([kategorie rangeOfString:@"ERSTEZWEITEKLASSE"].location != NSNotFound){
+                if([category rangeOfString:@"FIRST_ECONOMY"].location != NSNotFound
+                   || [category rangeOfString:@"FIRST_ECONOMOY"].location != NSNotFound){
                     waggon.type = @"3";
                 } else {
-                    if([kategorie rangeOfString:@"ERSTEKLASSE"].location == NSNotFound){
+                    if([category rangeOfString:@"FIRST_CLASS"].location == NSNotFound){
                         //second class
                         waggon.type = @"2";
                     } else {
@@ -302,33 +282,32 @@
                     }
                 }
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"SPEISEWAGEN"]){
+            } else if([category isEqualToString:@"DININGCAR"]){
                 waggon.type = @"a";//Restaurant, first or second class???
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"DOPPELSTOCKWAGENERSTEZWEITEKLASSE"]
-                   || [kategorie isEqualToString:@"REISEZUGWAGENERSTEZWEITEKLASSE"]
-                   || [kategorie isEqualToString:@"SCHLAFWAGENERSTEZWEITEKLASSE"]//type c?
+            } else if([category isEqualToString:@"DOUBLEDECK_FIRST_ECONOMY_CLASS"]
+                   || [category isEqualToString:@"PASSENGERCARRIAGE_FIRST_ECONOMY_CLASS"]
+                   || [category isEqualToString:@"SLEEPER_FIRST_ECONOMY_CLASS"]//type c?
                    ){
                     waggon.type = @"3";//1.Class + 2.Class
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"DOPPELSTOCKWAGENERSTEKLASSE"]
-                      || [kategorie isEqualToString:@"REISEZUGWAGENERSTEKLASSE"]
-                      || [kategorie isEqualToString:@"SCHLAFWAGENERSTEKLASSE"]//type c?
-                      || [kategorie isEqualToString:@"LIEGEWAGENERSTEKLASSE"]//type c?
-                      || [kategorie isEqualToString:@"HALBGEPAECKWAGENERSTEKLASSE"]//type??
+            } else if([category isEqualToString:@"DOUBLEDECK_FIRST_CLASS"]
+                      || [category isEqualToString:@"PASSENGERCARRIAGE_FIRST_CLASS"]
+                      || [category isEqualToString:@"SLEEPER_FIRST_CLASS"]//type c?
+                      || [category isEqualToString:@"COUCHETTE_FIRST_CLASS"]//type c?
                       ){
                 waggon.type = @"1";
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"HALBSPEISEWAGENERSTEKLASSE"]){
+            } else if([category isEqualToString:@"HALFDININGCAR_FIRST_CLASS"]){
                 waggon.type = @"4";//1.Class + Restaurant
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"HALBSPEISEWAGENZWEITEKLASSE"]){
+            } else if([category isEqualToString:@"HALFDININGCAR_ECONOMY_CLASS"]){
                 waggon.type = @"7";//2.Class + Restaurant
                 previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"HALBGEPAECKWAGENZWEITEKLASSE"]){
-                waggon.type = @"6";//2.Class + Luggage
-                previousWasWaggon = YES;
-            } else if([kategorie isEqualToString:@"GEPAECKWAGEN"]){
+//            } else if([category isEqualToString:@"HALBGEPAECKWAGENZWEITEKLASSE"]){//???
+//                waggon.type = @"6";//2.Class + Luggage
+//                previousWasWaggon = YES;
+            } else if([category isEqualToString:@"BAGGAGECAR"]){
                 waggon.type = @"8";//luggageCoach??
                 previousWasWaggon = YES;
             } else {
@@ -337,20 +316,20 @@
                 previousWasWaggon = YES;
             }
             
-            if([@"GESCHLOSSEN" isEqualToString:fahrzeug[@"status"]] && ![@"TRIEBKOPF" isEqualToString: kategorie]){
+            NSString* status = [vehicle db_stringForKey:@"status"];
+            if([status isEqualToString:@"CLOSED"]){
                 waggon.type = @"8";
                 waggon.differentDestination = @"verschlossen";
-                previousWasWaggon = YES;
             }
-            
-            NSArray* allFahrzeugausstattung = fahrzeug[@"allFahrzeugausstattung"];
-            NSMutableArray* ausstattungList = [NSMutableArray arrayWithCapacity:allFahrzeugausstattung.count+1];
+
+            //parse "fahrzeugaustattung"
+            NSArray* amenities = [vehicle db_arrayForKey:@"amenities"];
+            NSMutableArray* ausstattungList = [NSMutableArray arrayWithCapacity:5];
             NSMutableArray* ausstattungOhneIcon = [NSMutableArray arrayWithCapacity:2];
-            for(NSDictionary* ausstattung in allFahrzeugausstattung){
+            for(NSDictionary* ausstattung in amenities){
                 FahrzeugAusstattung* fa = [FahrzeugAusstattung new];
-                fa.ausstattungsart = ausstattung[@"ausstattungsart"];
-                fa.anzahl = ausstattung[@"anzahl"];
-                fa.bezeichnung = ausstattung[@"bezeichnung"];
+                fa.ausstattungsart = ausstattung[@"type"];
+                fa.anzahl = [ausstattung db_numberForKey:@"amount"].stringValue;
                 fa.status = ausstattung[@"status"];
                 if([fa iconNames].count == 0){
                     [ausstattungOhneIcon addObject:fa];
@@ -417,21 +396,13 @@
 }
 
 
-+(NSString*)makeDateStringForTime:(NSString*)formattedTime
++(NSString*)dateRequestStringForTimestamp:(NSTimeInterval)timestamp
 {
-    NSMutableString* res = [[NSMutableString alloc] init];
-    
     NSDateFormatter* df = [[NSDateFormatter alloc] init];
-    [df setDateFormat:@"yyyyMMdd"];
+    [df setDateFormat:@"yyyy-MM-dd"];
     [df setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
-    NSString* time = [formattedTime stringByReplacingOccurrencesOfString:@":" withString:@""];
-    if(time.length > 4){
-        time = [time substringToIndex:4];
-    }
-    NSDate* now = [NSDate date];
-    [res appendString:[df stringFromDate:now]];
-    [res appendString:time];
-    return res;
+    NSDate* date = [NSDate dateWithTimeIntervalSince1970:timestamp];
+    return [df stringFromDate:date];
 }
 
 +(NSString*)getTrainNumberForWagenstand:(Wagenstand*)wagenstand{
@@ -444,17 +415,10 @@
     return trainType;
 }
 
-+(NSString*)getDateAndTimeForWagenstand:(Wagenstand*)wagenstand
-{
-    NSString* time = wagenstand.time;
-    //NSString* dateAndTime = [self makeDateStringForTime:time];
-    
-    return time;
-}
 
 +(BOOL)isValidTrainTypeForIST:(NSString*) trainType
 {
-    return [trainType isEqualToString:@"ICE"] || [trainType isEqualToString:@"IC"] || [trainType isEqualToString:@"EC"];
+    return [trainType isEqualToString:@"ICE"] || [trainType isEqualToString:@"IC"] || [trainType isEqualToString:@"EC"] || [trainType isEqualToString:@"ECE"];
 }
 
 @end

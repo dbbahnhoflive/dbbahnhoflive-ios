@@ -102,6 +102,9 @@
 
 @property (nonatomic, strong) NSString* journeyID;//stored after successful ris:journeys request
 
+// this will be added when processing train splitting
+@property (nonatomic, strong) NSString *referenceSplitMessage;
+
 
 - (NSString *) actualStation;
 - (NSString *) actualStations;
@@ -113,7 +116,6 @@
 
 - (NSArray*) currentStations;
 
-- (NSArray*) buildEventIrisMessages;
 - (NSArray*) qosMessages;
 
 - (BOOL) eventIsCanceled;
@@ -122,7 +124,7 @@
 - (double) rawDelay;
 - (BOOL) hasChanges;
 
--(void) updateComposedIrisWithStop:(Stop*)stop;
+-(void) updateComposedIrisWithStop:(Stop*)stop departure:(BOOL)departure;
 
 -(BOOL)sameDayEvent:(Event*)event;
 

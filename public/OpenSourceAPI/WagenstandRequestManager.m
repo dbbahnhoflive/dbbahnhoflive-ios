@@ -37,22 +37,24 @@
         return;
     }
     NSString* trainNumber = [Wagenstand getTrainNumberForWagenstand:wagenstand];
-    NSString* dateAndTime = [Wagenstand makeDateStringForTime:[Wagenstand getDateAndTimeForWagenstand:wagenstand]];
+    NSString* dateAndTime = wagenstand.request_date;
     
     [self loadISTWagenstandWithTrain:trainNumber
                                 type:trainType
-                           departure:dateAndTime
-                              evaIds:wagenstand.evaIds
+                                date:dateAndTime
+                               evaId:wagenstand.evaId
+                           departure:wagenstand.departure
                      completionBlock:completion];
 }
 
 -(void)loadISTWagenstandWithTrain:(NSString*)trainNumber
                              type:(NSString*)trainType
-                        departure:(NSString*)departure
-                           evaIds:(NSArray*)evaIds
+                             date:(NSString*)date
+                            evaId:(NSString*)evaId
+                        departure:(BOOL)departure
                   completionBlock:(void (^)(Wagenstand *istWagenstand))completion
 {
-    if(![Wagenstand isValidTrainTypeForIST:trainType] || evaIds.count == 0){
+    if(![Wagenstand isValidTrainTypeForIST:trainType]){
         completion(nil);
         return;
     }

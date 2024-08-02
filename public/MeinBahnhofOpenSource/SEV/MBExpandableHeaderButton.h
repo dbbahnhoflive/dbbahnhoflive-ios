@@ -4,14 +4,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MBStationCollectionViewCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define WEGBEGLEITUNG_LINK @"https://db.de/wegbegleitung"
-
-@interface MBAccompanimentTeaserView : MBStationCollectionViewCell
-
+@interface MBExpandableHeaderButton : UIButton
+- (instancetype)initWithText:(NSString*)text;
+@property(nonatomic) BOOL isExpanded;
 @end
 
 NS_ASSUME_NONNULL_END

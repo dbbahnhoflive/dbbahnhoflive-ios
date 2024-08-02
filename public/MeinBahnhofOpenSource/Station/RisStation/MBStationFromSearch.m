@@ -10,6 +10,10 @@
 
 @implementation MBStationFromSearch
 
+-(NSString *)description{
+    return [NSString stringWithFormat:@"<MBStationFromSearch: %@,%@>",_stationId,_title];
+}
+
 -(instancetype)initWithDict:(NSDictionary *)dict{
     self = [super init];
     if(self){
@@ -74,6 +78,9 @@
     copy.title = self.title;
     copy.isOPNVStation = self.isOPNVStation;
     copy.isFreshStationFromSearch = self.isFreshStationFromSearch;
+    copy.hasEvaIdsUpdatedViaGroupsApi = self.hasEvaIdsUpdatedViaGroupsApi;
+    copy.isInternalLink = self.isInternalLink;
+    copy.isGoingBack = self.isGoingBack;
     return copy;
 }
 
@@ -107,18 +114,27 @@
 +(BOOL)needToUpdateEvaIdsForStation:(MBStationFromSearch *)stationFromSearch {
     return
        stationFromSearch.stationId != nil
-    && !stationFromSearch.isFreshStationFromSearch;
+    && !stationFromSearch.hasEvaIdsUpdatedViaGroupsApi;
 }
 -(void)updateEvaIds:(void (^)(BOOL success))completion{
     NSLog(@"update evaIds for station: %@",self.dictRepresentation);
-    [MBRISStationsRequestManager.sharedInstance requestUpdateForStation:self success:^(MBStationFromSearch* stationFromSearch) {
-        NSLog(@"replace %@ with %@",self.eva_ids, stationFromSearch.eva_ids);
-        self.eva_ids = stationFromSearch.eva_ids;
-        self.title = stationFromSearch.title;
-        completion(true);
+    [[MBRISStationsRequestManager sharedInstance] searchStationByStada:self.stationId.stringValue success:^(MBStationFromSearch *station) {
+        NSLog(@"update evaIds for station: got %@, requesting groups",station.eva_ids);
+        self.coordinate = station.coordinate;
+        [MBRISStationsRequestManager.sharedInstance requestStationGroups:station.eva_ids.firstObject forcedByUser:false success:^(NSArray<NSString *> *response) {
+            if(response.count > 0){
+                NSLog(@"replace %@ with %@",self.eva_ids,response);
+                self.eva_ids = response;
+                self.hasEvaIdsUpdatedViaGroupsApi = true;
+            }
+            completion(true);
+        } failureBlock:^(NSError * error) {
+            completion(false);
+        }];
     } failureBlock:^(NSError * error) {
         completion(false);
     }];
+
 }
 
 @end

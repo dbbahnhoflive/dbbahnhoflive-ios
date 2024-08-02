@@ -3,15 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+#import <WebKit/WebKit.h>
 #import <UIKit/UIKit.h>
-#import "MBStationCollectionViewCell.h"
+@import WebKit;
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define WEGBEGLEITUNG_LINK @"https://db.de/wegbegleitung"
-
-@interface MBAccompanimentTeaserView : MBStationCollectionViewCell
-
+@interface SEVWebView : WKWebView
+-(void)loadService;
 @end
 
 NS_ASSUME_NONNULL_END

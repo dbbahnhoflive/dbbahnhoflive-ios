@@ -21,6 +21,7 @@
 @class MBPXRShopCategory;
 @class FacilityStatus;
 @class MBPlatformAccessibility;
+@class MBStationFromSearch;
 
 @interface MBStation : NSObject
 
@@ -69,8 +70,13 @@
 -(BOOL)useOSM;
 -(BOOL)hasSEVStations;
 -(BOOL)hasStaticAdHocBox;
+-(BOOL)hasStaticAdHocBox:(NSString*)stationId;
+-(void)testSEVStationsDataIntegrity;
+-(NSArray<MBStationFromSearch*>*)sevStationsMatchingSearchString:(NSString*)text;
 -(BOOL)hasARTeaser;
 -(BOOL)hasAccompanimentService;
+-(NSArray<NSString*>*)accompanimentStationsTitles;
+-(BOOL)hasAccompanimentServiceActive;
 +(BOOL)stationShouldBeLoadedAsOPNV:(NSString*)stationId;
 
 + (NSArray<NSString*>*) categoriesForShoppen;
@@ -78,6 +84,7 @@
 -(NSArray<MBMarker*>*)getFacilityMapMarker;
 -(NSArray<MBMarker*>*)getSEVMapMarker;
 
+-(void)updateEvaIds:(NSArray<NSString*>*)evaIds;
 -(void)updateStationWithDetails:(MBStationDetails*)details;
 -(void)parseOpeningTimesWithCompletion:(void (^)(void))completion;
 

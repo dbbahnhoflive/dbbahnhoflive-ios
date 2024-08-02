@@ -18,5 +18,6 @@
 @property (nonatomic, weak) id<MBTextViewDelegate>delegado;
 @property (nonatomic, strong) NSString *htmlString;
 
+-(void)resizeForWidth:(NSInteger)width;
 
 @end

@@ -43,6 +43,10 @@
 	<string>Wenn Sie den Zugriff auf den Standort zulassen, können wir Ihnen Bahnhöfe in Ihrer Nähe anzeigen.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Wenn Sie den Zugriff auf den Standort zulassen, können wir Ihnen Bahnhöfe in Ihrer Nähe anzeigen.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Erlauben Sie Zugriff auf das Mikrofon, um den DB-Wegbegleitung Service zu nutzen.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Erlauben Sie Zugriff auf die Kamera, um den DB-Wegbegleitung Service zu nutzen.</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
 	<key>NSAppTransportSecurity</key>

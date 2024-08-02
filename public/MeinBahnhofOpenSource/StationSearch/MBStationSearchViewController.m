@@ -920,7 +920,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 }
 
 
-- (NSArray*) lastRequestedStations
+- (NSArray<NSDictionary*>*) lastRequestedStations
 {
     NSArray *data = [NSUserDefaults.standardUserDefaults objectForKey:SETTINGS_LAST_SEARCHES];
     if (data) {
@@ -1008,12 +1008,66 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(!stationList){
         //failure in search: display error
         results = nil;
-    } else if(stationList && stationList.count == 0){
-        //no results in search
-        results = @[];
     } else {
         //got some results
         results = stationList;
+        
+        if(searchTerm.length > 3){
+            //search in our riedbahn-list for text matches:
+            NSArray* sevStations = [[MBStation new] sevStationsMatchingSearchString:searchTerm];
+            if(sevStations.count > 0){
+                NSMutableArray<MBStationFromSearch*>* resultsModified = results.mutableCopy;
+                //find the last DB-station (first station from backwards with stada-id) and add Riedbahn-stations after this
+                BOOL foundDBStationInResults = false;
+                for(NSInteger i=resultsModified.count-1; i>=0; i--){
+                    if(resultsModified[i].stationId != nil){
+                        foundDBStationInResults = true;
+                        BOOL inserted = false;
+                        for(MBStationFromSearch* sev in sevStations){
+                            //is this station (with it's stada) already in the result list?
+                            BOOL found = false;
+                            for(MBStationFromSearch* searchStation in resultsModified){
+                                if(searchStation.stationId && [sev.stationId isEqualToNumber:searchStation.stationId]){
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(!found){
+                                //it's not there, add it below the DB-station
+                                i++;
+                                [resultsModified insertObject:sev atIndex:i];
+                                inserted = true;
+                            }
+                        }
+                        if(!inserted){
+                            //the sev was not added... is the response just one DB-station at the end?
+                            BOOL justOneStationAtTheEnd = true;
+                            for(NSInteger i=0; i<resultsModified.count-1; i++){//note that the last object is skipped!
+                                if(resultsModified[i].stationId != nil){
+                                    justOneStationAtTheEnd = false;
+                                }
+                            }
+                            if(justOneStationAtTheEnd){
+                                //special case, e.g. "Biblis", move this one up
+                                MBStationFromSearch* lastOne = resultsModified.lastObject;
+                                [resultsModified removeObjectAtIndex:resultsModified.count-1];
+                                [resultsModified insertObject:lastOne atIndex:0];
+                            }
+                        }
+                        break;
+                    }
+                }
+                if(!foundDBStationInResults){
+                    //result returned only "haltestellen", add the Riedbahn-stations at the top
+                    for(NSInteger i=0; i<sevStations.count; i++){
+                        [resultsModified insertObject:sevStations[i] atIndex:i];
+                    }
+                }
+                NSLog(@"modified %@ to %@",results,resultsModified);
+                results = resultsModified;
+            }
+        }
+        
         //calculate distance to user
         CLLocation *userLocation = self.currentUserPosition;
         if(userLocation){
@@ -1173,6 +1227,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
             station.isInternalLink = true;
             station.isGoingBack = true;
             station.isFreshStationFromSearch = true;//not really, but we need to safe the request here
+            station.hasEvaIdsUpdatedViaGroupsApi = true;
             station.coordinate = state.position;
             station.eva_ids = state.evaIds;
             station.title = state.title;
@@ -1289,11 +1344,11 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.stationMapController.allowBackFromStation = self.allowBackFromStation;
     self.startWithFacilityView = false;
     self.stationMapController.startWithDepartures = startWithDepartures;
-    if(startWithDepartures){
+    /*if(startWithDepartures){
         //ensure that timetable is setup early
         self.stationMapController.preloadedDepartures = station.stationEvaIds;
         [[TimetableManager sharedManager] reloadTimetableWithEvaIds:station.stationEvaIds];
-    }
+    }*/
     
     self.stationMapController.station = station;
     
@@ -1796,6 +1851,11 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     MBStationFromSearch* station = [self stationDataForTableView:tableView path:indexPath];
     if(station){
+        if(station.isFreshStationFromSearch){
+            //in case this station is in the favorites, it is updated
+            [MBFavoriteStationManager.client updateStation:station];
+        }
+        
         [self didSelectStation:station startWithDepartures:NO];
         //close text search area
         if(self.featureButtonArea.hidden){

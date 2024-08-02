@@ -8,6 +8,7 @@
 #import "MBStation.h"
 #import "MBPlatformAccessibility.h"
 #import "UIImage+MBImage.h"
+#import "SEVWebViewController.h"
 
 // Pattern to detect phone numbers in a text which also may be surrounded by anchor-tags or white spaces
 #define kPhoneRegexPattern @"(>|\\s)[\\d]{3,}\\/?([^\\D]|\\s)+[\\d]"
@@ -37,6 +38,7 @@
         kServiceType_DBInfo: @"app_information",
         kServiceType_WLAN: @"rimap_wlan_grau",
         kServiceType_SEV: @"sev_bus",
+        kServiceType_SEV_AccompanimentService: @"SEV_Icon",
         kServiceType_Locker: @"rimap_schliessfach_grau",
         kServiceType_LocalTravelCenter: @"rimap_reisezentrum_grau",
         kServiceType_LocalDBLounge: @"app_db_lounge",
@@ -73,6 +75,8 @@
         [self.type isEqualToString:kServiceType_LocalLostFound]
         ||
         [self.type isEqualToString:kServiceType_SEV]
+        ||
+        [self.type isEqualToString:kServiceType_SEV_AccompanimentService]
         ) {
         NSArray* res = [self parseConfigurableService:string];
         return res;
@@ -155,15 +159,15 @@
             NSString* btntext = [inputString substringWithRange:NSMakeRange(btnStart.location+btnStartLength, btnEnd.location-(btnStart.location+btnStartLength))];
             
             //parse single href-param in button
-            NSString* hrefString = @"";
-            NSRange hrefStart = [inputString rangeOfString:@"href=\"" options:0 range:NSMakeRange(btnStart.location, btnEnd.location-btnStart.location)];
-            if(hrefStart.location != NSNotFound){
-                NSRange hrefEnd = [inputString rangeOfString:@"\"" options:0 range:NSMakeRange(hrefStart.location+hrefStart.length, inputString.length-(hrefStart.location+hrefStart.length))];
-                if(hrefEnd.location != NSNotFound){
-                    hrefString = [inputString substringWithRange:NSMakeRange(hrefStart.location+hrefStart.length, hrefEnd.location-(hrefStart.location+hrefStart.length))];
-                }
+            NSString* hrefString = [self parseParameter:@"href" inString:inputString rangeStart:btnStart rangeEnd:btnEnd];
+            NSString* typeString = [self parseParameter:@"type" inString:inputString rangeStart:btnStart rangeEnd:btnEnd];
+            if(typeString.length == 0){
+                typeString = @"action";
+            } else if(![typeString isEqualToString:@"action"] && ![typeString isEqualToString:@"extern"] && ![typeString isEqualToString:@"intern"]){
+                NSAssert(false, @"invalid type, expected action, extern or intern");
             }
-            [res addObject:@{ kActionButtonKey:btntext, kActionButtonAction:hrefString }];
+            
+            [res addObject:@{ kActionButtonKey:btntext, kActionButtonAction:hrefString, kActionButtonType:typeString }];
             [inputString deleteCharactersInRange:NSMakeRange(0, btnEnd.location+btnEnd.length)];
         } else {
             //no more buttons, rest is text
@@ -176,6 +180,19 @@
     //replace other placeholders
     [self replaceString:kPlaceholderARService with:@{kSpecialAction:kSpecialActionAR_Teaser} inList:res];
     return res;
+}
+
+-(NSString*)parseParameter:(NSString*)parameter inString:(NSString*)inputString rangeStart:(NSRange)btnStart rangeEnd:(NSRange)btnEnd{
+    NSString* paramString = [parameter stringByAppendingString:@"=\""];
+    NSString* hrefString = @"";
+    NSRange hrefStart = [inputString rangeOfString:paramString options:0 range:NSMakeRange(btnStart.location, btnEnd.location-btnStart.location)];
+    if(hrefStart.location != NSNotFound){
+        NSRange hrefEnd = [inputString rangeOfString:@"\"" options:0 range:NSMakeRange(hrefStart.location+hrefStart.length, inputString.length-(hrefStart.location+hrefStart.length))];
+        if(hrefEnd.location != NSNotFound){
+            hrefString = [inputString substringWithRange:NSMakeRange(hrefStart.location+hrefStart.length, hrefEnd.location-(hrefStart.location+hrefStart.length))];
+        }
+    }
+    return hrefString;
 }
 
 -(void)replaceString:(NSString*)placeholder with:(NSDictionary*)action inList:(NSMutableArray*)list{
@@ -203,6 +220,16 @@
     }
 }
 
+-(ShopOpenState)openState{
+    if([self.type isEqualToString:kServiceType_SEV_AccompanimentService]){
+        if(self.station.hasAccompanimentServiceActive && [SEVWebViewController wegbegleitungIsActiveTime]){
+            return POI_OPEN;
+        } else {
+            return POI_CLOSED;
+        }
+    }
+    return POI_UNKNOWN;
+}
 
 -(BOOL)isChatBotTime{
     NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];

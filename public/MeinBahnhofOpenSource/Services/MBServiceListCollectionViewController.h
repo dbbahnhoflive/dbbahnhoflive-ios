@@ -8,6 +8,7 @@
 #import "MBStation.h"
 #import "MBStationTabBarViewController.h"
 #import "MBMapViewController.h"
+#import "MBMenuItem.h"
 
 @class MBContentSearchResult;
 
@@ -20,6 +21,7 @@ typedef NS_ENUM(NSUInteger, MBServiceCollectionType) {
 @interface MBServiceListCollectionViewController : UIViewController<MBMapViewControllerDelegate>
 
 @property (nonatomic, strong) MBContentSearchResult* searchResult;
+@property (nonatomic) BOOL openWegbegleitungScreen;
 @property (nonatomic) BOOL openChatBotScreen;
 @property (nonatomic) BOOL openServiceNumberScreen;
 @property (nonatomic, strong) MBStation *station;
@@ -33,5 +35,7 @@ typedef NS_ENUM(NSUInteger, MBServiceCollectionType) {
 - (NSArray *)prepareServices;
 
 -(void)reloadData;
+
++(MBMenuItem*)createMenuItemErsatzverkehrWithStation:(MBStation*)station;
 
 @end

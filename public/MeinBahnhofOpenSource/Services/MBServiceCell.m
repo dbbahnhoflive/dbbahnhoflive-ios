@@ -46,6 +46,7 @@
     self.cellTitle.text = serviceItem.title;
     self.cellIcon.image = [serviceItem iconForType];
     [self configureVoiceOver];
+    [self configureCellForItemWithOpenState:serviceItem.openState openText:@"Service verfügbar" closeText:@"Zur Zeit nicht verfügbar"];
 }
 
 -(void)updateStateAfterExpandChange{

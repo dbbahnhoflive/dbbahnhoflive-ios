@@ -84,6 +84,7 @@
                                    CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR: @"app_aufzug",
                                    CONTENT_SEARCH_KEY_STATIONINFO_PARKING: @"rimap_parkplatz_grau",
                                    CONTENT_SEARCH_KEY_STATIONINFO_SEV: @"sev_bus",
+                                   CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT: @"sev_bus",
                                    CONTENT_SEARCH_KEY_STATIONINFO_LOCKER: @"rimap_schliessfach_grau",
                                    CONTENT_SEARCH_KEY_MAP: @"app_karte_dunkelgrau",
                                    CONTENT_SEARCH_KEY_SETTINGS: @"app_einstellung",
@@ -334,6 +335,9 @@
 }
 -(BOOL)isSEVSearch{
     return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
+}
+-(BOOL)isSEVAccompanimentSearch{
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT];
 }
 -(BOOL)isLockerSearch{
     return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_LOCKER];

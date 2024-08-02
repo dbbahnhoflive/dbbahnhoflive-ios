@@ -63,6 +63,8 @@
         case MBCacheResponseRISStationServices:
         case MBCacheResponseRISLocker:
         case MBCacheResponseRISPlatforms:
+        case MBCacheResponseRISGroups:
+        case MBCacheResponseRISStopPlacesByKeyForStada:
             return CACHE_TIME_RIS_REQUEST;
         case MBCacheResponseRISOccupancy:
             return CACHE_TIME_RIS_OCCUPANCY;
@@ -112,11 +114,17 @@
         case MBCacheResponseRISStopPlacesForEva:
             filename = @"ris_stopplaces_foreva.json";
             break;
+        case MBCacheResponseRISStopPlacesByKeyForStada:
+            filename = @"ris_stopplaces_bykey_forstada.json";
+            break;
         case MBCacheResponseRISPlatforms:
             filename = @"ris_platform.json";
             break;
         case MBCacheResponseRISOccupancy:
             filename = @"ris_occupancy.json";
+            break;
+        case MBCacheResponseRISGroups:
+            filename = @"ris_groups.json";
             break;
         case MBCacheResponseRIMapStatus07API:
             filename = @"rimapstatus07.json";

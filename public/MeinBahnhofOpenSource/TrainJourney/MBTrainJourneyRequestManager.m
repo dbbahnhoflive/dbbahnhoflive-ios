@@ -14,7 +14,7 @@
 @property (nonatomic,strong) NSDateFormatter* dateFormatter;
 @end
 
-#define kRISJourneyBaseURL @"/ris-journeys/v1"
+#define kRISJourneyBaseURL @"/ris-journeys/v2"
 
 
 #define DEBUG_MODE NO
@@ -127,15 +127,19 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             if(journey){
                 NSLog(@"found matching journey, (dateMismatch=%d), stop here",journey.dateMismatch);
-                completion(journey);
-            } else {
-                if(index+1 < journeyIDs.count){
-                    //test next one
-                    [self checkJourneyAtIndex:index+1 ids:journeyIDs event:event completion:completion];
+                if(journeyIDs.count > 0 && journey.dateMismatch){
+                    NSLog(@"dateMismatch, try the next journeyId");
                 } else {
-                    //no more journeys to test
-                    completion(nil);
+                    completion(journey);
+                    return;
                 }
+            }
+            if(index+1 < journeyIDs.count){
+                //test next one
+                [self checkJourneyAtIndex:index+1 ids:journeyIDs event:event completion:completion];
+            } else {
+                //no more journeys to test
+                completion(nil);
             }
         });
     }];
@@ -155,8 +159,9 @@
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:event.timestamp];
     NSLog(@"load journey for stop %@, from eva %@, Kategorie %@, Fahrtnummer %@, Linie %@, Zeit %@",stop.stopId,stop.evaNumber,stop.transportCategory.transportCategoryType,stop.transportCategory.transportCategoryOriginalNumber, event.lineIdentifier,date);
 
+    NSString* path = @"";
     NSString* category = stop.transportCategory.transportCategoryType;
-    NSString* path = [NSString stringWithFormat:@"%@/byrelation?number=%@",self.baseUrl,stop.transportCategory.transportCategoryOriginalNumber];
+    path = [NSString stringWithFormat:@"%@/find?journeyNumber=%@",self.baseUrl,stop.transportCategory.transportCategoryOriginalNumber];
     if(category){
         path = [path stringByAppendingFormat:@"&category=%@",category];
     }
@@ -166,7 +171,9 @@
     }
     if(fromPreviousDay){
         NSDateFormatter* df = [[NSDateFormatter alloc] init];
-        [df setDateFormat:@"yyyy-MM-dd"];
+        df.dateFormat = @"yyyy-MM-dd";
+        df.locale = [NSLocale localeWithLocaleIdentifier:@"DE"];
+        df.timeZone = [NSTimeZone timeZoneWithName:@"Europe/Berlin"];
         [df setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         NSString* dateString = [df stringFromDate:[NSDate dateWithTimeIntervalSinceNow:-60*60*24]];
         path = [path stringByAppendingFormat:@"&date=%@",dateString];
@@ -214,7 +221,7 @@
         }
         NSString* eventType = [eventDict db_stringForKey:@"type"];
         if([eventType isEqualToString:targetType]){
-            NSDictionary* station = [eventDict db_dictForKey:@"station"];
+            NSDictionary* station = [eventDict db_dictForKey:@"stopPlace"];
             NSString* evaNumber = [station db_stringForKey:@"evaNumber"];
             if(evaNumber.longLongValue == targetEva.longLongValue){//some evas have a "0" at the beginning
                 return [eventDict db_stringForKey:@"timeSchedule"];
@@ -270,7 +277,7 @@
 
 - (void)getJourneyDictForId:(NSString*)journeyID
          completionBlock:(void (^)(NSDictionary * _Nullable dict))completion{
-    [self.sessionManager GET:[NSString stringWithFormat:@"%@/eventbased/%@",self.baseUrl,journeyID]
+    [self.sessionManager GET:[NSString stringWithFormat:@"%@/%@",self.baseUrl,journeyID]
                   parameters:nil
                      headers:nil
                     progress:^(NSProgress * _Nonnull uploadProgress) {

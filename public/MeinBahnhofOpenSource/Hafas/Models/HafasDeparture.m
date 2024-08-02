@@ -140,6 +140,9 @@ static NSDateFormatter* dateTimeFormatter = nil;
     return nil;*/
 }
 -(NSString*)removeSpacesFromString:(NSString*)string{
+    if(string.length == 0){
+        return string;
+    }
     NSString *trimmedString = [self.staticRegex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, string.length) withTemplate:@" "];
     return trimmedString;
 }

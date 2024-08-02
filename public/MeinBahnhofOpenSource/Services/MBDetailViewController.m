@@ -58,7 +58,7 @@
     if(self.service){
         if([self.service.type isEqualToString:kServiceType_Barrierefreiheit] ){
             return @[PRESET_ELEVATORS,PRESET_DB_TIMETABLE];
-        } else if([self.service.type isEqualToString:kServiceType_SEV]){
+        } else if([self.service.type isEqualToString:kServiceType_SEV] || [self.service.type isEqualToString:kServiceType_SEV_AccompanimentService]){
             return @[PRESET_SEV];
         } else if([self.service.type isEqualToString:kServiceType_Locker]){
             return @[PRESET_LOCKER, PRESET_LUGGAGE];
@@ -78,7 +78,9 @@
     if(self.trackingTitle){
         [MBTrackingManager trackStatesWithStationInfo:@[@"d1", self.trackingTitle]];
     }
-    
+    if([self.service.type isEqualToString:kServiceType_SEV]){
+        [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"schienenersatzverkehr",@"haltestelleninformation"]];
+    }
     
     self.navigationController.interactivePopGestureRecognizer.enabled = YES;
 }

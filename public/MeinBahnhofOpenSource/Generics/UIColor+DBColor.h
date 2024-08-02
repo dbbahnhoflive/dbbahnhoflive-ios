@@ -41,6 +41,8 @@
 + (UIColor*)db_sleepingCoach;
 + (UIColor*)db_fallback;
 
++(UIColor*)db_SEV;
+
 + (UIColor *)db_grayBackgroundColor;
 + (UIColor *)db_lightGrayTextColor;
 

@@ -81,6 +81,84 @@ static BOOL simulateSearchFailure = NO;
     return nil;
 }
 
+-(void)requestStationGroups:(NSString *)evaId forcedByUser:(BOOL)forcedByUser success:(void (^)(NSArray<NSString*> *response))success failureBlock:(void (^)(NSError *))failure{
+    
+    MBCacheResponseType type = MBCacheResponseRISGroups;
+    NSNumber* cacheKey = [NSNumber numberWithLongLong:evaId.longLongValue];
+    MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:cacheKey type:type];
+    if(forcedByUser && cacheState == MBCacheStateValid){
+        cacheState = MBCacheStateOutdated;
+    }
+    if(cacheState == MBCacheStateValid){
+        NSLog(@"using RIS: /groups data from cache!");
+        NSDictionary* data = [MBCacheManager.sharedManager cachedResponseForStationId:cacheKey type:type];
+        NSArray* res = [self parseGroupsResponse:data forMainEva:evaId];
+        if(res){
+            success(res);
+            return;
+        }
+        NSLog(@"cache failure");
+    }
+    
+    NSString* endPoint = [NSString stringWithFormat:@"%@/%@/stop-places/%@/groups",[Constants kDBAPI],[Constants kRISStationsPath], evaId];
+    NSLog(@"endPoint %@",endPoint);
+    [self.sessionManager GET:endPoint parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+        //
+    } success:^(NSURLSessionTask *operation, id responseObject) {
+        if([responseObject isKindOfClass:NSDictionary.class]){
+            [[MBCacheManager sharedManager] storeResponse:responseObject forStationId:cacheKey type:type];
+            NSArray* res = [self parseGroupsResponse:responseObject forMainEva:evaId];
+            if(res){
+                success(res);
+                return;
+            }
+        }
+        failure(nil);
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
+        NSLog(@"error: failed to load station data, continue with station services data. %@",error);
+        failure(error);
+    }];
+}
+-(NSArray*)parseGroupsResponse:(NSDictionary*)resp forMainEva:(NSString*)evaId{
+    NSArray* groups = [resp db_arrayForKey:@"groups"];
+    NSMutableArray* res = [NSMutableArray arrayWithCapacity:20];
+    //guido: only use SALES
+    //[res addObjectsFromArray:[self getGroupMemberForType:@"STATION" fromList:groups]];
+    //if(res.count == 0){
+    //    return nil;
+    //}
+    NSArray* salesList = [self getGroupMemberForType:@"SALES" fromList:groups];
+    if(salesList.count == 0){
+        return nil;
+    }
+    for(NSString* eva in salesList){
+        if(![res containsObject:eva]){
+            [res addObject:eva];
+        }
+    }
+    if([res containsObject:evaId]){
+        //ensure that the mainEva is the first item
+        [res removeObject:evaId];
+        [res insertObject:evaId atIndex:0];
+        return res;
+    }
+    return nil;
+}
+
+-(NSArray*)getGroupMemberForType:(NSString*)type fromList:(NSArray*)list{
+    for(NSDictionary* dict in list){
+        if([dict isKindOfClass:NSDictionary.class] && [[dict db_stringForKey:@"type"] isEqualToString:type]){
+            NSArray* res = [dict db_arrayForKey:@"members"];
+            if(res && [res.firstObject isKindOfClass:NSString.class]){
+                return res;
+            } else {
+                break;//return empty array
+            }
+        }
+    }
+    return @[];
+}
+
 -(void)requestStationData:(NSNumber *)stationId forcedByUser:(BOOL)forcedByUser success:(void (^)(MBStationDetails *response))success failureBlock:(void (^)(NSError *))failure{
     
     //we combine the results from two requests here
@@ -157,7 +235,7 @@ static BOOL simulateSearchFailure = NO;
 }
 
 -(void)searchStationByEva:(NSString *)evaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure{
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-key?keyType=EVA&key=%@&limit=10",[Constants kDBAPI], [Constants kRISStationsPath],evaNumber];
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-key?keyType=EVA&key=%@&limit=10&onlyActive=false",[Constants kDBAPI], [Constants kRISStationsPath],evaNumber];
     NSLog(@"RIS:Stations: %@",requestUrlWithParams);
     [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         //
@@ -187,7 +265,51 @@ static BOOL simulateSearchFailure = NO;
         failure(error);
     }];
 }
+-(void)searchStationByStada:(NSString *)stadaNumber success:(void (^)(MBStationFromSearch* station))success failureBlock:(void (^)(NSError *))failure{
+    
+    MBCacheResponseType type = MBCacheResponseRISStopPlacesByKeyForStada;
+    NSNumber* cacheKey = [NSNumber numberWithLongLong:stadaNumber.longLongValue];
+    MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:cacheKey type:type];
+    if(cacheState == MBCacheStateValid){
+        NSLog(@"using RIS: by-key?keyType=STADA data from cache!");
+        NSDictionary* data = [MBCacheManager.sharedManager cachedResponseForStationId:cacheKey type:type];
+        MBStationFromSearch* res = [self parseResponse:data].firstObject;
+        res.isFreshStationFromSearch = false;
+        if(res){
+            success(res);
+            return;
+        }
+        NSLog(@"cache failure");
+    }
+    
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-key?keyType=STADA&key=%@&limit=10&onlyActive=false",[Constants kDBAPI], [Constants kRISStationsPath],stadaNumber];
+    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
+    [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+        //
+    } success:^(NSURLSessionTask *operation, id responseObject) {
+        
+        if(simulateSearchFailure){
+            failure(nil);
+            return;
+        }
 
+        if([responseObject isKindOfClass:NSDictionary.class]){
+            MBStationFromSearch* res = [self parseResponse:responseObject].firstObject;
+            res.isFreshStationFromSearch = false;
+            if(res){
+                [MBCacheManager.sharedManager storeResponse:responseObject forStationId:cacheKey type:type];
+                success(res);
+            } else {
+                failure(nil);
+            }
+        } else {
+            failure(nil);
+        }
+    } failure:^(NSURLSessionTask *operation, NSError *error) {
+        NSLog(@"risstations by-key failed: %@",error.localizedDescription);
+        failure(error);
+    }];
+}
 
 -(void)searchStationByName:(NSString *)text success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success failureBlock:(void (^)(NSError *))failure{
     NSString* searchTerm = [text stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet letterCharacterSet]];
@@ -220,7 +342,7 @@ static BOOL simulateSearchFailure = NO;
 
 -(void)searchStationByGeo:(CLLocationCoordinate2D)geo success:(void (^)(NSArray<MBStationFromSearch*>* stationList))success failureBlock:(void (^)(NSError *))failure{
     NSInteger size = 100;
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-position?latitude=%.3f&longitude=%.3f&radius=2000&limit=%ld",
+    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-position?latitude=%.3f&longitude=%.3f&radius=2000&limit=%ld&onlyActive=false",
                             [Constants kDBAPI],
                             [Constants kRISStationsPath],
                             geo.latitude,
@@ -258,6 +380,8 @@ static BOOL simulateSearchFailure = NO;
     }
     results = [response db_arrayForKey:@"stopPlaces"];
     if(results){
+        MBStation* s = [MBStation new];
+        
         NSMutableArray<MBStationFromSearch*>* resultsTransformed = [NSMutableArray arrayWithCapacity:results.count];
         for(NSDictionary* res in results){
             
@@ -269,7 +393,11 @@ static BOOL simulateSearchFailure = NO;
             NSArray* evaNumbers = [res db_arrayForKey:@"groupMembers"];
             NSArray* availableTransports = [res db_arrayForKey:@"availableTransports"];
             if(availableTransports.count == 0){
-                continue;//skip stations without any transports
+                if(stationID && [s hasStaticAdHocBox:stationID]){
+                    //use this: ensures that inactive Riedbahn stations are still displayed
+                } else {
+                    continue;//skip stations without any transports
+                }
             }
 
             NSNumber* stationNumber = nil;
@@ -375,54 +503,6 @@ static BOOL simulateSearchFailure = NO;
     return false;
 }
 
--(void)requestUpdateForStation:(MBStationFromSearch*)station success:(void (^)(MBStationFromSearch* stationFromSearch))success failureBlock:(void (^)(NSError *))failure{
-    
-    MBCacheResponseType type = MBCacheResponseRISStopPlacesForEva;
-    MBCacheState cacheState = [[MBCacheManager sharedManager] cacheStateForStationId:station.stationId type:type];
-    if(cacheState == MBCacheStateValid){
-        NSDictionary* cachedResponse = [[MBCacheManager sharedManager] cachedResponseForStationId:station.stationId type:type];
-        if(cachedResponse){
-            MBStationFromSearch* stationFromSearch = [self getMatchingStationFromResponse:cachedResponse forStation:station.stationId];
-            if(stationFromSearch.eva_ids){
-                NSLog(@"using RIS: StopPlacesForEva data from cache!");
-                success(stationFromSearch);
-            } else {
-                failure(nil);
-            }
-            return;
-        }
-    }
-    //note: even thought we use the station name as the request parameter the caching works with the stationID!
-    NSString* searchTerm = [station.title stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet letterCharacterSet]];
-    NSString* requestUrlWithParams = [NSString stringWithFormat:@"%@/%@/stop-places/by-name/%@",[Constants kDBAPI], [Constants kRISStationsPath], searchTerm];
-    NSLog(@"RIS:Stations: %@",requestUrlWithParams);
-    [self.sessionManager GET:requestUrlWithParams parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
-        //
-    } success:^(NSURLSessionTask *operation, id responseObject) {
-        MBStationFromSearch* stationFromSearch = [self getMatchingStationFromResponse:responseObject forStation:station.stationId];
-        if(stationFromSearch.eva_ids){
-            [[MBCacheManager sharedManager] storeResponse:responseObject forStationId:station.stationId type:type];
-            success(stationFromSearch);
-        } else {
-            failure(nil);
-        }
-    } failure:^(NSURLSessionTask *operation, NSError *error) {
-        NSLog(@"risstations stopPlaces failed: %@",error.localizedDescription);
-        failure(error);
-    }];
-}
 
--(MBStationFromSearch*)getMatchingStationFromResponse:(NSDictionary*)responseObject forStation:(NSNumber*)stationId{
-    if([responseObject isKindOfClass:NSDictionary.class]){
-        NSArray* stations = [self parseResponse:responseObject];
-        for(MBStationFromSearch* searchResult in stations){
-            if([searchResult.stationId isEqualToNumber:stationId]){
-                return searchResult;
-            }
-        }
-        NSLog(@"Error: station not found in search");
-    }
-    return nil;
-}
 
 @end

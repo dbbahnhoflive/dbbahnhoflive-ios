@@ -9,6 +9,7 @@
 #import <Mantle/Mantle.h>
 #import "MBTravelcenter.h"
 #import "MBOSMOpeningWeek.h"
+#import "RIMapPoi.h"
 
 #define kPhoneKey @"phone"
 #define kImageKey @"image"
@@ -20,8 +21,11 @@
 #define kSpecialActionAR_Teaser @"kSpecialActionAR_Teaser"
 
 #define kActionButtonKey @"actionButton"
+#define kActionButtonType @"actionButtonType"
 #define kActionButtonAction @"actionButtonAction"
 #define kActionChatbot @"chatbot"
+#define kActionWegbegleitung @"actionWegbegleitungVideo"
+#define kActionWegbegleitung_info @"actionWegbegleitungInfo"
 #define kActionMobilitaetsService @"mobilitaetsservice"
 #define kActionFeedbackMail @"feedbackmail"
 #define kActionWhatsAppFeedback @"whatsappfeedback"
@@ -29,6 +33,7 @@
 #define kActionFeedbackChatbotMail @"feedbackchatbot"
 
 #define kServiceType_SEV @"schienenersatzverkehr"
+#define kServiceType_SEV_AccompanimentService @"accompanimentservice"
 #define kServiceType_Locker @"locker"
 #define kServiceType_LocalTravelCenter @"local_travelcenter"
 #define kServiceType_LocalDBLounge @"local_db_lounge"
@@ -92,5 +97,7 @@
 - (NSString*) parsePhoneNumber;
 
 - (NSArray*) descriptionTextComponents;
+
+-(ShopOpenState)openState;
 
 @end

@@ -47,6 +47,7 @@
 #import "MBStationSearchViewController.h"
 #import "AppDelegate.h"
 #import "MBAccompanimentTeaserView.h"
+#import "MBContentSearchResult.h"
 
 @interface MBStationViewController () <UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UIAlertViewDelegate>
 
@@ -56,8 +57,6 @@
 
 @property(nonatomic,strong) MBNewsContainerViewController* newsVC;
 @property(nonatomic,strong) UIView* newsContainerView;
-
-@property(nonatomic,strong) MBAccompanimentTeaserView* accompanimentTeaser;
 
 @property (nonatomic, strong) UIView *tafelContainerView;
 @property (nonatomic, strong) MBStationFernverkehrTableViewController *fernVC;
@@ -190,6 +189,8 @@
     [self.collectionView registerClass:[MBStationGreenTeaserCollectionViewCell class] forCellWithReuseIdentifier:@"GreenCell"];
     [self.collectionView registerClass:[MBStationChatbotTeaserCollectionViewCell class] forCellWithReuseIdentifier:@"ChatbotCell"];
     [self.collectionView registerClass:MBStationARTeaserCollectionViewCell.class forCellWithReuseIdentifier:@"ARTeaser"];
+    [self.collectionView registerClass:[MBAccompanimentTeaserView class] forCellWithReuseIdentifier:@"Wegbegleitung"];
+
     [self.collectionView registerClass:[MBStationNavigationCollectionViewCell class] forCellWithReuseIdentifier:@"NaviCell"];
 
     //the content search button is part of the navigation controller since it is above the content
@@ -228,12 +229,7 @@
     [self.collectionView addSubview:self.newsContainerView];
     [self addChildViewController:self.newsVC];
     [self.newsContainerView addSubview:self.newsVC.view];
-    
-    if(self.station.hasAccompanimentService){
-        self.accompanimentTeaser = [MBAccompanimentTeaserView new];
-        [self.collectionView addSubview:self.accompanimentTeaser];
-    }
-    
+        
     [self setupOccupancy];
     
     UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(gotoTafel:)];
@@ -335,18 +331,6 @@
         tafelY = CGRectGetMaxY(self.newsContainerView.frame)+5;
     } else {
         self.newsContainerView.hidden = YES;
-    }
-    
-    if(self.accompanimentTeaser && self.hasNecessaryData){
-        self.accompanimentTeaser.hidden = false;
-        NSInteger yA = tafelY-20;
-        if(self.newsContainerView.hidden){
-            yA = y;
-        }
-        self.accompanimentTeaser.frame = CGRectMake(0, yA, self.view.sizeWidth, 110);
-        tafelY = CGRectGetMaxY(self.accompanimentTeaser.frame)+25;
-    } else {
-        self.accompanimentTeaser.hidden = true;
     }
     
     CGRect tafelFrameInCollectionView = CGRectMake(0.0, 0.0, 0.0, 242.0);
@@ -593,6 +577,12 @@
     [nextLine addObject:feedbackKachel];
 
     //construct arrays
+    if(self.station.hasAccompanimentServiceActive && UIAccessibilityIsVoiceOverRunning()){
+        //fist element in CollectionView, directly below departures
+        MBStationKachel* wegKachel = [MBStationKachel new];
+        wegKachel.isWegbegleitungTeaser = YES;
+        [kacheln addObject:@[ wegKachel ]];
+    }
     [kacheln addObject:firstRowKacheln];
     if(secondRowKacheln.count > 0){
         [kacheln addObject:secondRowKacheln];
@@ -603,7 +593,11 @@
     if(fourthRowKacheln.count > 0){
         [kacheln addObject:fourthRowKacheln];
     }
-    
+    if(self.station.hasAccompanimentServiceActive && !UIAccessibilityIsVoiceOverRunning()){
+        MBStationKachel* wegKachel = [MBStationKachel new];
+        wegKachel.isWegbegleitungTeaser = YES;
+        [kacheln addObject:@[ wegKachel ]];
+    }
     if(self.station.hasARTeaser){
         MBStationKachel* arKachel = [MBStationKachel new];
         arKachel.isARTeaser = YES;
@@ -649,6 +643,10 @@
     
     // sizes -> 1: small, 2: medium, 3: large, 4: xlarge
     
+    CGSize special = [self specialSizeKachel:indexPath];
+    if(special.width > 0){
+        return special;
+    }
     CGSize itemSize = [[self.kachelSizes objectForKey:@"small"] CGSizeValue];
     // each section has 1 or 2 items
     if (indexPath.section == 0) {
@@ -658,10 +656,6 @@
             itemSize = [[self.kachelSizes objectForKey:@"small"] CGSizeValue];
         }
     } else if (indexPath.section == 1) {
-        CGSize special = [self specialSizeKachel:indexPath];
-        if(special.height > 0){
-            itemSize = special;
-        } else {
             NSArray* kachelnLine2 = _kacheln[indexPath.section];
             if(kachelnLine2.count == 1){
                 //single object, takes full size
@@ -679,12 +673,7 @@
             } else {
                 itemSize = [[self.kachelSizes objectForKey:@"small"] CGSizeValue];
             }
-        }
     } else if (indexPath.section == 2) {
-        CGSize special = [self specialSizeKachel:indexPath];
-        if(special.height > 0){
-            itemSize = special;
-        } else {
             //3 or two items?
             NSArray* kachelnLine2 = _kacheln[indexPath.section];
             if(kachelnLine2.count == 3){
@@ -692,13 +681,8 @@
             } else {
                 itemSize = [[self.kachelSizes objectForKey:@"medium"] CGSizeValue];
             }
-        }
-    } else if(indexPath.section >= 3){
-        CGSize special = [self specialSizeKachel:indexPath];
-        if(special.height > 0){
-            itemSize = special;
-        }
-    }
+        
+    } 
     return itemSize;
 }
 
@@ -707,6 +691,13 @@
     MBStationKachel* kachel = _kacheln[indexPath.section][indexPath.row];
     if(kachel.isGreenTeaser || kachel.isChatbotTeaser || kachel.isARTeaser){
         return [self teaserSize];
+    }
+    if(kachel.isWegbegleitungTeaser){
+        if(self.view.sizeWidth <= 320){
+            //text will wrap into 4 lines, increased height
+            return CGSizeMake(self.view.bounds.size.width - 16.0, 130);
+        }
+        return CGSizeMake(self.view.bounds.size.width - 16.0, 110);
     }
     return CGSizeZero;
 }
@@ -816,6 +807,9 @@
     } else if(kachel.isARTeaser){
         MBStationARTeaserCollectionViewCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"ARTeaser" forIndexPath:indexPath];
         return cell;
+    } else if(kachel.isWegbegleitungTeaser){
+        MBAccompanimentTeaserView* cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Wegbegleitung" forIndexPath:indexPath];
+        return cell;
     }
     
     MBStationCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:(isGreenTeaser) ? @"GreenCell" : @"NaviCell" forIndexPath:indexPath];
@@ -854,6 +848,12 @@
     }
     if(kachel.isARTeaser){
         [MBUrlOpening openURL:[NSURL URLWithString:AR_TEASER_LINK]];
+        return;
+    }
+    if(kachel.isWegbegleitungTeaser){
+        [self moveToServiceListControllerAndConfigureController:^(MBServiceListCollectionViewController * _Nonnull controller) {
+            controller.openWegbegleitungScreen = YES;
+        }];
         return;
     }
     
@@ -952,6 +952,7 @@
 
 -(void)willStartLoadingData{
     NSLog(@"willStartLoadingData");
+    /*
     if (self.station.stationEvaIds.count > 0) {
         if([[MBRootContainerViewController currentlyVisibleInstance].preloadedDepartures isEqualToArray: self.station.stationEvaIds]){
             NSLog(@"skip timetable reload in station, was preloaded in station search");
@@ -960,7 +961,7 @@
             NSLog(@"timetable started from willStartLoadingData...");
             [[TimetableManager sharedManager] reloadTimetableWithEvaIds:self.station.stationEvaIds];
         }
-    }
+    }*/
     
     [self hafasNearbyStationsRequest];
 }

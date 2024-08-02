@@ -27,15 +27,12 @@
 @property (nonatomic, strong) NSString *junctionType;
 @property (nonatomic, strong) NSString *stopIndex;
 
-// this will be added in TimetableViewController if this stop is a Reference to another
-@property (nonatomic, strong) NSString *referenceSplitMessage;
 
 - (NSString*) formattedTransportType:(NSString*)lineIdentifier;
 - (NSString*) replacementTrainMessage:(NSString*)lineIdentifier;
 - (NSString*) changedTrainMessage:(NSString*)lineIdentifier;
 
 - (Event*)eventForDeparture:(BOOL)departure;
-- (NSDictionary*) requestParamsForWagenstandWithEvent:(Event*)event;
 
 +(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop;
 @end

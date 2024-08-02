@@ -38,8 +38,10 @@
 
 + (UIColor *)db_787d87 { return [UIColor colorWithRed:120./255. green:125./255. blue:135./255. alpha:1];}
 
++(UIColor*)db_SEV { return [UIColor colorWithRed:134.0/255. green:36./255.0 blue:90./255. alpha:1]; }
+
 //Grün
-+(UIColor*)db_green { return [UIColor dbColorWithRGB:0x508B1B]; }
++(UIColor*)db_green { return [UIColor dbColorWithRGB:0x408335]; } //0x508B1B -> 0x408335
 //Rot
 + (UIColor *)db_mainColor { return
     [Constants dbMainColor];

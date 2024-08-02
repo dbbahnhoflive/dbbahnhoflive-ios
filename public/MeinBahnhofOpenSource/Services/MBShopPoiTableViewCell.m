@@ -12,8 +12,6 @@
 #import "MBStatusImageView.h"
 
 @interface MBShopPoiTableViewCell()<MBDetailViewDelegate>
-@property (nonatomic, strong) UILabel *opencloseLabel;
-@property (nonatomic, strong) MBStatusImageView *opencloseImage;
 
 @end
 
@@ -22,17 +20,6 @@
 - (void) configureCell
 {
     [super configureCell];
-    
-    self.opencloseImage = [MBStatusImageView new];
-
-    self.opencloseLabel = [UILabel new];
-    
-    self.opencloseLabel.textAlignment = NSTextAlignmentLeft;
-    self.opencloseLabel.font = [UIFont db_RegularFourteen];
-    self.opencloseLabel.isAccessibilityElement = NO;
-    
-    [self.topView addSubview:self.opencloseLabel];
-    [self.topView addSubview:self.opencloseImage];
 
     self.contactAddonView = [UIView new];
     self.contactAddonView.backgroundColor = [UIColor whiteColor];
@@ -44,11 +31,6 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    if(self.opencloseImage.hidden){
-        [self.cellTitle centerViewVerticalWithView:self.cellIcon];
-    } else {
-        [self.cellTitle setY:13];
-    }
     NSInteger bottomViewHeight = 0;
     if (nil != self.shopDetailView) {
         [self.shopDetailView layoutForSize:self.frame.size.width];
@@ -57,9 +39,6 @@
     }
     self.bottomView.frame = CGRectMake(0, 80+4, self.backView.sizeWidth, bottomViewHeight);
 
-    NSInteger y = CGRectGetMaxY(self.cellTitle.frame)+2;
-    self.opencloseImage.frame = CGRectMake(CGRectGetMaxX(self.cellIcon.frame)+30, y, 24, 24);
-    self.opencloseLabel.frame = CGRectMake(CGRectGetMaxX(self.opencloseImage.frame)+4,y,self.backView.sizeWidth-(CGRectGetMaxX(self.opencloseImage.frame)+4),24);
 
     if(self.contactAddonView.subviews > 0){
         self.contactAddonView.frame = CGRectMake(0, CGRectGetMaxY(self.bottomView.frame)+4, self.backView.sizeWidth, 105 );
@@ -110,42 +89,15 @@
     [self configureVoiceOver];
 }
 
--(void)configureVoiceOver{
-    [super configureVoiceOver];
-    if(!self.opencloseLabel.hidden){
-        self.cellTitle.accessibilityLabel = [NSString stringWithFormat:@"%@, %@.",self.cellTitle.text,self.opencloseLabel.text];
-    }
-}
-
 -(void)setPoiItem:(RIMapPoi *)poiItem{
     _poiItem = poiItem;
     ShopOpenState openState = POI_UNKNOWN;
     self.cellTitle.text = poiItem.name;
     self.cellIcon.image = [MBPXRShopCategory menuIconForCategoryTitle:[RIMapPoi mapPXRToShopCategory:poiItem]];//until PXR delivers icons for shops we use the category icon
     openState = poiItem.hasOpeningInfo ? (poiItem.isOpen ? POI_OPEN : POI_CLOSED ) : POI_UNKNOWN;
-    self.cellTitle.numberOfLines = 1;
     [self configureCellForItemWithOpenState:openState];
 }
 
--(void)configureCellForItemWithOpenState:(ShopOpenState)openState{
-    self.opencloseImage.hidden = NO;
-    self.opencloseLabel.hidden = NO;
-    if (openState == POI_OPEN) {
-        self.opencloseLabel.text = @"Geöffnet";
-        self.opencloseLabel.textColor = [UIColor db_green];
-        [self.opencloseImage setStatusActive];
-    } else if(openState == POI_CLOSED) {
-        self.opencloseLabel.text = @"Geschlossen";
-        self.opencloseLabel.textColor = [UIColor db_mainColor];
-        [self.opencloseImage setStatusInactive];
-    } else {
-        self.opencloseImage.hidden = YES;
-        self.opencloseLabel.hidden = YES;
-    }
-    [self.opencloseLabel sizeToFit];
-    
-    [self configureVoiceOver];
-}
 
 
 #pragma mark MBDetailViewDelegate

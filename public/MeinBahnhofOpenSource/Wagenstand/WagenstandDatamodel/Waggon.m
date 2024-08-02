@@ -16,58 +16,6 @@
 
 @implementation Waggon 
 
-+ (NSValueTransformer *)typeJSONTransformer
-{
-    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        NSString *type = value;
-        type = [type stringByReplacingOccurrencesOfString:@".Kl" withString:@""];
-        type = [type stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-        return type;
-    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        return value;
-    }];
-}
-
-+ (NSValueTransformer *)symbolsJSONTransformer
-{
-    return [MTLValueTransformer transformerUsingForwardBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        NSString *symbols = value;
-        NSInteger noOfSymbols = symbols.length;
-        
-        if (noOfSymbols == 0) {
-            return @[];
-        }
-        
-        NSMutableArray *characters = [[NSMutableArray alloc] initWithCapacity:noOfSymbols];
-        for (int i=0; i < noOfSymbols; i++) {
-            NSString *ichar  = [NSString stringWithFormat:@"%c", [symbols characterAtIndex:i]];
-            [characters addObject:ichar];
-        }
-        
-        return characters;
-    } reverseBlock:^id(id value, BOOL *success, NSError *__autoreleasing *error) {
-        return value;
-    }];
-}
-
-+ (NSValueTransformer *)waggonJSONTransformer
-{
-    return [NSValueTransformer valueTransformerForName:MTLBooleanValueTransformerName];
-}
-
-+ (NSDictionary*) JSONKeyPathsByPropertyKey
-{
-    return @{
-             @"differentDestination": @"differentDestination",
-             @"length": @"length",
-             @"number": @"number",
-             @"position": @"position",
-             @"sections": @"sections",
-             @"symbols": @"symbols",
-             @"type": @"type",
-             @"waggon": @"waggon"
-             };
-}
 
 -(NSArray *)fahrzeugausstattung{
     if(_fahrzeugausstattung)

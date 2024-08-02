@@ -19,6 +19,10 @@
 #import "MBContentSearchResult.h"
 #import "MBRootContainerViewController.h"
 #import "MBARAppTeaserView.h"
+#import "SEVWebViewController.h"
+#import "MBLinkButton.h"
+#import "MBWegbegleitungInfoViewController.h"
+#import "SEVWebViewController.h"
 
 @interface MBStaticServiceView() <MBTextViewDelegate>
 @property (nonatomic, weak) UIViewController* viewController;
@@ -142,40 +146,6 @@
         [baseView addSubview:descriptionHTMLLabel];
     }
     
-    BOOL sevHack = [self.service.type isEqualToString: kServiceType_SEV] && self.station.hasStaticAdHocBox;
-    if(sevHack && self.station.newsList.count == 1){
-        UIImageView* icon = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"NEV_Icon"]];
-        icon.frame = CGRectMake(15, offset.y, 52, 52);
-        [baseView addSubview:icon];
-        NSInteger x = CGRectGetMaxX(icon.frame)+15;
-        NSInteger contentWidth = self.frame.size.width-20-x;
-        UILabel* title = [[UILabel alloc] initWithFrame:CGRectZero];
-        [baseView addSubview:title];
-        title.numberOfLines = 2;
-        title.font = [UIFont db_BoldFourteen];
-        title.textColor = [UIColor db_333333];
-        title.text = self.station.newsList.firstObject.title;
-        CGSize size = [title sizeThatFits:CGSizeMake(contentWidth, 300)];
-        [title setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
-        [title setGravityLeft:x];
-        [title setGravityTop:offset.y];
-
-        NSInteger y = CGRectGetMaxY(title.frame)+5;
-        UILabel* content = [[UILabel alloc] initWithFrame:CGRectZero];
-        [baseView addSubview:content];
-        content.numberOfLines = 3;
-        content.font = [UIFont db_RegularFourteen];
-        content.textColor = [UIColor db_333333];
-        content.text = self.station.newsList.firstObject.content;
-        size = [content sizeThatFits:CGSizeMake(contentWidth, 300)];
-        [content setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
-        [content setGravityLeft:x];
-        [content setGravityTop:y];
-        
-        offset.y = CGRectGetMaxY(content.frame)+20;
-        contentSize.height = CGRectGetMaxY(content.frame)+20;
-    }
-
     
     NSArray *descriptionComponents = [self.service descriptionTextComponents];
     if (descriptionComponents && descriptionComponents.count > 0) {
@@ -187,9 +157,6 @@
                 descriptionHTMLLabel.htmlString = obj;
                 descriptionHTMLLabel.delegado = self;
                 [self sizeViewForWidth:descriptionHTMLLabel];
-                if(sevHack){
-                    descriptionHTMLLabel.dataDetectorTypes = UIDataDetectorTypeNone;
-                }
                 
                 offset.y += descriptionHTMLLabel.frame.size.height;
                 contentSize.height += descriptionHTMLLabel.frame.size.height;
@@ -200,8 +167,10 @@
                 //title, is this a phone number or an action button?
                 NSString *phoneNumber = obj[kPhoneKey];
                 NSString *actionButton = obj[kActionButtonKey];
+                NSString *actionButtonType = obj[kActionButtonType];
                 NSString *imageName = obj[kImageKey];
                 NSString *specialAction = obj[kSpecialAction];
+                NSString *buttonActionString = obj[kActionButtonAction];
                 if(specialAction){
                     if([specialAction isEqualToString:kSpecialActionPlatformAccessibiltyUI]){
                         //this view will resize its parent when the content changes
@@ -244,32 +213,59 @@
                     offset.y += 20;
                     contentSize.height += 20;
                     
-                    CGFloat width = (int) MIN(345, (contentSize.width-2*15));
-                    MBButtonWithData *redPhoneButton = [[MBButtonWithData alloc] initWithFrame: CGRectMake((int)((contentSize.width-width)/2), offset.y, width, 60)];
-                    redPhoneButton.layer.shadowOffset = CGSizeMake(1,1);
-                    redPhoneButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
-                    redPhoneButton.layer.shadowRadius = 2;
-                    redPhoneButton.layer.shadowOpacity = 1.0;
-                    redPhoneButton.layer.cornerRadius = redPhoneButton.frame.size.height / 2.0;
-                    
-                    [redPhoneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                    
-                    if(phoneNumber){
-                        [redPhoneButton setTitle:phoneNumber forState:UIControlStateNormal];
-                        [redPhoneButton addTarget:self action:@selector(didTapOnPhoneButton:) forControlEvents:UIControlEventTouchUpInside];
-                    } else {
-                        [redPhoneButton setTitle:actionButton forState:UIControlStateNormal];
-                        redPhoneButton.data = obj[kActionButtonAction];
-                        [redPhoneButton addTarget:self action:@selector(didTapOnActionButton:) forControlEvents:UIControlEventTouchUpInside];
+                    if([actionButtonType isEqualToString:@"action"]){
+                        CGFloat width = (int) MIN(345, (contentSize.width-2*15));
+                        MBButtonWithData *redPhoneButton = [[MBButtonWithData alloc] initWithFrame: CGRectMake((int)((contentSize.width-width)/2), offset.y, width, 60)];
+                        redPhoneButton.layer.shadowOffset = CGSizeMake(1,1);
+                        redPhoneButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
+                        redPhoneButton.layer.shadowRadius = 2;
+                        redPhoneButton.layer.shadowOpacity = 1.0;
+                        redPhoneButton.layer.cornerRadius = redPhoneButton.frame.size.height / 2.0;
+                        
+                        [redPhoneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                        
+                        if(phoneNumber){
+                            [redPhoneButton setTitle:phoneNumber forState:UIControlStateNormal];
+                            [redPhoneButton addTarget:self action:@selector(didTapOnPhoneButton:) forControlEvents:UIControlEventTouchUpInside];
+                        } else {
+                            [redPhoneButton setTitle:actionButton forState:UIControlStateNormal];
+                            redPhoneButton.data = buttonActionString;
+                            [redPhoneButton addTarget:self action:@selector(didTapOnActionButton:) forControlEvents:UIControlEventTouchUpInside];
+                        }
+                        [redPhoneButton setBackgroundColor:[UIColor db_GrayButton]];
+                        [redPhoneButton.titleLabel setFont:[UIFont db_BoldEighteen]];
+                        
+                        
+                        offset.y += redPhoneButton.frame.size.height+10;
+                        contentSize.height += redPhoneButton.frame.size.height+10;
+                        
+                        [baseView addSubview:redPhoneButton];
+                    } else if([actionButtonType isEqualToString:@"intern"] || [actionButtonType isEqualToString:@"extern"]){
+                        MBLinkButton* linkButton = nil;
+                        if([actionButtonType isEqualToString:@"intern"]){
+                            linkButton = [MBLinkButton boldButtonWithRedLink];
+                        } else {
+                            linkButton = [MBLinkButton boldButtonWithRedExternalLink];
+                        }
+                        linkButton.data = buttonActionString;
+                        [linkButton setLabelText:actionButton];
+                        [linkButton addTarget:self action:@selector(didTapOnActionButton:) forControlEvents:UIControlEventTouchUpInside];
+                        [linkButton setGravityLeft:16];
+                        [linkButton setGravityTop:offset.y];
+                        if(CGRectGetMaxX(linkButton.frame) >= baseView.frame.size.width){
+                            //wrap button in two lines
+                            CGRect f = linkButton.frame;
+                            linkButton.titleLabel.numberOfLines = 0;
+                            f.size.width = baseView.frame.size.width-f.origin.x;
+                            f.size.height = f.size.height*2;
+                            linkButton.frame = f;
+                        }
+                        offset.y += linkButton.frame.size.height+10;
+                        contentSize.height += linkButton.frame.size.height+10;
+                        
+                        [baseView addSubview:linkButton];
+
                     }
-                    [redPhoneButton setBackgroundColor:[UIColor db_GrayButton]];
-                    [redPhoneButton.titleLabel setFont:[UIFont db_BoldEighteen]];
-                    
-                    
-                    offset.y += redPhoneButton.frame.size.height+10;
-                    contentSize.height += redPhoneButton.frame.size.height+10;
-                    
-                    [baseView addSubview:redPhoneButton];
                 }
             }
         }];
@@ -398,19 +394,6 @@
         contentSize.height += additionalTextHTMLLabel.frame.size.height;
     }
     
-    if(sevHack){
-        offset.y += 10;
-        contentSize.height += 10;
-        MBLargeButton* btn = [[MBLargeButton alloc] initWithFrame:CGRectMake(16, 16, self.frame.size.width-2*16, 60)];
-        [btn setTitle:@"bahnhof.de öffnen" forState:UIControlStateNormal];
-        [btn addTarget:self action:@selector(didTapOnBahnhofLink:) forControlEvents:UIControlEventTouchUpInside ];
-        [baseView addSubview:btn];
-        [btn setGravityLeft:15];
-        [btn setGravityTop:offset.y];
-        offset.y += btn.frame.size.height+10;
-        contentSize.height += btn.frame.size.height+10;
-    }
-    
     contentSize.height += 16;
     if([baseView isKindOfClass:UIScrollView.class]){
         contentSize.height += 30;
@@ -419,9 +402,6 @@
     } else {
         [self setSize:CGSizeMake(self.frame.size.width, contentSize.height)];
     }
-}
--(void)didTapOnBahnhofLink:(id)sender{
-    [self didInteractWithURL:[NSURL URLWithString:@"https://bahnhof.de/bfl/ev-nw"]];
 }
 
 -(void)sizeViewForWidth:(UIView*)v{
@@ -491,6 +471,28 @@
         [self feedbackDirtViaWhatspp:false];
     } else if([action isEqualToString:kActionWhatsAppFeedback]){
         [self feedbackDirtViaWhatspp:true];
+    } else if([action isEqualToString:kActionWegbegleitung]){
+        //BAHNHOFLIVE-2519
+        [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"schienenersatzverkehr",@"wegbegleitung",@"video"]];
+        MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+        if([SEVWebViewController wegbegleitungIsActiveTime]){
+            SEVWebViewController* web = [SEVWebViewController new];
+            UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:web];
+            nav.modalPresentationStyle = UIModalPresentationFullScreen;
+            [root presentViewController:nav animated:true completion:nil];
+        } else {
+            UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Servicezeiten" message:@"Leider rufen Sie außerhalb unserer Servicezeiten an. Diese sind täglich von 07:00 Uhr bis 19:00 Uhr." preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+            }]];
+            [root presentViewController:alert animated:true completion:nil];
+        }
+    } else if([action isEqualToString:kActionWegbegleitung_info]){
+        //BAHNHOFLIVE-2519
+        UIViewController* wegbegleitungInfo = [[MBWegbegleitungInfoViewController alloc] initWithStation:self.station];
+        UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:wegbegleitungInfo];
+        nav.modalPresentationStyle = UIModalPresentationFullScreen;
+        MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+        [root presentViewController:nav animated:true completion:nil];
     } else {
         NSURL* url = [NSURL URLWithString:action];
         if(url){
@@ -498,6 +500,7 @@
         }
     }
 }
+
 
 -(void)feedbackDirtViaWhatspp:(BOOL)useWhatsapp{
     NSString* s = [NSString stringWithFormat:@"Sehr geehrte Damen und Herren, mir ist eine Verschmutzung an folgendem Bahnhof aufgefallen: %@ (%@). ",self.station.title,self.station.mbId];

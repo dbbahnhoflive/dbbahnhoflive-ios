@@ -6,38 +6,10 @@
 
 #import "Stop.h"
 #import "NSDateFormatter+MBDateFormatter.h"
+#import "Wagenstand.h"
 
 @implementation Stop
 
-- (NSDictionary*) requestParamsForWagenstandWithEvent:(Event*)event;
-{
-    if(!self.transportCategory.transportCategoryType || !self.transportCategory.transportCategoryNumber){
-        return nil;
-    }
-    NSString *formattedDate = [NSDateFormatter
-                               formattedDate:[NSDate dateWithTimeIntervalSince1970:event.timestamp]
-                               forPattern:@"HH:mm"];
-    
-    NSMutableDictionary *parameters = [@{
-                                 @"platform": [event.originalPlatform stringByReplacingOccurrencesOfString:@"[\\D+]" withString:@"" options:NSRegularExpressionSearch range:NSMakeRange(0, [event.originalPlatform length])],
-                                 @"trainId": self.stopId} mutableCopy];
-    
-    if (![self.transportCategory.transportCategoryType isEqualToString:@"RE"]
-        && ![self.transportCategory.transportCategoryType isEqualToString:@"RB"]) {
-        [parameters setObject:formattedDate forKey:@"time"];
-        [parameters setObject:self.transportCategory.transportCategoryNumber forKey:@"trainNumber"];
-    } else {
-        [parameters setObject:self.transportCategory.transportCategoryType forKey:@"trainType"];
-        
-        if (self.transportCategory.transportCategoryGenericNumber) {
-            [parameters setObject:self.transportCategory.transportCategoryGenericNumber forKey:@"trainNumber"];
-        } else {
-            [parameters setObject:self.transportCategory.transportCategoryNumber forKey:@"trainNumber"];
-        }
-    }
-    
-    return parameters;
-}
 
 - (Event*)eventForDeparture:(BOOL)departure;
 {
@@ -114,17 +86,14 @@
 }
 
 +(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop{
-    if ([timetableStop.transportCategory.transportCategoryType isEqualToString:@"ICE"]
-        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"IC"]
-        || [timetableStop.transportCategory.transportCategoryType isEqualToString:@"EC"])
-    {
+    if ([Wagenstand isValidTrainTypeForIST:timetableStop.transportCategory.transportCategoryType]){
         if(timetableStop.departureEvent.stations.count == 0){
             //at the destination station (no departure event stations), no train record is available
 //            NSLog(@"stopShouldHaveTrainRecord would return NO");
 //            NSLog(@"stop %@",timetableStop.transportCategory.transportCategoryNumber);
 //            NSLog(@"stop %@ with %@",timetableStop.departureEvent,timetableStop.departureEvent.stations);
 //            NSLog(@"stop %@ with %@",timetableStop.arrivalEvent,timetableStop.arrivalEvent.stations);
-            return NO;
+            return YES;//RIS:Transports v3 provides arrival train order
         }
         return YES;
     }

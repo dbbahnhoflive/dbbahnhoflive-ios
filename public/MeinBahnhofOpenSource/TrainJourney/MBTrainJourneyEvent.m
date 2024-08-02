@@ -13,7 +13,7 @@
     if(self){
         self.additional = [dict db_boolForKey:@"additional"];
         self.canceled = [dict db_boolForKey:@"canceled"];
-        NSDictionary* station = [dict db_dictForKey:@"station"];
+        NSDictionary* station = [dict db_dictForKey:@"stopPlace"];
         self.name = [station db_stringForKey:@"name"];
         self.evaNumber = [station db_stringForKey:@"evaNumber"];
         self.platform = [dict db_stringForKey:@"platform"];

@@ -43,4 +43,9 @@
     return YES;
 }
 
+- (void)resizeForWidth:(NSInteger)width{
+    CGSize size = [self sizeThatFits:CGSizeMake(width, NSIntegerMax)];
+    [self setSize:CGSizeMake(ceilf(size.width), ceilf(size.height))];
+}
+
 @end

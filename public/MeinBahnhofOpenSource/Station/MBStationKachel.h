@@ -22,6 +22,7 @@
 @property (nonatomic) BOOL isGreenTeaser;
 @property (nonatomic) BOOL isChatbotTeaser;
 @property (nonatomic) BOOL isARTeaser;
+@property (nonatomic) BOOL isWegbegleitungTeaser;
 
 @property (nonatomic, strong) MBStation *station;
 @property (nonatomic, assign) BOOL showBubble;

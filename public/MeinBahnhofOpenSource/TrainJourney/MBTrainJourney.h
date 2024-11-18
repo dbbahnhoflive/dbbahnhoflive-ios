@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSArray<MBTrainJourneyStop*>*)journeyStopsForDeparture:(BOOL)departure;
 -(BOOL)isSEVJourney;
 @property(nonatomic) BOOL dateMismatch;
+@property(nonatomic) BOOL journeyShouldHaveTrainOrderRecord;
 
 @end
 

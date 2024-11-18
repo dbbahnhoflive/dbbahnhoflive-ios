@@ -174,6 +174,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
                                    action:@selector(backgroundTapped:)];
     NSLog(@"adding tap: %@",tap);
     [self.backgroundTapView addGestureRecognizer:tap];
+    
+    [WagenstandRequestManager.sharedManager loadAdministrators];
 }
 -(void)backgroundTapped:(UITapGestureRecognizer*)sender{
     if (sender.state == UIGestureRecognizerStateEnded)

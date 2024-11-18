@@ -105,8 +105,7 @@
     wagenstandFrame.origin.x = self.trainLabel.frame.origin.x + self.trainLabel.frame.size.width + 8.0;
     wagenstandFrame.origin.y = self.trainLabel.frame.origin.y - 4.0;
     
-    BOOL trainRecordAvailable = [Stop stopShouldHaveTrainRecord:self.event.stop];
-    [self.wagenstandIcon setHidden:!trainRecordAvailable];
+    [self.wagenstandIcon setHidden:true];//we no longer can rely on IRIS data
     wagenstandFrame.size.width = self.wagenstandIcon.isHidden ? 0.0 : self.wagenstandIcon.frame.size.width;
     CGFloat messageXOffset = self.wagenstandIcon.isHidden ? 0.0 : 8.0;
     self.wagenstandIcon.frame = wagenstandFrame;

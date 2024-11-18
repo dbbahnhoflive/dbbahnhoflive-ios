@@ -45,8 +45,8 @@
 }
 
 //cache for 24h = 60*60*24
-#define CACHE_TIME_RIS_EVA_UPDATE (60*60*24)
-#define CACHE_TIME_RIS_REQUEST (60*60*1)
+#define CACHE_TIME_RIS_1_DAY (60*60*24)
+#define CACHE_TIME_RIS_1H (60*60*1)
 #define CACHE_TIME_RIS_OCCUPANCY (60*15)
 #define CACHE_TIME_RIMAP (60*60*1)
 #define CACHE_TIME_PARKING (60*60*1)
@@ -65,11 +65,13 @@
         case MBCacheResponseRISPlatforms:
         case MBCacheResponseRISGroups:
         case MBCacheResponseRISStopPlacesByKeyForStada:
-            return CACHE_TIME_RIS_REQUEST;
+            return CACHE_TIME_RIS_1H;
+        case MBCacheResponseRISTransportAdminstrator:
+            return CACHE_TIME_RIS_1_DAY;
         case MBCacheResponseRISOccupancy:
             return CACHE_TIME_RIS_OCCUPANCY;
         case MBCacheResponseRISStopPlacesForEva:
-            return CACHE_TIME_RIS_EVA_UPDATE;
+            return CACHE_TIME_RIS_1_DAY;
         case MBCacheResponseRIMapStatus07API:
         case MBCacheResponseRIMapPOIs07Api:
         case MBCacheResponseRIMapSEV07API:
@@ -116,6 +118,9 @@
             break;
         case MBCacheResponseRISStopPlacesByKeyForStada:
             filename = @"ris_stopplaces_bykey_forstada.json";
+            break;
+        case MBCacheResponseRISTransportAdminstrator:
+            filename = @"ris_transport_administrator.json";
             break;
         case MBCacheResponseRISPlatforms:
             filename = @"ris_platform.json";

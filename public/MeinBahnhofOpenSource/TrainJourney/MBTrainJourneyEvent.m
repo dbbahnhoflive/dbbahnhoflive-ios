@@ -12,7 +12,7 @@
     self = [super init];
     if(self){
         self.additional = [dict db_boolForKey:@"additional"];
-        self.canceled = [dict db_boolForKey:@"canceled"];
+        self.canceled = [dict db_boolForKey:@"cancelled"];
         NSDictionary* station = [dict db_dictForKey:@"stopPlace"];
         self.name = [station db_stringForKey:@"name"];
         self.evaNumber = [station db_stringForKey:@"evaNumber"];

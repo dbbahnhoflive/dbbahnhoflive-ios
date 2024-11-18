@@ -18,6 +18,8 @@
 
 + (instancetype) sharedManager;
 
+-(void)loadAdministrators;
+-(BOOL)hasDataForAdministration:(NSString*)administrationId;
 
 -(void)loadISTWagenstandWithWagenstand:(Wagenstand*)wagenstand completionBlock:(void (^)(Wagenstand *istWagenstand))completion;
 -(void)loadISTWagenstandWithTrain:(NSString*)trainNumber type:(NSString*)trainType date:(NSString*)date evaId:(NSString*)evaId departure:(BOOL)departure completionBlock:(void (^)(Wagenstand *istWagenstand))completion;

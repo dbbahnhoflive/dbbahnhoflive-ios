@@ -85,19 +85,5 @@
     return nil;
 }
 
-+(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop{
-    if ([Wagenstand isValidTrainTypeForIST:timetableStop.transportCategory.transportCategoryType]){
-        if(timetableStop.departureEvent.stations.count == 0){
-            //at the destination station (no departure event stations), no train record is available
-//            NSLog(@"stopShouldHaveTrainRecord would return NO");
-//            NSLog(@"stop %@",timetableStop.transportCategory.transportCategoryNumber);
-//            NSLog(@"stop %@ with %@",timetableStop.departureEvent,timetableStop.departureEvent.stations);
-//            NSLog(@"stop %@ with %@",timetableStop.arrivalEvent,timetableStop.arrivalEvent.stations);
-            return YES;//RIS:Transports v3 provides arrival train order
-        }
-        return YES;
-    }
-    return NO;
-}
 
 @end

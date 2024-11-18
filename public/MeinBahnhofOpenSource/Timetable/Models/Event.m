@@ -384,9 +384,6 @@
         msg = @"";
     }
     NSString* trainOrder = @"";
-    if([Stop stopShouldHaveTrainRecord:event.stop]){
-        trainOrder = @"Informationen zur Wagenreihung verfügbar.";
-    }
     NSString* res = [NSString stringWithFormat:@"%@ %@ %@. %@, %@, %@; %@. %@",
                 train,
                 event.departure ? @"nach" : @"von",

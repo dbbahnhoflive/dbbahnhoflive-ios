@@ -585,18 +585,7 @@
 
     for(NSString* key in tags){
         if([key isEqualToString:CONTENT_SEARCH_KEY_TRAINORDER]){
-            //do we have a departing train with train order?
-            Timetable* timetable = [[TimetableManager sharedManager] timetable];
-            BOOL found = NO;
-            for (Stop *stop in [timetable departureStops]) {
-                if ([Stop stopShouldHaveTrainRecord:stop]){
-                    found = YES;
-                    break;
-                }
-            }
-            if(!found){
-                continue;//don't add wagenreihung in search results
-            }
+            continue;//don't add wagenreihung in search results
         }
         MBContentSearchResult* searchResult = [MBContentSearchResult searchResultWithKeywords:key];
         //special handling for OPNV search tags

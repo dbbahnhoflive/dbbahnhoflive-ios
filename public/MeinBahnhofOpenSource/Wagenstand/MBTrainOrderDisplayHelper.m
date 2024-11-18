@@ -54,9 +54,13 @@
     Event *event = [stop eventForDeparture:self.departure];
     
     NSString* dateString = [Wagenstand dateRequestStringForTimestamp:event.timestamp];
-    if (dateString && [Wagenstand isValidTrainTypeForIST:stop.transportCategory.transportCategoryType]) {
+    if (dateString) {
+        NSString* number = stop.transportCategory.transportCategoryNumber;
+        if(number == nil){
+            number = stop.transportCategory.transportCategoryOriginalNumber;
+        }
         [[WagenstandRequestManager sharedManager]
-         loadISTWagenstandWithTrain:stop.transportCategory.transportCategoryNumber
+         loadISTWagenstandWithTrain:number
          type:stop.transportCategory.transportCategoryType
          date:dateString
          evaId:stop.evaNumber

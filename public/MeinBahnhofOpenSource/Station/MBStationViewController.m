@@ -48,6 +48,7 @@
 #import "AppDelegate.h"
 #import "MBAccompanimentTeaserView.h"
 #import "MBContentSearchResult.h"
+#import "WagenstandRequestManager.h"
 
 @interface MBStationViewController () <UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UIAlertViewDelegate>
 
@@ -305,6 +306,8 @@
         [MBRootContainerViewController currentlyVisibleInstance].startWithDepartures = NO;
         [[MBRootContainerViewController currentlyVisibleInstance] selectTimetableTab];
     }
+    
+    [WagenstandRequestManager.sharedManager loadAdministrators];
 }
 
 -(void)updateContainerFrames{

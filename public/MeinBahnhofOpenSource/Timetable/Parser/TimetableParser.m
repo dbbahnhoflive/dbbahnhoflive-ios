@@ -335,7 +335,7 @@ static NSDateFormatter *formatter = nil;
 + (NSString*)messageForKey:(NSString*)key
 {
     NSDictionary *messages = @{
-      @"80": @"Andere Reihenfolge der Wagen",
+      //@"80": @"Andere Reihenfolge der Wagen",
       @"82": @"Mehrere Wagen fehlen",
       @"83": @"Störung fahrzeuggebundene Einstiegshilfe",
       @"85": @"Ein Wagen fehlt",

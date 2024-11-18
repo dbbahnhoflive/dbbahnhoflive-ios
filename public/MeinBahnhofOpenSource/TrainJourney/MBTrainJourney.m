@@ -6,6 +6,7 @@
 #import "MBTrainJourney.h"
 #import "NSDictionary+MBDictionary.h"
 #import "MBTrainJourneyEvent.h"
+#import "WagenstandRequestManager.h"
 
 @interface MBTrainJourney()
 @property(nonatomic,strong) NSDictionary* dict;
@@ -31,6 +32,18 @@
     NSDictionary* replacementTransport = [transport db_dictForKey:@"replacementTransport"];
     NSString* realType = [replacementTransport db_stringForKey:@"realType"];
     return [realType isEqualToString:@"BUS"];
+}
+
+-(BOOL)journeyShouldHaveTrainOrderRecord{
+    NSDictionary* info = [self.dict db_dictForKey:@"info"];
+    NSDictionary* transportAtStart = [info db_dictForKey:@"transportAtStart"];
+    NSDictionary* administration = [transportAtStart db_dictForKey:@"administration"];
+    NSString* administrationID = [administration db_stringForKey:@"administrationID"];
+    NSLog(@"ris:journey administrationID %@",administrationID);
+    if(administrationID){
+        return [WagenstandRequestManager.sharedManager hasDataForAdministration:administrationID];
+    }
+    return false;
 }
 
 -(NSArray<MBTrainJourneyStop *> *)journeyStopsForDeparture:(BOOL)departure{

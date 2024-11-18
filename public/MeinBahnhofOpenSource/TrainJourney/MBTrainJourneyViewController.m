@@ -120,7 +120,7 @@
         }
     }
 
-    if(self.showJourneyMessageAndTrainLinks && [Stop stopShouldHaveTrainRecord:self.event.stop]){
+    if(self.showJourneyMessageAndTrainLinks && self.journey.journeyShouldHaveTrainOrderRecord){
         self.trainOrderButton = [[MBLargeButton alloc] initWithFrame:CGRectZero];
         [self.trainOrderButton setImage:[UIImage db_imageNamed:@"app_wagenreihung_weiss"] forState:UIControlStateNormal];
         [self.trainOrderButton setTitle:@"Zur Wagenreihung" forState:UIControlStateNormal];

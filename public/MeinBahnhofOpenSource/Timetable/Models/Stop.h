@@ -34,5 +34,4 @@
 
 - (Event*)eventForDeparture:(BOOL)departure;
 
-+(BOOL)stopShouldHaveTrainRecord:(Stop*)timetableStop;
 @end

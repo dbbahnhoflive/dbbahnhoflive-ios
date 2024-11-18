@@ -35,7 +35,6 @@
 
 +(NSString*)getTrainNumberForWagenstand:(Wagenstand*)wagenstand;
 +(NSString*)getTrainTypeForWagenstand:(Wagenstand*)wagenstand;
-+(BOOL)isValidTrainTypeForIST:(NSString*)trainType;
 +(NSString*)dateRequestStringForTimestamp:(NSTimeInterval)timestamp;
 
 

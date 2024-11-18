@@ -104,6 +104,7 @@
         [SentrySDK startWithConfigureOptions:^(SentryOptions *options) {
             options.dsn = sentryDNS;
             options.sendClientReports = false;
+            options.enableCaptureFailedRequests = false;
             options.appHangTimeoutInterval = 3;
             options.enableCaptureFailedRequests = false;
             //options.debug = @YES;

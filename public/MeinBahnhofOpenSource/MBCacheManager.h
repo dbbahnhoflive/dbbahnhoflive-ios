@@ -29,6 +29,8 @@ typedef NS_ENUM(NSUInteger, MBCacheResponseType) {
 
     MBCacheResponseRISGroups = 20,
     MBCacheResponseRISStopPlacesByKeyForStada = 21,
+    
+    MBCacheResponseRISTransportAdminstrator = 22,
 
 };
 

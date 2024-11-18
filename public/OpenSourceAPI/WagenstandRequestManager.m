@@ -32,10 +32,6 @@
 {
     NSString* trainType = [Wagenstand getTrainTypeForWagenstand:wagenstand];
     
-    if(![Wagenstand isValidTrainTypeForIST:trainType]){
-        completion(nil);
-        return;
-    }
     NSString* trainNumber = [Wagenstand getTrainNumberForWagenstand:wagenstand];
     NSString* dateAndTime = wagenstand.request_date;
     
@@ -54,15 +50,13 @@
                         departure:(BOOL)departure
                   completionBlock:(void (^)(Wagenstand *istWagenstand))completion
 {
-    if(![Wagenstand isValidTrainTypeForIST:trainType]){
-        completion(nil);
-        return;
-    }
-
     completion(nil);
 }
 
 
-
+-(void)loadAdministrators{}
+-(BOOL)hasDataForAdministration:(NSString*)administrationId{
+    return false;
+}
 
 @end

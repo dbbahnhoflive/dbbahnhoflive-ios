@@ -638,22 +638,6 @@
         [destLabel setWidth:self.frame.size.width-80-16];
         [self.moveableContentView addSubview:destLabel];
         
-        if([Stop stopShouldHaveTrainRecord:stop]){
-            MBButtonWithData* wagenstandButton = [[MBButtonWithData alloc] initWithFrame:CGRectMake(0, y, 50, 50)];
-            wagenstandButton.data = stop;
-            [wagenstandButton addTarget:self action:@selector(wagenstandForTrain:) forControlEvents:UIControlEventTouchUpInside];
-            wagenstandButton.backgroundColor = [UIColor whiteColor];
-            wagenstandButton.layer.cornerRadius = wagenstandButton.sizeHeight/2;
-            wagenstandButton.layer.shadowOffset = CGSizeMake(1.0, 1.0);
-            wagenstandButton.layer.shadowColor = [[UIColor db_dadada] CGColor];
-            wagenstandButton.layer.shadowRadius = 4;
-            wagenstandButton.layer.shadowOpacity = 1.0;
-            [wagenstandButton setImage:[UIImage db_imageNamed:@"app_wagenreihung_grau"] forState:UIControlStateNormal];
-            [self.moveableContentView addSubview:wagenstandButton];
-            [wagenstandButton setGravityRight:16];
-            
-            [destLabel setWidth:self.frame.size.width-80-72];
-        }
         y += 25;
         
         UILabel* expectedTimeLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, y, 60, 20)];

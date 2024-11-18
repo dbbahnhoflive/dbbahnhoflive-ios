@@ -113,11 +113,8 @@ static NSString *kHeadCell = @"HeadCell";
     
     [self.view addSubview:self.updateTimestampView];
     
-    if([Wagenstand isValidTrainTypeForIST:[Wagenstand getTrainTypeForWagenstand:_wagenstand]]){
-        self.pushHeader = [[WagenstandPushHeader alloc] initWithFrame:CGRectMake(0,0,self.view.sizeWidth,34)];
-        
-    } 
-    
+    self.pushHeader = [[WagenstandPushHeader alloc] initWithFrame:CGRectMake(0,0,self.view.sizeWidth,34)];
+
     self.sectionIndicator = [[SectionIndicatorView alloc] initWithWagenstand:self.wagenstand
                                                                     andFrame:CGRectMake(0, 0, self.view.sizeWidth, 70)];
     self.sectionIndicator.backgroundColor = [UIColor whiteColor];

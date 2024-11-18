@@ -1369,12 +1369,7 @@
         BOOL wagenreihungSearch = search.isWagenreihung;
         for(id item in self.timetableDataByDays){
             if(wagenreihungSearch){
-                if([item isKindOfClass:Stop.class]){
-                    if([Stop stopShouldHaveTrainRecord:item]){
-                        found = YES;
-                        break;
-                    }
-                }
+                //no longer supported
             } else {
                 if(item == search.stop){
                     found = YES;
@@ -1486,29 +1481,6 @@
     return finalMessageAttributed;
 }
 
-- (CGFloat) calculateCellHeightForStop:(Stop*)stop;
-{
-    Event *event = [stop eventForDeparture:self.departure];
-    
-    CGSize constraintSize = CGSizeMake(self.timetableView.frame.size.width-kStationsLabelWidthReducer, CGFLOAT_MAX);
-    
-    CGFloat viaStationsSize = 100.0;
-    CGRect boundingRect = CGRectIntegral([event.composedIrisMessageAttributed boundingRectWithSize:constraintSize options:(NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading) context:nil]);
-    
-    CGSize messageLabelSize = boundingRect.size;
-    
-    CGFloat computedHeight = viaStationsSize;
-    if (event.composedIrisMessage.length > 0) {
-        computedHeight += messageLabelSize.height+16;
-    }
-    
-    if ([Stop stopShouldHaveTrainRecord:event.stop]) {
-        // add extra height for Wagenstand button if the cell could display a link
-        computedHeight += 100;
-    }
-    
-    return ceilf(computedHeight);
-}
 
 
 #pragma -

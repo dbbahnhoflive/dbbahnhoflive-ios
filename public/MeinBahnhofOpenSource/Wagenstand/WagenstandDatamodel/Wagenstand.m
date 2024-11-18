@@ -416,9 +416,5 @@
 }
 
 
-+(BOOL)isValidTrainTypeForIST:(NSString*) trainType
-{
-    return [trainType isEqualToString:@"ICE"] || [trainType isEqualToString:@"IC"] || [trainType isEqualToString:@"EC"] || [trainType isEqualToString:@"ECE"];
-}
 
 @end

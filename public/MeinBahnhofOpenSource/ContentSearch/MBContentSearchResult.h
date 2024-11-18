@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define CONTENT_SEARCH_KEY_SHOP_AND_EAT @"Shoppen & Schlemmen"
 #define CONTENT_SEARCH_KEY_OPNV @"ÖPNV Anschluss"
 #define CONTENT_SEARCH_KEY_SHOP_OPEN @"Geöffnet"
-#define CONTENT_SEARCH_KEY_TRAINORDER @"Wagenreihung"
+#define CONTENT_SEARCH_KEY_TRAINORDER @"Wagenreihung"//removed
 #define CONTENT_SEARCH_KEY_DEPARTURES @"Abfahrtstafel"
 #define CONTENT_SEARCH_KEY_ARRIVALS @"Ankunftstafel"
 

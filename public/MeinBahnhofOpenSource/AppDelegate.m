@@ -31,13 +31,14 @@
 #import "MBCacheManager.h"
 
 @import UserNotifications;
-@import Sentry;
+//@import Sentry;
 @import Firebase;
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 @property(nonatomic) BOOL hasHadBeenActive;
 
 @property(nonatomic) BOOL hasEnabledPushServices;
+@property(nonatomic,strong) NSDate* endDate;
 
 @end
 
@@ -51,6 +52,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+    NSDate* endDate = [dateFormatter dateFromString: @"2024-12-31 23:59:59 GMT+01:00"];
+    self.endDate = endDate;
     
     // Override point for customization after application launch.
     // NSLog(@"didFinishLaunching with %@",launchOptions);
@@ -98,6 +103,7 @@
 #ifdef DEBUG
     NSLog(@"Sentry: no crash reporting on debug builds");
 #else
+    /*
     NSString *sentryDNS = [Constants kSentryDNS];
     if(sentryDNS){
         NSLog(@"starting sentry %@",sentryDNS);
@@ -110,7 +116,7 @@
             //options.debug = @YES;
             //options.logLevel = kSentryLogLevelVerbose;
         }];
-    }
+    }*/
 #endif
     
     if (@available(iOS 15.0, *))
@@ -130,9 +136,11 @@
 
 
     // initialize Google Maps
-    [GMSServices setAbnormalTerminationReportingEnabled:NO];
-    [GMSServices provideAPIKey:[MBMapInternals kGoogleMapsApiKey]];
-
+    if(!AppDelegate.appDelegate.appDisabled){
+        [GMSServices setAbnormalTerminationReportingEnabled:NO];
+        [GMSServices provideAPIKey:[MBMapInternals kGoogleMapsApiKey]];
+    }
+    
     if(Constants.usePushServices){
         //firebase setup
         [FIRApp configure];
@@ -164,13 +172,19 @@
     return [NSUserDefaults.standardUserDefaults stringForKey:@"PreviousCFBundleShortVersionString"];
 }
 
+-(BOOL)appDisabled{
+    //BAHNHOFLIVE-2589
+    //return true;
+    return self.endDate.timeIntervalSinceNow < 0;
+}
+
 
 -(BOOL)trackingEnabled{
     return [NSUserDefaults.standardUserDefaults boolForKey:SETTING_ENABLED_TRACKING];
 }
 -(BOOL)needsInitialPrivacyScreen{
-    //return true;
-    return ![NSUserDefaults.standardUserDefaults boolForKey:SETTING_GOT_TRACKING_DECISION];
+    return false;//tracking was removed
+    //return ![NSUserDefaults.standardUserDefaults boolForKey:SETTING_GOT_TRACKING_DECISION];
 }
 -(void)userFeedbackOnPrivacyScreen:(BOOL)enabledTracking{
     [NSUserDefaults.standardUserDefaults setBool:YES forKey:SETTING_GOT_TRACKING_DECISION];
@@ -310,6 +324,10 @@
 
 - (void) handleLocalNotification:(NSDictionary*)userInfo
 {
+    if(AppDelegate.appDelegate.appDisabled){
+        return;
+    }
+    
     NSLog(@"handleLocalNotification: %@",userInfo);
     if([userInfo[@"type"] isEqualToString:@"wagenstand"]){
         if ([UIApplication sharedApplication].applicationState == UIApplicationStateActive) {

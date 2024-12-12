@@ -91,9 +91,6 @@
 
     CGFloat labelHeight = 44.0;
     
-    CGRect imageRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height-labelHeight);
-    self.imageView.frame = imageRect;
-    
     if(_kachel.showOnlyImage){
         self.imageView.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
         self.imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -131,9 +128,11 @@
         
     } else {
         self.imageView.contentMode = UIViewContentModeCenter;
-        CGRect imageRect = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height-44.0);
+        if(self.imageView.image.size.width > 50){
+            self.imageView.contentMode = UIViewContentModeScaleAspectFit;
+        }
+        CGRect imageRect = CGRectMake(self.bounds.size.width/2-25, (self.bounds.size.height-labelHeight)/2-25, 50,50);
         self.imageView.frame = imageRect;
-        
     }
 
     self.errorView.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height-44);

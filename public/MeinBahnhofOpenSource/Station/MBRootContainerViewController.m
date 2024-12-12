@@ -265,9 +265,7 @@
     // - ParkingOccupancy (*)
     // - News (only if parameter requestNewsAndCoupons=true)
     
-    if(station.hasStaticAdHocBox){
-        station.newsList = [MBNews staticInfoData];
-    }
+    station.newsList = [MBNews staticInfoData:station];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSNumber* requestId = station.mbId;

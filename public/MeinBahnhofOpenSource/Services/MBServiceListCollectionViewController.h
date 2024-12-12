@@ -37,5 +37,5 @@ typedef NS_ENUM(NSUInteger, MBServiceCollectionType) {
 -(void)reloadData;
 
 +(MBMenuItem*)createMenuItemErsatzverkehrWithStation:(MBStation*)station;
-
++(MBMenuItem*)createMenuItemNextApp:(MBStation*)station;
 @end

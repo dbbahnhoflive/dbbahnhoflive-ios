@@ -757,26 +757,6 @@
 #endif
 }
 -(BOOL)hasARTeaser{
-    if(self.hasStaticAdHocBox && !UIAccessibilityIsVoiceOverRunning()){
-        /*
-        NSString* stationId = self.mbId.stringValue;
-        NSString* startDateString;
-        if([stationId isEqualToString:@"6945"]){
-            startDateString = @"2023-05-29 00:00:01 GMT+02:00";
-        } else if([stationId isEqualToString:@"4593"]){
-            startDateString = @"2023-08-04 00:00:01 GMT+02:00";
-        } else {
-            return false;
-        }
-        if([NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
-            return true;
-        }
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-        NSDate* startDate = [dateFormatter dateFromString: startDateString];
-        return startDate.timeIntervalSinceNow < 0;
-         */
-    }
     return false;
 }
 

@@ -17,6 +17,8 @@
 
 #import "MBServiceListCollectionViewController.h"
 #import "MBServiceListTableViewController.h"
+#import "MBStaticStationInfo.h"
+#import "MBDetailViewController.h"
 
 @interface MBNewsContainerView()
 
@@ -48,7 +50,7 @@
         [self addSubview:self.headerLabelContainer];
         self.staticHeaderlabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 44)];
         self.staticHeaderlabel.textAlignment = NSTextAlignmentLeft;
-        self.staticHeaderlabel.text = @"+++ Aktuelle Informationen ";
+        self.staticHeaderlabel.text = NEW_APP_HEADER;
         if(self.news.headerOverwrite != nil){
             if(self.endlessAnimation){
                 self.staticHeaderlabel.text = [NSString stringWithFormat:@"+++ %@ ",self.news.headerOverwrite];
@@ -158,16 +160,26 @@
     [MBUrlOpening openURL:[NSURL URLWithString:self.news.link]];
 }
 -(void)touchAreaButtonPressed:(id)sender{
-    //STATIC FIX BAHNHOFLIVE-2519
-    [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"ersatzverkehrteaser"]];
-    MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
-    MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
-    //[root handleSearchResult:res];
-    MBMenuItem* sevItem = [MBServiceListCollectionViewController createMenuItemErsatzverkehrWithStation:root.station];
-    MBServiceListTableViewController* vclist = [[MBServiceListTableViewController alloc] initWithItem:sevItem station:root.station];
-    res.service = sevItem.services.firstObject;
-    vclist.searchResult = res;
-    [root.stationContainerNavigationController  pushViewController:vclist animated:true];
+    //STATIC FIX
+    if(self.news.newsType == MBNewsTypeMajorDisruption){
+        //BAHNHOFLIVE-2519
+        [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"ersatzverkehrteaser"]];
+        MBContentSearchResult* res = [MBContentSearchResult searchResultWithKeywords:CONTENT_SEARCH_KEY_STATIONINFO_SEV];
+        MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+        //[root handleSearchResult:res];
+        MBMenuItem* sevItem = [MBServiceListCollectionViewController createMenuItemErsatzverkehrWithStation:root.station];
+        MBServiceListTableViewController* vclist = [[MBServiceListTableViewController alloc] initWithItem:sevItem station:root.station];
+        res.service = sevItem.services.firstObject;
+        vclist.searchResult = res;
+        [root.stationContainerNavigationController  pushViewController:vclist animated:true];
+    } else {
+        //must be BAHNHOFLIVE-2586
+        [MBTrackingManager trackActionsWithStationInfo:@[@"h1",@"tap",@"nextapp"]];
+        MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
+        MBService* service = [MBStaticStationInfo serviceForType:kServiceType_NEXTAPP withStation:root.station];
+        UIViewController* vc = [[MBDetailViewController alloc] initWithStation:root.station service:service];
+        [root.stationContainerNavigationController  pushViewController:vc animated:true];
+    }
 
 
 /*
@@ -207,7 +219,7 @@
             iconName = @"SEV_Icon";//@"news_malfunction";//BAHNHOFLIVE-2353
             break;
         case MBNewsTypeProductsServices:
-            iconName = @"news_neuambahnhof";
+            iconName = NEW_APP_ICON;
             break;
         case MBNewsTypeUndefined:
             break;
@@ -248,7 +260,7 @@
     blockY = blockY + (74-self.textBlock.sizeHeight)/2;
     [self.textBlock setY:blockY];
 
-    self.touchAreaButton.accessibilityLabel = [NSString stringWithFormat:@"Aktuelle Informationen. %@. Zur Anzeige von Details doppeltippen",self.news.title];
+    self.touchAreaButton.accessibilityLabel = [NSString stringWithFormat:@"Aktuelle Informationen. %@, %@. Zur Anzeige von Details doppeltippen",self.news.title,self.news.content];
     if(self.news.headerOverwrite != nil){
         self.touchAreaButton.accessibilityLabel = [NSString stringWithFormat:@"%@. %@: %@. Zur Anzeige von Details doppeltippen",self.news.headerOverwrite,self.news.title,self.news.content];
     }

@@ -229,6 +229,8 @@
 		42F0CC342923DFF60052FD80 /* MBFavoriteButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F0CC322923DFF60052FD80 /* MBFavoriteButton.m */; };
 		42F58DAA26835AB500EA469E /* MBPlatformAccessibilityFeature.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F58DA926835AB500EA469E /* MBPlatformAccessibilityFeature.m */; };
 		42F58DAD26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F58DAB26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m */; };
+		42FEB6B52CF4A4D900D9A1DC /* MBNextAppOverlayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42FEB6B42CF4A4D900D9A1DC /* MBNextAppOverlayViewController.m */; };
+		42FEB6B62CF4A4D900D9A1DC /* MBNextAppButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 42FEB6B22CF4A4D900D9A1DC /* MBNextAppButton.m */; };
 		56E94AAC060126EC045C4008 /* Pods_MeinBahnhofOpenSource.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9E16A826E12FEAFDBFB15DC /* Pods_MeinBahnhofOpenSource.framework */; };
 /* End PBXBuildFile section */
 
@@ -671,6 +673,10 @@
 		42F58DA926835AB500EA469E /* MBPlatformAccessibilityFeature.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibilityFeature.m; sourceTree = "<group>"; };
 		42F58DAB26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBPlatformAccessibilityInfoOverlayViewController.m; sourceTree = "<group>"; };
 		42F58DAC26835AE300EA469E /* MBPlatformAccessibilityInfoOverlayViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBPlatformAccessibilityInfoOverlayViewController.h; sourceTree = "<group>"; };
+		42FEB6B12CF4A4D900D9A1DC /* MBNextAppButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MBNextAppButton.h; sourceTree = "<group>"; };
+		42FEB6B22CF4A4D900D9A1DC /* MBNextAppButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MBNextAppButton.m; sourceTree = "<group>"; };
+		42FEB6B32CF4A4D900D9A1DC /* MBNextAppOverlayViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MBNextAppOverlayViewController.h; sourceTree = "<group>"; };
+		42FEB6B42CF4A4D900D9A1DC /* MBNextAppOverlayViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MBNextAppOverlayViewController.m; sourceTree = "<group>"; };
 		77D2B534ECD89DD23BB1EAAE /* Pods-MeinBahnhofOpenSource.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MeinBahnhofOpenSource.release.xcconfig"; path = "Target Support Files/Pods-MeinBahnhofOpenSource/Pods-MeinBahnhofOpenSource.release.xcconfig"; sourceTree = "<group>"; };
 		8544AB5E4F24C097E57BB2C5 /* Pods-MeinBahnhofOpenSource.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MeinBahnhofOpenSource.debug.xcconfig"; path = "Target Support Files/Pods-MeinBahnhofOpenSource/Pods-MeinBahnhofOpenSource.debug.xcconfig"; sourceTree = "<group>"; };
 		A9E16A826E12FEAFDBFB15DC /* Pods_MeinBahnhofOpenSource.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MeinBahnhofOpenSource.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -917,6 +923,10 @@
 		426105C7244EF10F00E0B05C /* StationSearch */ = {
 			isa = PBXGroup;
 			children = (
+				42FEB6B12CF4A4D900D9A1DC /* MBNextAppButton.h */,
+				42FEB6B22CF4A4D900D9A1DC /* MBNextAppButton.m */,
+				42FEB6B32CF4A4D900D9A1DC /* MBNextAppOverlayViewController.h */,
+				42FEB6B42CF4A4D900D9A1DC /* MBNextAppOverlayViewController.m */,
 				42D85DE026F8A1F40017E479 /* MBStationListTableView.h */,
 				42D85DDF26F8A1F30017E479 /* MBStationListTableView.m */,
 				426105CD244EF10F00E0B05C /* MBStationSearchViewController.h */,
@@ -1761,6 +1771,8 @@
 				426106A8244EF11000E0B05C /* MBLinkButton.m in Sources */,
 				426106E1244EF11000E0B05C /* MBFacilityStatusViewController.m in Sources */,
 				42B1743A2899255B00D21264 /* MBNetworkFactory.m in Sources */,
+				42FEB6B52CF4A4D900D9A1DC /* MBNextAppOverlayViewController.m in Sources */,
+				42FEB6B62CF4A4D900D9A1DC /* MBNextAppButton.m in Sources */,
 				426106B6244EF11000E0B05C /* MBOverlayViewController.m in Sources */,
 				426106B5244EF11000E0B05C /* AttributableButton.m in Sources */,
 				426106E7244EF11000E0B05C /* MBTriangleView.m in Sources */,

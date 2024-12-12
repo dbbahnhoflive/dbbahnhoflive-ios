@@ -185,6 +185,8 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
                 }
             } else if(self.searchResult.isLockerSearch){
                 [self pushServiceViewForType:kServiceType_Locker];
+            } else if(self.searchResult.isNextAppSearch){
+                [self pushServiceViewForType:kServiceType_NEXTAPP];
             }
         }
         self.searchResult = nil;
@@ -471,6 +473,10 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         [infoServices addObject:lockerItem];
     }
     
+    MBMenuItem* appItem = [MBServiceListCollectionViewController createMenuItemNextApp:self.station];
+    [infoServices addObject:appItem];
+
+    
     if(filteredInfoServices.count > 0){
         NSMutableDictionary *newItemDict = [NSMutableDictionary new];
         [newItemDict setValue:@"Info & Services vor Ort" forKey:@"title"];
@@ -505,6 +511,17 @@ static NSString * const kServiceCollectionViewCellReuseIdentifier = @"Cell";
         }
         return result;
     }];
+}
+
++(MBMenuItem*)createMenuItemNextApp:(MBStation*)station{
+    NSString* type = kServiceType_NEXTAPP;
+    MBService* sevService = [MBStaticStationInfo serviceForType:type withStation:station];
+    MBMenuItem *sevItem = [[MBMenuItem alloc] initWithDictionary:@{@"type": type,
+                                                                        @"title": NEW_APP_HEADER,
+                                                                        @"services": @[sevService],
+                                                                        @"position": @"12"} error:nil];
+    return sevItem;
+
 }
 
 +(MBMenuItem*)createMenuItemErsatzverkehrWithStation:(MBStation*)station{

@@ -9,6 +9,7 @@
 #import "MBPlatformAccessibility.h"
 #import "UIImage+MBImage.h"
 #import "SEVWebViewController.h"
+#import "MBNews.h"
 
 // Pattern to detect phone numbers in a text which also may be surrounded by anchor-tags or white spaces
 #define kPhoneRegexPattern @"(>|\\s)[\\d]{3,}\\/?([^\\D]|\\s)+[\\d]"
@@ -50,6 +51,7 @@
         kServiceType_Dirt_NoWhatsapp: @"verschmutzungmelden",
         kServiceType_Rating: @"app_bewerten",
         kServiceType_Problems: @"probleme_app_melden",
+        kServiceType_NEXTAPP: NEW_APP_ICON,
     };
 
     NSString *name = [mappingTypes objectForKey:self.type];
@@ -77,6 +79,8 @@
         [self.type isEqualToString:kServiceType_SEV]
         ||
         [self.type isEqualToString:kServiceType_SEV_AccompanimentService]
+        ||
+        [self.type isEqualToString:kServiceType_NEXTAPP]
         ) {
         NSArray* res = [self parseConfigurableService:string];
         return res;

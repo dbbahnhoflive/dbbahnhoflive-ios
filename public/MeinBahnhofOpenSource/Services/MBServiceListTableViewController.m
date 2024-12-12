@@ -77,6 +77,8 @@ typedef NS_ENUM(NSUInteger, MBServiceType)  {
             self.trackingTitle = @"schienenersatzverkehr";//note: we also track the items in SEV view like d1:schienenersatzverkehr:haltestelleninformation when its opened
         } else if([menuItem.type isEqualToString:kServiceType_Locker]){
             self.trackingTitle = @"locker";
+        } else if([menuItem.type isEqualToString:kServiceType_NEXTAPP]){
+            self.trackingTitle = @"nextapp";
         } else if([menuItem.type isEqualToString:kServiceType_Rating]){
             self.trackingTitle = nil;
             [MBTrackingManager trackStatesWithStationInfo:@[@"d2", @"feedback", @"bewerten"]];

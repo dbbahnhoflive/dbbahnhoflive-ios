@@ -32,6 +32,7 @@
     _htmlString = [htmlString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSMutableAttributedString *mutableHTML = [htmlString attributedStringFromHtml];
     self.attributedText = mutableHTML;
+    self.dataDetectorTypes = UIDataDetectorTypeNone;
 }
 
 - (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)url inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction

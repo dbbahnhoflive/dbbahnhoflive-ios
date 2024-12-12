@@ -81,7 +81,7 @@
         if(iconView.size.height > iconBackground.sizeHeight-2*10){
             //reduce size
             iconView.contentMode = UIViewContentModeScaleAspectFit;
-            NSInteger newHeight = iconBackground.sizeHeight - 2*10;
+            NSInteger newHeight = iconBackground.sizeHeight - 2-2*25;
             NSInteger newWidth = iconBackground.sizeWidth;
             iconView.frame = CGRectMake(0, 0, newWidth, newHeight);
         }
@@ -494,6 +494,9 @@
         MBRootContainerViewController* root = [MBRootContainerViewController currentlyVisibleInstance];
         [root presentViewController:nav animated:true completion:nil];
     } else {
+        if([action isEqualToString:NEW_APP_LINK]){
+            [MBTrackingManager trackActionsWithStationInfo:@[@"d1",@"nextapp",@"appstore"]];
+        }
         NSURL* url = [NSURL URLWithString:action];
         if(url){
             [MBUrlOpening openURL:url];

@@ -287,7 +287,9 @@
     return [self displayTutorialIfNecessary:type withOffset:0];
 }
 -(BOOL)displayTutorialIfNecessary:(MBTutorialViewType)type withOffset:(NSInteger)y{
-    
+    if(AppDelegate.appDelegate.appDisabled){
+        return false;
+    }
     if(self.userDisabledTutorials){
         return false;
     }

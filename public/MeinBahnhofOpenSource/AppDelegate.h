@@ -22,6 +22,7 @@
 
 -(BOOL)hasEnabledPushServices;
 -(NSString*)previousAppVersion;
+-(BOOL)appDisabled;
 
 //Tracking
 -(BOOL)needsInitialPrivacyScreen;

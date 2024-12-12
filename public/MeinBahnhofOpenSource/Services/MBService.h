@@ -32,6 +32,7 @@
 #define kActionFeedbackVerschmutzungMail @"feedbackverschmutzung"
 #define kActionFeedbackChatbotMail @"feedbackchatbot"
 
+#define kServiceType_NEXTAPP @"nextapp"
 #define kServiceType_SEV @"schienenersatzverkehr"
 #define kServiceType_SEV_AccompanimentService @"accompanimentservice"
 #define kServiceType_Locker @"locker"

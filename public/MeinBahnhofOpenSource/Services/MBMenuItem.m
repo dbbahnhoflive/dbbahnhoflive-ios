@@ -7,7 +7,7 @@
 #import "MBMenuItem.h"
 #import "MBService.h"
 #import "UIImage+MBImage.h"
-
+#import "MBNews.h"
 
 @implementation MBMenuItem
 
@@ -39,6 +39,7 @@
         kServiceType_Dirt_NoWhatsapp: @"verschmutzungmelden",
         kServiceType_Rating: @"app_bewerten",
         kServiceType_Problems: @"probleme_app_melden",
+        kServiceType_NEXTAPP: NEW_APP_ICON
     };
     
     NSString *iconFileName = [iconMapping objectForKey:self.type];

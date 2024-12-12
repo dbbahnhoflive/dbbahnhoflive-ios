@@ -722,6 +722,9 @@
 }
 
 +(BOOL)canDisplayMap{
+    if(AppDelegate.appDelegate.appDisabled){
+        return false;
+    }
     return !UIAccessibilityIsVoiceOverRunning();
 }
 

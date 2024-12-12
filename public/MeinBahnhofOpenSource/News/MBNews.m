@@ -196,43 +196,60 @@ static NSArray<NSNumber*>* groupSortOrder = nil;
     }
 }
 
-+(NSArray *)staticInfoData{
++(NSArray *)staticInfoData:(MBStation*)station{
     NSMutableArray* res = [NSMutableArray arrayWithCapacity:10];
-    
+
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
-    //BAHNHOFLIVE-2519
-    MBNews* n = nil;
-    n = [MBNews new];
-    n.startTimestamp = [dateFormatter dateFromString: @"2024-07-08 00:00:01 GMT+02:00"];
-    n.endTimestamp = [dateFormatter dateFromString: @"2024-07-14 23:59:59 GMT+02:00"];
-    n.headerOverwrite = @"Ankündigung Ersatzverkehr";
-    n.title = @"15.07. – 14.12.2024";
-    n.content = @"Ersatzverkehr an der Riedbahn und deren Nebenstrecken.";
-    if(UIAccessibilityIsVoiceOverRunning()){
-        n.title = @"Vom 15. Juli bis zum 14. Dezember 2024";
-        n.content = @"ist aufgrund von Baumaßnahmen ein Ersatzverkehr an der Riedbahn und deren Nebenstrecken eingerichtet.";
-    }
-    n.groupId = MBNewsTypeMajorDisruption;
-    NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
-    if([n hasValidTime] || [NSUserDefaults.standardUserDefaults boolForKey:@"VorErsatzverkehr"]){
+    
+    //BAHNHOFLIVE-2586
+    MBNews* n = [MBNews new];
+    n.startTimestamp = [dateFormatter dateFromString: @"2024-01-01 00:00:01 GMT+02:00"];
+    n.endTimestamp = [dateFormatter dateFromString: @"2034-12-31 23:59:59 GMT+02:00"];//forever
+    //n.headerOverwrite = NEW_APP_TITLE;
+    n.headerOverwrite = NEW_APP_HEADER;
+    n.title = NEW_APP_TITLE;
+    n.content = NEW_APP_TEXT;
+    n.groupId = MBNewsTypeProductsServices;
+    if([n hasValidTime]){
         [res addObject:n];
     }
-    n = [MBNews new];
-    n.startTimestamp = [dateFormatter dateFromString: @"2024-07-15 00:00:00 GMT+02:00"];
-    n.endTimestamp = [dateFormatter dateFromString: @"2024-12-14 23:59:59 GMT+02:00"];
-    n.headerOverwrite = @"Ersatzverkehr beachten";
-    n.title = @"15.07. – 14.12.2024";
-    n.content = @"Ersatzverkehr an der Riedbahn und deren Nebenstrecken.";
-    if(UIAccessibilityIsVoiceOverRunning()){
-        n.title = @"Vom 15. Juli bis zum 14. Dezember 2024";
-        n.content = @"ist aufgrund von Baumaßnahmen ein Ersatzverkehr an der Riedbahn und deren Nebenstrecken eingerichtet.";
+    
+    if(station.hasStaticAdHocBox){
+        //BAHNHOFLIVE-2519
+        MBNews* n = [MBNews new];
+        n.startTimestamp = [dateFormatter dateFromString: @"2024-07-08 00:00:01 GMT+02:00"];
+        n.endTimestamp = [dateFormatter dateFromString: @"2024-07-14 23:59:59 GMT+02:00"];
+        n.headerOverwrite = @"Ankündigung Ersatzverkehr";
+        n.title = @"15.07. – 14.12.2024";
+        n.content = @"Ersatzverkehr an der Riedbahn und deren Nebenstrecken.";
+        if(UIAccessibilityIsVoiceOverRunning()){
+            n.title = @"Vom 15. Juli bis zum 14. Dezember 2024";
+            n.content = @"ist aufgrund von Baumaßnahmen ein Ersatzverkehr an der Riedbahn und deren Nebenstrecken eingerichtet.";
+        }
+        n.groupId = MBNewsTypeMajorDisruption;
+        NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
+        if([n hasValidTime] || [NSUserDefaults.standardUserDefaults boolForKey:@"VorErsatzverkehr"]){
+            [res addObject:n];
+        }
+        n = [MBNews new];
+        n.startTimestamp = [dateFormatter dateFromString: @"2024-07-15 00:00:00 GMT+02:00"];
+        n.endTimestamp = [dateFormatter dateFromString: @"2024-12-14 23:59:59 GMT+02:00"];
+        n.headerOverwrite = @"Ersatzverkehr beachten";
+        n.title = @"15.07. – 14.12.2024";
+        n.content = @"Ersatzverkehr an der Riedbahn und deren Nebenstrecken.";
+        if(UIAccessibilityIsVoiceOverRunning()){
+            n.title = @"Vom 15. Juli bis zum 14. Dezember 2024";
+            n.content = @"ist aufgrund von Baumaßnahmen ein Ersatzverkehr an der Riedbahn und deren Nebenstrecken eingerichtet.";
+        }
+        n.groupId = MBNewsTypeMajorDisruption;
+        NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
+        if([n hasValidTime] || [NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
+            [res addObject:n];
+        }
     }
-    n.groupId = MBNewsTypeMajorDisruption;
-    NSLog(@"static news %@ .. %@",n.startTimestamp,n.endTimestamp);
-    if([n hasValidTime] || [NSUserDefaults.standardUserDefaults boolForKey:@"AktiverErsatzverkehr"]){
-        [res addObject:n];
-    }
+    
+
     return res;
 }
 

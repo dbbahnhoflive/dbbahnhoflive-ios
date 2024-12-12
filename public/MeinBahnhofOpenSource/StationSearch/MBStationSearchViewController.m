@@ -37,6 +37,7 @@
 #import "MBMapViewButton.h"
 #import "MBMarkerMerger.h"
 #import "MBMarker.h"
+#import "MBNews.h"
 
 #import "MBFavoriteStationManager.h"
 #import "MBMapViewController.h"
@@ -59,8 +60,10 @@
 #import "AppDelegate.h"
 #import "MBTrainPositionViewController.h"
 #import "MBBackNavigationState.h"
+#import "MBNextAppOverlayViewController.h"
+#import "MBNextAppButton.h"
 
-@import Sentry;
+//@import Sentry;
 
 typedef NS_ENUM(NSUInteger, MBStationSearchType){
     MBStationSearchTypeTextSearch = 0,
@@ -99,6 +102,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 @property (nonatomic,strong) MBTriangleView* triangleInputTextfieldView;
 
 @property (nonatomic,strong) UIImageView* backgroundImage;
+@property(nonatomic,strong) MBNextAppButton* nextAppTutorial;
 
 @property (nonatomic,strong) UIView* backgroundTapView;
 
@@ -175,7 +179,9 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     NSLog(@"adding tap: %@",tap);
     [self.backgroundTapView addGestureRecognizer:tap];
     
-    [WagenstandRequestManager.sharedManager loadAdministrators];
+    if(!AppDelegate.appDelegate.appDisabled){
+        [WagenstandRequestManager.sharedManager loadAdministrators];
+    }
 }
 -(void)backgroundTapped:(UITapGestureRecognizer*)sender{
     if (sender.state == UIGestureRecognizerStateEnded)
@@ -217,6 +223,17 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:)
                                                  name:UIKeyboardWillHideNotification object:nil];
 
+    if(AppDelegate.appDelegate.appDisabled){
+        _featureButtonArea.hidden = true;
+        _stationSearchInputField.hidden = true;
+        _triangleInputTextfieldView.hidden = true;
+        _searchResultTableView.hidden = true;
+        _favoritesTableView.hidden = true;
+        _geoSearchTableView.hidden = true;
+        self.viewAppeared = YES;
+        return;
+    }
+    
     if(self.locationManagerAuthorized){
         [[MBGPSLocationManager sharedManager] getOneShotLocationUpdate];//callback in didReceiveLocationUpdate
     }
@@ -240,6 +257,9 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     NSUserDefaults* def = NSUserDefaults.standardUserDefaults;
     BOOL didSeeTutorial = [def boolForKey:SETTING_DIDSEE_TUTORIAL];
+    if(AppDelegate.appDelegate.appDisabled){
+        didSeeTutorial = true;//don't show tutorial for new users
+    }
     if (!didSeeTutorial) {
         
         [def setBool:YES forKey:SETTING_DIDSEE_TUTORIAL];
@@ -342,7 +362,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.backgroundTapView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:self.backgroundTapView];
     
-    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 32, 32)];
+    self.closeButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 42, 42)];
     [self.closeButton setImage:[UIImage db_imageNamed:@"ChevronBlackLeft"] forState:UIControlStateNormal];
     self.closeButton.accessibilityLabel = @"Suche schließen";
     self.closeButton.accessibilityIdentifier = @"CloseButton";
@@ -357,6 +377,12 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         [self.mapFloatingBtn addTarget:self action:@selector(mapFloatingBtnPressed) forControlEvents:UIControlEventTouchUpInside];
         [self.mapFloatingBtn setSize:CGSizeMake([self scaleForScreen:self.mapFloatingBtn.frame.size.width], [self scaleForScreen:self.mapFloatingBtn.frame.size.height])];
     }
+    
+    self.nextAppTutorial = [MBNextAppButton new];
+    self.nextAppTutorial.clipsToBounds = NO;
+//    self.nextAppTutorial.userInteractionEnabled = false;//should not have an action?! BAHNHOFLIVE-2592
+    [self.nextAppTutorial addTarget:self action:@selector(nextAppPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.nextAppTutorial];
 
     self.logoImage = [[UIImageView alloc] initWithImage:[UIImage db_imageNamed:@"Hub_Icon"]];
     if(AppDelegate.SCALEFACTORFORSCREEN != 1.0){
@@ -364,11 +390,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     }
     [self.view addSubview:self.logoImage];
     [self.logoImage centerViewHorizontalInSuperView];
-    [self.logoImage setGravityTop:[self scaleForScreen:26]];
     
     self.logoText = [[UILabel alloc] initWithFrame:CGRectZero];
     CGRect logoFrame = CGRectMake(0,
-                                  [self scaleForScreen:146],
+                                  0,
                                   300,
                                   32);
     self.logoText.frame = logoFrame;
@@ -381,6 +406,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self.view addSubview:self.logoText];
     [self.logoText centerViewHorizontalInSuperView];
     
+    if(!AppDelegate.appDelegate.appDisabled){
+        
     self.featureSearchButton = [self createFeatureButton:MBStationSearchTypeTextSearch];
     self.featureFavoriteButton = [self createFeatureButton:MBStationSearchTypeFavorite];
     self.featureLocationButton = [self createFeatureButton:MBStationSearchTypeLocation];
@@ -400,7 +427,6 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self.featureSearchButton setGravityLeft:15];
     [self.featureFavoriteButton setRight:self.featureSearchButton withPadding:0];
     [self.featureLocationButton setRight:self.featureFavoriteButton withPadding:0];
-    [self.featureButtonArea setBelow:self.logoText withPadding:[self scaleForScreen:30]];
     
     CGRect inputFrame = CGRectMake(15, 0, self.view.frame.size.width-2*15, [self scaleForScreen:60]);
     self.stationSearchInputField = [[MBInputField alloc] initWithFrame:inputFrame];
@@ -409,10 +435,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     self.stationSearchInputField.placeholder = @"Haltestellen finden. Bahnhöfe entdecken.";
     self.stationSearchInputField.accessibilityLanguage = @"de-DE";
     [self.view addSubview:self.stationSearchInputField];
-    [self.stationSearchInputField setBelow:self.featureButtonArea withPadding:20];
     self.triangleInputTextfieldView = [[MBTriangleView alloc] initWithFrame:CGRectMake(0, 0, 16, 8)];
     [self.view addSubview:self.triangleInputTextfieldView];
-    [self.triangleInputTextfieldView setAbove:self.stationSearchInputField withPadding:0];
 
     
     self.inputAccessoryButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -470,6 +494,8 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     self.loadActivity = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     [self.loadActivity stopAnimating];
+    }
+
     if([[NSBundle mainBundle] pathForResource:@"impressum" ofType:@"html"]){
         self.imprintButton = [MBLinkButton boldButtonWithRedLink];
         [self.imprintButton setLabelText:@"Impressum"];
@@ -525,6 +551,19 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         self.inputAccessoryButton.isAccessibilityElement = NO;
     }
 }
+
+-(void)nextAppPressed:(id)sender{
+    NSLog(@"next app");
+    [MBTrackingManager trackActions:@[@"h0", @"tap", @"nextapp"]];
+    if(AppDelegate.appDelegate.appDisabled){
+        [MBTrackingManager trackActions:@[@"h0",@"nextapp",@"appstore"]];
+        [MBUrlOpening openURL:[NSURL URLWithString:NEW_APP_LINK]];
+    } else {
+        MBNextAppOverlayViewController * vc = [MBNextAppOverlayViewController new];
+        [MBRootContainerViewController presentViewControllerAsOverlay:vc allowNavigation:YES];
+    }
+}
+
 
 #define CONTENT_VIEW_TAG 42
 -(UIButton*)createFeatureButton:(MBStationSearchType)type{
@@ -868,7 +907,20 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    
+    [self.nextAppTutorial layoutUI];
+    [self.nextAppTutorial setGravityTop:MAX(self.view.safeAreaInsets.top,self.navigationController.navigationBar.frame.size.height)];
+
+    if(self.nextAppTutorial){
+        [self.logoImage setBelow:self.nextAppTutorial withPadding:-10];
+    } else {
+        [self.logoImage setGravityTop:MAX(self.view.safeAreaInsets.top,self.navigationController.navigationBar.frame.size.height)];
+    }
+    [self.logoText setBelow:self.logoImage withPadding:-20];
+    [self.featureButtonArea setBelow:self.logoText withPadding:[self scaleForScreen:10]];
+    if(!self.featureButtonArea.hidden){
+        [self.stationSearchInputField setBelow:self.featureButtonArea withPadding:20];
+        [self.triangleInputTextfieldView setAbove:self.stationSearchInputField withPadding:0];
+    }
     [self.mapFloatingBtn setGravityRight:10];
     
     CGFloat bottomSafeOffset = self.view.safeAreaInsets.bottom;
@@ -1252,6 +1304,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 - (void) didSelectStation:(MBStationFromSearch *)stationFromSearch startWithDepartures:(BOOL)startWithDepartures
 {
+    if(AppDelegate.appDelegate.appDisabled){
+        return;
+    }
+    
     if(_didSelectStationRunning){
         NSLog(@"ignored %@, waiting for %@",stationFromSearch,_selectedStation);
         return;
@@ -1278,6 +1334,9 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 }
 
 -(void)loadStation:(MBStationFromSearch*)stationFromSearch startWithDepartures:(BOOL)startWithDepartures{
+    if(AppDelegate.appDelegate.appDisabled){
+        return;
+    }
     BOOL stadaMissing = NO;
     NSNumber* stationId = stationFromSearch.stationId;
     if(!stationId){
@@ -1290,12 +1349,13 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     
     self.selectedStation = station;
 
+    /*
     [SentrySDK configureScope:^(SentryScope *_Nonnull scope) {
         [scope setContextValue:@{
             @"stationId" : (station.mbId == nil ? @0 : station.mbId),
             @"station" : (station.title == nil ? @"" : station.title)
         } forKey:@"station"];
-    }];
+    }];*/
 
     if(stationFromSearch.isOPNVStation){
         NSLog(@"opening an opnv station");
@@ -1379,9 +1439,10 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     [self.stationMapController cleanup];
     self.stationMapController = nil;
     self.selectedStation = nil;
+    /*
     [SentrySDK configureScope:^(SentryScope *_Nonnull scope) {
         [scope removeContextForKey:@"station"];
-    }];
+    }];*/
     if(clearBackHistory){
         NSLog(@"clearing backNavigationList");
         [self.backNavigationList removeAllObjects];
@@ -1464,6 +1525,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
 
 -(void)enableTextSearch{
     NSLog(@"enable text search...");
+    self.nextAppTutorial.hidden = YES;
     self.mapFloatingBtn.hidden = YES;
     self.logoText.hidden = YES;
     self.logoImage.hidden = YES;
@@ -1475,12 +1537,12 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
         if(AppDelegate.SCALEFACTORFORSCREEN != 1.0){
             [self.stationSearchInputField setGravityTop:60];
         } else {
-            CGFloat topSafeOffset = 0.0;
-            [self.stationSearchInputField setGravityTop:15+60+topSafeOffset];
+            CGFloat topSafeOffset = MAX(15,self.view.safeAreaInsets.top);
+            [self.stationSearchInputField setGravityTop:topSafeOffset+self.closeButton.sizeHeight];
         }
     } completion:^(BOOL finished) {
-        [self.closeButton setAbove:self.stationSearchInputField withPadding:7];
-        [self.closeButton setGravityLeft:5];
+        [self.closeButton setAbove:self.stationSearchInputField withPadding:2];
+        [self.closeButton setGravityLeft:0];
         self.closeButton.hidden = NO;
         [self.searchResultTableView setBelow:self.stationSearchInputField withPadding:54];
         [self.searchErrorView setBelow:self.stationSearchInputField withPadding:54];
@@ -1615,6 +1677,7 @@ static NSString * const kFavoriteCollectionViewCellReuseIdentifier = @"Cell";
     if(self.locationManagerAuthorized){
         self.mapFloatingBtn.hidden = NO;
     }
+    self.nextAppTutorial.hidden = NO;
     self.logoText.hidden = NO;
     self.logoImage.hidden = NO;
     self.footerButtons.hidden = NO;

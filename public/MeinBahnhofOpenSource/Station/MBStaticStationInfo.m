@@ -14,6 +14,7 @@
 #import "RIMapSEV.h"
 #import "MBLocker.h"
 #import "MBAccompanimentTeaserView.h"
+#import "MBNews.h"
 
 @implementation MBStaticStationInfo
 
@@ -157,6 +158,9 @@
 //                [text appendString:@"<br>"];
             }
             service.descriptionText = text;
+        } else if([type isEqualToString:kServiceType_NEXTAPP]){
+            service.title = NEW_APP_HEADER;
+            service.descriptionText = NEW_APP_DESCRIPTION;
         }
     }
     service.trackingKey = type;

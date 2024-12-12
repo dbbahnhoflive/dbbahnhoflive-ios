@@ -342,6 +342,9 @@
 -(BOOL)isLockerSearch{
     return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_LOCKER];
 }
+-(BOOL)isNextAppSearch{
+    return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_NEXT];
+}
 
 -(BOOL)isElevatorSearch{
     return [self.keywordString isEqualToString:CONTENT_SEARCH_KEY_STATIONINFO_ELEVATOR];

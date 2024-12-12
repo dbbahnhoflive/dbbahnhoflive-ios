@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define CONTENT_SEARCH_KEY_STATIONINFO @"Bahnhofsinformation"
 
+#define CONTENT_SEARCH_KEY_STATIONINFO_NEXT [@"Bahnhofsinformation " stringByAppendingString:NEW_APP_HEADER]
 #define CONTENT_SEARCH_KEY_STATIONINFO_SEV @"Bahnhofsinformation Ersatzverkehr"
 #define CONTENT_SEARCH_KEY_STATIONINFO_SEV_ACCOMPANIMENT @"Bahnhofsinformation Ersatzverkehr DB Wegbegleitung"
 #define CONTENT_SEARCH_KEY_STATIONINFO_LOCKER @"Bahnhofsinformation Schließfächer"
@@ -132,6 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL)isStationFeatureSearch;
 -(BOOL)isStationInfoSearch;
 -(BOOL)isChatBotSearch;
+-(BOOL)isNextAppSearch;
 
 -(BOOL)isStationInfoLocalServicesSearch;
 -(BOOL)isLocalServiceDBInfo;
